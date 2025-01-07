@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241122030252_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20250106024031_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -179,7 +179,14 @@ namespace project_garage.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("EmailConfirmationCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastLogin")

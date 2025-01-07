@@ -176,7 +176,14 @@ namespace project_garage.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("EmailConfirmationCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastLogin")

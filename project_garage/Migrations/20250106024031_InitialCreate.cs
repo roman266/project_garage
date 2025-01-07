@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace project_garage.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,6 +38,8 @@ namespace project_garage.Migrations
                     LastLogin = table.Column<DateTime>(type: "TEXT", nullable: true),
                     ActiveStatus = table.Column<string>(type: "TEXT", nullable: false),
                     AccountStatus = table.Column<string>(type: "TEXT", nullable: false),
+                    IsEmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
+                    EmailConfirmationCode = table.Column<string>(type: "TEXT", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),

@@ -6,7 +6,6 @@ namespace project_garage.Models
 {
         public class UserModel : IdentityUser
         {
-
         public string ProfilePicture { get; set; } = "None";
         [Required]
         public string Role { get; set; } = "User"; // Default role
@@ -22,6 +21,8 @@ namespace project_garage.Models
         public string ActiveStatus { get; set; } = "Online"; // Status like "Online", "Away", etc.
 
         public string AccountStatus { get; set; } = "Active"; // Account status: "Active", "Banned", etc.
+        public bool IsEmailConfirmed { get; set; }
+        public string EmailConfirmationCode { get; set; }
     }
 }
 

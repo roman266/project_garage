@@ -7,7 +7,7 @@ namespace project_garage.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options )
             : base(options)
         {
         }
