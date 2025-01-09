@@ -4,17 +4,20 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Data;
 using project_garage.Models;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Controllers
 {
     public class AccountController : Controller
     {
         private readonly UserManager<UserModel> _userManager;
+        private readonly SignInManager<UserModel> _signInManager;
         private readonly IEmailSender _emailSender;
 
         public AccountController(UserManager<UserModel> userManager, SignInManager<UserModel> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _emailSender = new EmailSender();
         }
 
@@ -36,6 +39,13 @@ namespace project_garage.Controllers
                 {
                     Console.WriteLine($"{error.ErrorMessage}");
                 }
+                return View(model);
+            }
+
+            var emailCheck = await _userManager.FindByEmailAsync(model.Email);
+            if (emailCheck != null)
+            {
+                ModelState.AddModelError(string.Empty, "Email зайнятий");
                 return View(model);
             }
 
@@ -90,6 +100,7 @@ namespace project_garage.Controllers
             }
 
             user.IsEmailConfirmed = true;
+            user.EmailConfirmed = true;
             user.EmailConfirmationCode = "none"; // Видаляємо код після успішного підтвердження
             var result = await _userManager.UpdateAsync(user);
 
@@ -101,5 +112,51 @@ namespace project_garage.Controllers
             return BadRequest("Щось пішло не так.");
         }
 
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            Console.WriteLine("Login POST called");
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("invalid");
+                return View(model);
+            }
+            Console.WriteLine(model.Email);
+            // Отримуємо користувача за email
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                Console.WriteLine("there's no users with this email");
+                ModelState.AddModelError(string.Empty, "Невдала спроба входу. Перевірте дані.");
+                return View(model);
+            }
+
+            // Перевірка email-верифікації
+            if (!user.IsEmailConfirmed)
+            {
+                Console.WriteLine("email doesn't confirmed");
+                ModelState.AddModelError(string.Empty, "Ваш email не підтверджений. Перевірте пошту для активації.");
+                return View(model);
+            }
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            Console.WriteLine($"IsPasswordValid: {isPasswordValid}");
+            if (isPasswordValid)
+            {
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                return RedirectToAction("Profile", "User", new { id = user.Id });
+            }
+
+            Console.WriteLine("Smth going wrong");
+            ModelState.AddModelError(string.Empty, "Невдала спроба входу. Перевірте дані.");
+            return View(model);
+        }
     }
 }

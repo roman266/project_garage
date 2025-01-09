@@ -1,0 +1,10 @@
+    .logo{
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .logo-sigma{
+        width: 44px;
+        position: relative;
+        bottom: 4px;
+    }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace project_garage.Models
+namespace project_garage.Models.ViewModels
 {
     public class RegisterViewModel
     {
