@@ -86,7 +86,7 @@ namespace project_garage.Controllers
 
             if (user.EmailConfirmationCode != code)
             {
-                return BadRequest("Недійсний код підтвердження.");
+                return View("InvalidCodeEmail");
             }
 
             user.IsEmailConfirmed = true;

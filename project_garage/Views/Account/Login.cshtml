@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    @* стиль *@
-    <link rel="stylesheet" href="~/css/reset.css">
-    <link rel="stylesheet" href="~/css/StyleRegister.css">
+    <title>Sign In</title>
     @* шрифт *@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:wght@300&display=swap" rel="stylesheet">
-
+    @* стиль *@
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/StyleRegister.css">
+    <link rel="stylesheet" href="~/css/StyleLogin.css">
+    
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
-
+    
 </head>
 <body>
-    <form id="registrationForm" class="signup-form" method="post" asp-controller="Account" asp-action="Register">
+    <form id="registrationForm" class="signup-form" method="post" asp-controller="Account" asp-action="Login">
         @Html.AntiForgeryToken()
-        <h2>Sign Up</h2>
+        <div class="logo">
+        <h2>Sigm<img class="logo-sigma" src="~/img/sigma 2.svg" alt=""></h2>
+
+        </div>
         <div class="form-group">
             <label for="email">Email</label>
             <input type="email" id="email" name="Email" placeholder="Type your email" />
-        </div>
-
-        <div class="form-group">
-            <label for="username">User name</label>
-            <input type="text" id="username" name="UserName" placeholder="Type your user name" />
         </div>
 
         <div class="form-group">
@@ -37,13 +36,8 @@
             <input type="password" id="password" name="Password" placeholder="Type your password" />
         </div>
 
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="СonfirmPassword" placeholder="Confirm Password" />
-        </div>
-
-        <button type="submit" class="submit-btn">Sign Up</button>
-        <a href="http://localhost:5021/Account/Login">Sign In</a>
+        <button type="submit" class="submit-btn">Sign In</button>
+        <a class="links-a" href="http://localhost:5021/Account/Register">Sign Up</a>
     </form>
 </body>
-</html>
+
