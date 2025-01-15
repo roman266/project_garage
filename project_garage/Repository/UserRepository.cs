@@ -1,0 +1,114 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using project_garage.Interfaces.IRepository;
+using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
+
+namespace project_garage.Repository
+{
+    public class UserRepository : IUserRepository
+    {
+        public readonly UserManager<UserModel> _userManager;
+        public UserRepository(UserManager<UserModel> userManager) 
+        {
+            _userManager = userManager;
+        }
+
+        public async Task<IdentityResult> CreateUserAsync(UserModel userModel, string password)
+        {
+            var user = new UserModel
+            {
+                UserName = userModel.UserName,
+                Email = userModel.Email,
+                EmailConfirmationCode = userModel.EmailConfirmationCode,
+            };
+
+            var result = await _userManager.CreateAsync(user, password);
+            return result;
+        }
+
+        public async Task<UserModel> GetByEmailAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email)) 
+            {
+                throw new Exception("Wrong email");
+            }
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                throw new Exception("Email is null here");
+            }
+
+            return user;
+        }
+
+        public async Task<UserModel> GetByIdAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                throw new Exception("No user finded");
+            }
+
+            return user;
+        }
+
+        public async Task<IdentityResult> UpdateUserInfoAsync(UserModel user)
+        {
+            var result = await _userManager.UpdateAsync(user);
+            return result;
+        }
+
+        public async Task<IdentityResult> UpdateUserPasswordAsync(string id, string password)
+        {
+            var user = await GetByIdAsync(id);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User is null");
+            }
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, password);
+                if (!result.Succeeded)
+                {
+                    return result;
+                }
+            }
+            throw new InvalidOperationException("Somthing go wrong");
+        }
+
+        public async Task<IdentityResult> ConfirmUserEmail(UserModel user)
+        {
+            user.IsEmailConfirmed = true;
+            user.EmailConfirmed = true;
+            user.EmailConfirmationCode = "none";
+            var updateResult = await _userManager.UpdateAsync(user);
+            return updateResult;
+        }
+
+        public async Task<Boolean> CheckPasswordAsync(UserModel user, string password)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            var result = await _userManager.CheckPasswordAsync(user, password);
+            return result;
+        }
+
+        public async Task<IdentityResult> DeleteUserAsync(string id) {
+            var user = await GetByIdAsync(id);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User is null here");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            return result;
+        }
+    }
+}

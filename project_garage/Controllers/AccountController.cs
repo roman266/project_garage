@@ -3,21 +3,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Data;
-using project_garage.Models;
+using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
+using project_garage.Interfaces.IRepository;
 
 namespace project_garage.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<UserModel> _userManager;
-        private readonly SignInManager<UserModel> _signInManager;
+        private readonly IUserRepository _userRepository;
+        private readonly IAuthRepository _authRepository;
         private readonly IEmailSender _emailSender;
 
-        public AccountController(UserManager<UserModel> userManager, SignInManager<UserModel> signInManager)
+        public AccountController(IUserRepository userRepository, IAuthRepository authRepository)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _userRepository = userRepository;
+            _authRepository = authRepository;
             _emailSender = new EmailSender();
         }
 
@@ -42,7 +43,7 @@ namespace project_garage.Controllers
                 return View(model);
             }
 
-            var emailCheck = await _userManager.FindByEmailAsync(model.Email);
+            var emailCheck = _userRepository.GetByEmailAsync(model.Email);
             if (emailCheck != null)
             {
                 ModelState.AddModelError(string.Empty, "Email зайнятий");
@@ -58,7 +59,7 @@ namespace project_garage.Controllers
                 Email = model.Email,
                 EmailConfirmationCode = Guid.NewGuid().ToString()
             };
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userRepository.CreateUserAsync(user, model.Password);
 
             if (result.Succeeded)
             {
@@ -88,7 +89,7 @@ namespace project_garage.Controllers
                 return BadRequest("Недійсний запит.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound("Користувача не знайдено.");
@@ -99,10 +100,8 @@ namespace project_garage.Controllers
                 return View("InvalidCodeEmail");
             }
 
-            user.IsEmailConfirmed = true;
-            user.EmailConfirmed = true;
-            user.EmailConfirmationCode = "none"; // Видаляємо код після успішного підтвердження
-            var result = await _userManager.UpdateAsync(user);
+            
+            var result = await _userRepository.ConfirmUserEmail(user);
 
             if (result.Succeeded)
             {
@@ -130,7 +129,7 @@ namespace project_garage.Controllers
             }
             Console.WriteLine(model.Email);
             // Отримуємо користувача за email
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
             {
                 Console.WriteLine("there's no users with this email");
@@ -146,17 +145,23 @@ namespace project_garage.Controllers
                 return View(model);
             }
 
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            var isPasswordValid = await _userRepository.CheckPasswordAsync(user, model.Password);
             Console.WriteLine($"IsPasswordValid: {isPasswordValid}");
             if (isPasswordValid)
             {
-                await _signInManager.SignInAsync(user, isPersistent: true);
-                return RedirectToAction("Profile", "User", new { id = user.Id });
+                await _authRepository.SignInAsync(user);
+                return RedirectToAction("ProfileIndex", "Profile", new { id = user.Id });
             }
 
             Console.WriteLine("Smth going wrong");
             ModelState.AddModelError(string.Empty, "Невдала спроба входу. Перевірте дані.");
             return View(model);
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await _authRepository.SignOutAsync(); // Викликає розлогування
+            return RedirectToAction("Login", "Account"); // Перенаправлення на головну сторінку або іншу
         }
     }
 }

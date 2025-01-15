@@ -1,0 +1,12 @@
+﻿@using project_garage.Models.ViewModels
+@model ProfileViewModel
+
+<div class="profile-page">
+    <h1>@Model.Nickname</h1>
+    <p>@Model.Description</p>
+    <div>
+        <span>Friends: @Model.FriendsCount</span>
+        <span>Posts: @Model.PostsCount</span>
+    </div>
+    <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
+</div>

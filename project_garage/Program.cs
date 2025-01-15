@@ -2,8 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using project_garage.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
-using project_garage.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using project_garage.Models.DbModels;
+using project_garage.Interfaces.IRepository;
+using project_garage.Repository;
+using project_garage.Interfaces.IService;
+using project_garage.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +18,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(); // Для відлагодження
 });
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -27,6 +38,9 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+
+
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
@@ -71,5 +85,10 @@ Console.WriteLine($"Connection String: {connectionString}");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "profile",
+    pattern: "User/Profile/{userId}",
+    defaults: new { controller = "Profile", action = "ProfileIndex" });
 
 app.Run();

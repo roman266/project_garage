@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 
 
-namespace project_garage.Models
+namespace project_garage.Models.DbModels
 {
-        public class UserModel : IdentityUser
-        {
+    public class UserModel : IdentityUser
+    {
         public string ProfilePicture { get; set; } = "None";
         [Required]
         public string Role { get; set; } = "User"; // Default role
@@ -23,6 +23,8 @@ namespace project_garage.Models
         public string AccountStatus { get; set; } = "Active"; // Account status: "Active", "Banned", etc.
         public bool IsEmailConfirmed { get; set; }
         public string EmailConfirmationCode { get; set; }
+        public ICollection<PostModel> Posts { get; set; }
+        public ICollection<FriendModel> Friends { get; set; }
     }
 }
 
