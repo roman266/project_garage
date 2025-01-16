@@ -25,6 +25,8 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -38,9 +40,6 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-
-
-
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
@@ -90,5 +89,11 @@ app.MapControllerRoute(
     name: "profile",
     pattern: "User/Profile/{userId}",
     defaults: new { controller = "Profile", action = "ProfileIndex" });
+
+app.MapControllerRoute(
+    name: "profile-search",
+    pattern: "Profile/SearchUsers",
+    defaults: new { controller = "ProfileController", action = "SearchUsers" });
+
 
 app.Run();

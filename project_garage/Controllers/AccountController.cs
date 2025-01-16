@@ -1,24 +1,23 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Data;
 using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
-using project_garage.Interfaces.IRepository;
+using project_garage.Interfaces.IService;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace project_garage.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IAuthRepository _authRepository;
+        private readonly IUserService _userService;
+        private readonly IAuthService _authService;
         private readonly IEmailSender _emailSender;
 
-        public AccountController(IUserRepository userRepository, IAuthRepository authRepository)
+        public AccountController(IUserService userService, IAuthService authService)
         {
-            _userRepository = userRepository;
-            _authRepository = authRepository;
+            _userService = userService;
+            _authService = authService;
             _emailSender = new EmailSender();
         }
 
@@ -32,22 +31,25 @@ namespace project_garage.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            Console.WriteLine("entered regisrt");
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("im invalid");
+                // Виведення помилок у консоль
+                Console.WriteLine("Model is invalid");
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
                     Console.WriteLine($"{error.ErrorMessage}");
                 }
-                return View(model);
+
+                // Повертаємо порожній JSON або об'єкт, який містить помилки
+                return Json(new { success = false, 
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
             }
 
-            var emailCheck = _userRepository.GetByEmailAsync(model.Email);
+            var emailCheck = _userService.GetByEmailAsync(model.Email);
             if (emailCheck != null)
             {
                 ModelState.AddModelError(string.Empty, "Email зайнятий");
-                return View(model);
+                return Json(new { success = false, message = "Email зайнятий" });
             }
 
             Console.WriteLine("i got data");
@@ -59,7 +61,7 @@ namespace project_garage.Controllers
                 Email = model.Email,
                 EmailConfirmationCode = Guid.NewGuid().ToString()
             };
-            var result = await _userRepository.CreateUserAsync(user, model.Password);
+            var result = await _userService.CreateUserAsync(user, model.Password);
 
             if (result.Succeeded)
             {
@@ -70,7 +72,7 @@ namespace project_garage.Controllers
                 await _emailSender.SendEmailAsync(model.Email, "Підтвердження email",
                     $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
                 Console.WriteLine("sended");
-                return RedirectToAction("Login");
+                return Json(new { success = true, message = "Реєстрація успішна. Перевірте вашу пошту для підтвердження акаунта." });
             }
 
             foreach (var error in result.Errors)
@@ -78,7 +80,9 @@ namespace project_garage.Controllers
                 ModelState.AddModelError("", error.Description);
             }
 
-            return View(model);
+            var errors = result.Errors.Select(e => e.Description).ToList();
+
+            return Json(new { success = false, errors });
         }
 
         [HttpGet]
@@ -89,7 +93,7 @@ namespace project_garage.Controllers
                 return BadRequest("Недійсний запит.");
             }
 
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userService.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound("Користувача не знайдено.");
@@ -101,7 +105,7 @@ namespace project_garage.Controllers
             }
 
             
-            var result = await _userRepository.ConfirmUserEmail(user);
+            var result = await _userService.ConfirmUserEmail(user);
 
             if (result.Succeeded)
             {
@@ -129,7 +133,7 @@ namespace project_garage.Controllers
             }
             Console.WriteLine(model.Email);
             // Отримуємо користувача за email
-            var user = await _userRepository.GetByEmailAsync(model.Email);
+            var user = await _userService.GetByEmailAsync(model.Email);
             if (user == null)
             {
                 Console.WriteLine("there's no users with this email");
@@ -145,11 +149,11 @@ namespace project_garage.Controllers
                 return View(model);
             }
 
-            var isPasswordValid = await _userRepository.CheckPasswordAsync(user, model.Password);
+            var isPasswordValid = await _userService.CheckPasswordAsync(user, model.Password);
             Console.WriteLine($"IsPasswordValid: {isPasswordValid}");
             if (isPasswordValid)
             {
-                await _authRepository.SignInAsync(user);
+                await _authService.SignInAsync(user);
                 return RedirectToAction("ProfileIndex", "Profile", new { id = user.Id });
             }
 
@@ -160,7 +164,7 @@ namespace project_garage.Controllers
 
         public async Task<IActionResult> Logout()
         {
-            await _authRepository.SignOutAsync(); // Викликає розлогування
+            await _authService.SignOutAsync(); // Викликає розлогування
             return RedirectToAction("Login", "Account"); // Перенаправлення на головну сторінку або іншу
         }
     }

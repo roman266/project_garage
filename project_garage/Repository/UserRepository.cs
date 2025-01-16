@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
-using project_garage.Models.ViewModels;
 
 namespace project_garage.Repository
 {
@@ -80,15 +80,6 @@ namespace project_garage.Repository
             throw new InvalidOperationException("Somthing go wrong");
         }
 
-        public async Task<IdentityResult> ConfirmUserEmail(UserModel user)
-        {
-            user.IsEmailConfirmed = true;
-            user.EmailConfirmed = true;
-            user.EmailConfirmationCode = "none";
-            var updateResult = await _userManager.UpdateAsync(user);
-            return updateResult;
-        }
-
         public async Task<Boolean> CheckPasswordAsync(UserModel user, string password)
         {
             if (user == null)
@@ -110,5 +101,29 @@ namespace project_garage.Repository
             var result = await _userManager.DeleteAsync(user);
             return result;
         }
+
+        public async Task<List<UserModel>> SearchUsersAsync(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+                throw new ArgumentException("Query cannot be null or empty", nameof(query));
+
+            var users = await _userManager.Users
+                .Where(u => u.UserName.Contains(query))
+                .Take(10)
+                .Select(u => new UserModel
+                {
+                    Id = u.Id,
+                    UserName = u.UserName
+                })
+                .ToListAsync();
+
+            if(users.Count == 0) 
+                throw new ArgumentException("No users founded");
+
+            return users;
+        }
+
+
+
     }
 }

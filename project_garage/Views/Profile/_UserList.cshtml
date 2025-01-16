@@ -1,0 +1,10 @@
+﻿@using project_garage.Models.DbModels;
+@model List<UserModel>
+
+    <ul>
+        @foreach (var user in Model)
+        {
+            <li>@user.UserName</li>
+        }
+    </ul>
+
