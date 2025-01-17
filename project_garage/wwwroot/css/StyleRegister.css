@@ -85,3 +85,14 @@
             .submit-btn:hover {
                 width: 150px;
             }
+/* Стили для инпутов с ошибкой */
+/* Добавьте в ваш CSS файл */
+input.error {
+    border-color: red; /* Подсветка поля ввода с ошибкой */
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+

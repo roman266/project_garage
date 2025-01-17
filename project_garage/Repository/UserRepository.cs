@@ -36,7 +36,7 @@ namespace project_garage.Repository
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                throw new Exception("Email is null here");
+                return null;
             }
 
             return user;
