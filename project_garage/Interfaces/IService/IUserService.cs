@@ -6,7 +6,7 @@ namespace project_garage.Interfaces.IService
 {
     public interface IUserService
     {
-        Task<IdentityResult> CreateUserAsync(UserModel user, string password);
+        Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl);
         Task<UserModel> GetByEmailAsync(string email);
         Task<UserModel> GetByIdAsync(string id);
         Task<IdentityResult> UpdateUserInfoAsync(UserModel user);

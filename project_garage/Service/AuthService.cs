@@ -7,21 +7,42 @@ namespace project_garage.Service
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authService;
+        private readonly IAuthRepository _authRepository;
+        private readonly IUserService _userService;
 
-        public AuthService(IAuthRepository authService)
+        public AuthService(IAuthRepository authRepository, IUserService userService)
         {
-            _authService = authService;
+            _authRepository = authRepository;
+            _userService = userService;
         }
 
-        public async Task SignInAsync(UserModel userModel)
+        public async Task SignInAsync(string email, string password)
         {
-            await _authService.SignInAsync(userModel);
+            var userModel = await _userService.GetByEmailAsync(email);
+            if (userModel == null)
+                throw new Exception("No user founded");
+
+
+            if (await _userService.CheckPasswordAsync(userModel, password))
+            {
+                if (userModel.IsEmailConfirmed)
+                {
+                    await _authRepository.SignInAsync(userModel);
+                }
+                else
+                {
+                    throw new Exception("Email isn't confirmed");
+                }
+            }
+            else 
+            { 
+                throw new Exception("Wrong password"); 
+            }
         }
 
         public async Task SignOutAsync()
         {
-            await _authService.SignOutAsync();
+            await _authRepository.SignOutAsync();
         }
     }
 }

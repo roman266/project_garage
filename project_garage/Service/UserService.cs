@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace project_garage.Service
 {
@@ -9,18 +12,49 @@ namespace project_garage.Service
 
     {
         private readonly IUserRepository _userRepository;
+        private readonly IEmailSender _emailSender;
         public UserService(IUserRepository userRepository) 
         {
             _userRepository = userRepository;
+            _emailSender = new EmailSender();
         }
 
-        public async Task<IdentityResult> CreateUserAsync(UserModel user, string password)
+        public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl)
         {
-            var result = await _userRepository.CreateUserAsync(user, password);
+            if (!await CheckForExistanceByEmail(email))
+            {
+                var user = new UserModel
+                {
+                    UserName = userName,
+                    Email = email,
+                    EmailConfirmationCode = Guid.NewGuid().ToString()
+                };
 
-            return result;
+                var result = await _userRepository.CreateUserAsync(user, password);
+
+                if (result.Succeeded)
+                {
+                    Console.WriteLine("succed");
+                    var confirmationLink = $"{baseUrl}/Account/ConfirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
+
+                    await _emailSender.SendEmailAsync(email, "Підтвердження email",
+                        $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
+                    Console.WriteLine("sended");
+                    return result;
+                }
+            }
+            throw new Exception("User with this email already exist");
         }
 
+        public async Task<bool> CheckForExistanceByEmail(string email)
+        {
+            var user = await GetByEmailAsync(email);
+            if (user == null)
+                return false;
+            return true;
+        }
+           
+ 
         public async Task<UserModel> GetByEmailAsync(string email)
         {
             var user = await _userRepository.GetByEmailAsync(email);

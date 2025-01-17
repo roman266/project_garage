@@ -39,7 +39,6 @@ namespace project_garage.Repository
             {
                 return null;
             }
-
             return user;
         }
 

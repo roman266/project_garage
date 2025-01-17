@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using project_garage.Data;
-using project_garage.Models.DbModels;
+﻿using Microsoft.AspNetCore.Mvc;
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace project_garage.Controllers
 {
@@ -12,13 +8,13 @@ namespace project_garage.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
-        private readonly IEmailSender _emailSender;
+        
 
         public AccountController(IUserService userService, IAuthService authService)
         {
             _userService = userService;
             _authService = authService;
-            _emailSender = new EmailSender();
+            
         }
 
         [HttpGet]
@@ -29,6 +25,7 @@ namespace project_garage.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("Account/Register")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -45,47 +42,22 @@ namespace project_garage.Controllers
                     errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
             }
 
-            var emailCheck = _userService.GetByEmailAsync(model.Email);
-            if (emailCheck != null)
-            {
-                ModelState.AddModelError(string.Empty, "Email зайнятий");
-                return Json(new { success = false, message = "Email зайнятий" });
-            }
-
             Console.WriteLine("i got data");
 
-
-            var user = new UserModel
+            try
             {
-                UserName = model.UserName,
-                Email = model.Email,
-                EmailConfirmationCode = Guid.NewGuid().ToString()
-            };
-            var result = await _userService.CreateUserAsync(user, model.Password);
-
-            if (result.Succeeded)
-            {
-                Console.WriteLine("succed");
-                var confirmationLink = Url.Action("ConfirmEmail", "Account",
-                new { userId = user.Id, code = user.EmailConfirmationCode }, Request.Scheme);
-
-                await _emailSender.SendEmailAsync(model.Email, "Підтвердження email",
-                    $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
-                Console.WriteLine("sended");
-                return Json(new { success = true, message = "Реєстрація успішна. Перевірте вашу пошту для підтвердження акаунта." });
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var result = await _userService.CreateUserAsync(model.UserName, model.Email, model.Password, baseUrl);
+                return Json(new { success = true, message = "Email confirmation code has been sended on your email" });
             }
-
-            foreach (var error in result.Errors)
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", error.Description);
+                return Json(new { success = false, message = $"{ex.Message}" });
             }
-
-            var errors = result.Errors.Select(e => e.Description).ToList();
-
-            return Json(new { success = false, errors });
         }
 
         [HttpGet]
+        [Route("Account/EmailConfirmed/{userId}")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
@@ -123,6 +95,7 @@ namespace project_garage.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("Account/Login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             Console.WriteLine("Login POST called");
@@ -132,40 +105,22 @@ namespace project_garage.Controllers
                 return View(model);
             }
             Console.WriteLine(model.Email);
-            // Отримуємо користувача за email
-            var user = await _userService.GetByEmailAsync(model.Email);
-            if (user == null)
-            {
-                Console.WriteLine("there's no users with this email");
-                ModelState.AddModelError(string.Empty, "Невдала спроба входу. Перевірте дані.");
-                return View(model);
-            }
 
-            // Перевірка email-верифікації
-            if (!user.IsEmailConfirmed)
+            try
             {
-                Console.WriteLine("email doesn't confirmed");
-                ModelState.AddModelError(string.Empty, "Ваш email не підтверджений. Перевірте пошту для активації.");
-                return View(model);
+                await _authService.SignInAsync(model.Email, model.Password);
+                return Json(new { success = true, message = "You successfully loged" });
             }
-
-            var isPasswordValid = await _userService.CheckPasswordAsync(user, model.Password);
-            Console.WriteLine($"IsPasswordValid: {isPasswordValid}");
-            if (isPasswordValid)
+            catch (Exception ex)
             {
-                await _authService.SignInAsync(user);
-                return RedirectToAction("ProfileIndex", "Profile", new { id = user.Id });
+                return Json(new { success = false, message = $"{ex.Message}" });
             }
-
-            Console.WriteLine("Smth going wrong");
-            ModelState.AddModelError(string.Empty, "Невдала спроба входу. Перевірте дані.");
-            return View(model);
         }
 
         public async Task<IActionResult> Logout()
         {
             await _authService.SignOutAsync(); // Викликає розлогування
-            return RedirectToAction("Login", "Account"); // Перенаправлення на головну сторінку або іншу
+            return Json(new { success = false, message = "You successfully loged out" }); // Перенаправлення на головну сторінку або іншу
         }
     }
 }
