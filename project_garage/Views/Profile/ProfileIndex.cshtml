@@ -9,5 +9,13 @@
         <span>Posts: @Model.PostsCount</span>
     </div>
     <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
-    <a href="http://localhost:5021/Profile/SearchUsers">Search</a>
+    @if(@Model.CanAddFriend){
+        
+        <form method="post" action="/Friends/Add">
+            <input type="hidden" name="friendId" value="@Model.UserId" />
+            <button type="submit">Додати в друзі</button>
+        </form>
+    }
+    <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
+    <a href="@Url.Action("GetAllRequests", "Profile")">Requests</a>
 </div>

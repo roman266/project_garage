@@ -2,9 +2,11 @@
 {
     public class ProfileViewModel
     {
-            public string Nickname { get; set; }
-            public string Description { get; set; }
-            public int FriendsCount { get; set; }
-            public int PostsCount { get; set; }
+        public string UserId { get; set; }
+        public string Nickname { get; set; }
+        public string Description { get; set; }
+        public int FriendsCount { get; set; }
+        public int PostsCount { get; set; }
+        public bool CanAddFriend { get; set; }
     }
 }

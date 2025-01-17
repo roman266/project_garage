@@ -6,9 +6,8 @@ namespace project_garage.Interfaces.IRepository
     {
         Task<FriendModel> GetById(string id);
         Task<List<FriendModel>> GetByUserIdAsync(string id);
-        Task SendFriendRequestAsync(FriendModel friend);
-        Task AcceptRequestAsync(FriendModel friend);
-        Task RejectRequestAsync(FriendModel friend);
-        Task RemoveFriendAsync(FriendModel friend);
+        Task CreateNewRequestAsync(FriendModel friend);
+        Task UpdateRequestAsync(FriendModel friend);
+        Task DeleteFriendAsync(FriendModel friend);
     }
 }

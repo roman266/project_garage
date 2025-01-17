@@ -30,25 +30,19 @@ namespace project_garage.Repository
             return list;
         }
 
-        public async Task SendFriendRequestAsync(FriendModel friendModel)
+        public async Task CreateNewRequestAsync(FriendModel friendModel)
         {
             _context.Friends.Add(friendModel);
             await _context.SaveChangesAsync();
         }
 
-        public async Task AcceptRequestAsync(FriendModel friendModel)
+        public async Task UpdateRequestAsync(FriendModel friend)
         {
-            friendModel.IsAccepted = true;
-            _context.Friends.Update(friendModel);
+            _context.Friends.Update(friend);
             await _context.SaveChangesAsync();
         }
 
-        public async Task RejectRequestAsync(FriendModel friendModel)
-        {
-            await RemoveFriendAsync(friendModel);
-        }
-
-        public async Task RemoveFriendAsync(FriendModel friendModel)
+        public async Task DeleteFriendAsync(FriendModel friendModel)
         {
             _context.Friends.Remove(friendModel);
             await _context.SaveChangesAsync();

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using System.Security.Claims;
 
 namespace project_garage.Repository
 {
@@ -36,7 +37,7 @@ namespace project_garage.Repository
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                throw new Exception("Email is null here");
+                return null;
             }
 
             return user;
@@ -122,8 +123,5 @@ namespace project_garage.Repository
 
             return users;
         }
-
-
-
     }
 }
