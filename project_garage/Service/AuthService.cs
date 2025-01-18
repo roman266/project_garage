@@ -16,7 +16,7 @@ namespace project_garage.Service
             _userService = userService;
         }
 
-        public async Task SignInAsync(string email, string password)
+        public async Task<string> SignInAsync(string email, string password)
         {
             var userModel = await _userService.GetByEmailAsync(email);
             if (userModel == null)
@@ -28,6 +28,7 @@ namespace project_garage.Service
                 if (userModel.IsEmailConfirmed)
                 {
                     await _authRepository.SignInAsync(userModel);
+                    return userModel.Id;
                 }
                 else
                 {

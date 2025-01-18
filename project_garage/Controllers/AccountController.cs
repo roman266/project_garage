@@ -108,8 +108,8 @@ namespace project_garage.Controllers
 
             try
             {
-                await _authService.SignInAsync(model.Email, model.Password);
-                return Json(new { success = true, message = "You successfully loged" });
+                var profileIndex = await _authService.SignInAsync(model.Email, model.Password);
+                return Json(new { success = true, userId = profileIndex, message = "You successfully loged" });
             }
             catch (Exception ex)
             {
