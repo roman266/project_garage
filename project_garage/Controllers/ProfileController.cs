@@ -60,7 +60,7 @@ namespace project_garage.Controllers
 
             try
             {
-                await _friendService.SendFriendRequestAsync(userId, friendId);
+                await _friendService.SendFriendRequestAsync(friendId, userId);
                 return Ok(new { message = "Friend request set successfully." });
             }
             catch (InvalidOperationException ex)
@@ -132,18 +132,21 @@ namespace project_garage.Controllers
 
                 foreach (var request in requests)
                 {
-                    // Отримуємо дані друга через FriendId
-                    var friend = await _userService.GetByIdAsync(request.FriendId);
-
-                    if (friend != null)
+                    if (!request.IsAccepted)
                     {
-                        viewModel.Add(new FriendRequestViewModel
+                        // Отримуємо дані друга через FriendId
+                        var friend = await _userService.GetByIdAsync(request.FriendId);
+
+                        if (friend != null)
                         {
-                            RequestId = request.Id,
-                            SenderId = friend.Id, // ID друга (відправника заявки)
-                            SenderName = friend.UserName, // Ім'я друга
-                            SenderDescription = friend.Description // Опис друга
-                        });
+                            viewModel.Add(new FriendRequestViewModel
+                            {
+                                RequestId = request.Id,
+                                SenderId = friend.Id, // ID друга (відправника заявки)
+                                SenderName = friend.UserName, // Ім'я друга
+                                SenderDescription = friend.Description // Опис друга
+                            });
+                        }
                     }
 
                     return View(viewModel); // Передаємо список у View
