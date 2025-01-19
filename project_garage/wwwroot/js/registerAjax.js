@@ -1,15 +1,14 @@
 $(document).ready(function () {
     $("#registrationForm").on("submit", function (e) {
-        e.preventDefault(); // Отменяем стандартную отправку формы
+        e.preventDefault();
 
         const form = $(this);
-        const url = form.attr("action"); // Получаем URL из атрибута формы
+        const url = form.attr("action"); 
 
-        // Убираем предыдущие подсветки ошибок и сообщения
         form.find(".is-invalid").removeClass("is-invalid");
         form.find(".invalid-feedback").remove();
 
-        // Отправляем данные через AJAX
+        
         $.ajax({
             url: url,
             type: "POST",
@@ -17,7 +16,7 @@ $(document).ready(function () {
             success: function (response) {
                 console.log("info:", response);
 
-                // Если регистрация успешна
+                
                 if (response.success) {
                     const emailInput = $("[name='Email']");
                     const usernameInput = $("[name='Username']");
@@ -31,7 +30,7 @@ $(document).ready(function () {
 
                     confirmPasswordInput.after(`<div class="successfully-feedback">Ви успійшно залогінились</div>`);
                     setTimeout(function () {
-                        location.href = "/Account/Login"; // Перенаправлення на профіль
+                        location.href = "/Account/Login";
                     }, 1500);
                     }   
                     else {
@@ -71,7 +70,7 @@ $(document).ready(function () {
                                     confirmPasswordInput.after(`<div class="invalid-feedback">Поле підтвердження пароля є обов'язковим.</div>`);
                                 }
                             }else {
-                                console.log("Unknown error:", errorMessage); // Если ошибка общая, показываем её в alert
+                                console.log("Unknown error:", errorMessage); 
                             }
                         });
                     } else {

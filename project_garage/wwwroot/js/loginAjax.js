@@ -1,16 +1,14 @@
 $(document).ready(function () {
-    // Обробка форми логіну
+
     $("#registrationForm").on("submit", function (e) {
-        e.preventDefault(); // Отменяем стандартную отправку формы
+        e.preventDefault();
 
         const form = $(this);
-        const url = form.attr("action"); // Получаем URL из атрибута формы
+        const url = form.attr("action"); 
 
-        // Убираем предыдущие подсветки ошибок и сообщения
         form.find(".is-invalid").removeClass("is-invalid");
         form.find(".invalid-feedback").remove();
 
-        // Отправляем данные через AJAX
         $.ajax({
             url: url,
             type: "POST",
