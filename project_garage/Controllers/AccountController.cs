@@ -60,30 +60,39 @@ namespace project_garage.Controllers
         [Route("Account/EmailConfirmed/{userId}")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
+            Console.WriteLine($"ConfirmEmail called with userId: {userId}, code: {code}");
+
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
+                Console.WriteLine("Empty userId or code");
                 return BadRequest("Недійсний запит.");
             }
 
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
             {
+                Console.WriteLine($"User not found for userId: {userId}");
                 return NotFound("Користувача не знайдено.");
             }
 
+            Console.WriteLine($"User found: {user.Email}");
+
             if (user.EmailConfirmationCode != code)
             {
+                Console.WriteLine($"Invalid code: Expected {user.EmailConfirmationCode}, received {code}");
                 return View("InvalidCodeEmail");
             }
 
-            
+            Console.WriteLine("Attempting to confirm email...");
             var result = await _userService.ConfirmUserEmail(user);
 
             if (result.Succeeded)
             {
-                return View("EmailConfirmed"); // Сторінка успішного підтвердження
+                Console.WriteLine("Email confirmed successfully.");
+                return View("EmailConfirmed");
             }
 
+            Console.WriteLine("Failed to confirm email.");
             return BadRequest("Щось пішло не так.");
         }
 

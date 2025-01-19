@@ -5,6 +5,7 @@ using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 namespace project_garage.Service
 {
@@ -31,12 +32,12 @@ namespace project_garage.Service
                 };
 
                 var result = await _userRepository.CreateUserAsync(user, password);
+                var emailSend = await _userRepository.GetByEmailAsync(email);
 
                 if (result.Succeeded)
                 {
-                    Console.WriteLine("succed");
-                    var confirmationLink = $"{baseUrl}/Account/ConfirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
-
+                    Console.WriteLine($"succed, {user.Id}");
+                    var confirmationLink = $"{baseUrl}/Account/EmailConfirmed/{emailSend.Id}?code={emailSend.EmailConfirmationCode}";
                     await _emailSender.SendEmailAsync(email, "Підтвердження email",
                         $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
                     Console.WriteLine("sended");
