@@ -34,7 +34,7 @@ namespace project_garage.Service
 
                 if (result.Succeeded)
                 {
-                    Console.WriteLine("succed");
+                    Console.WriteLine($"succed, {user.Id}");
                     var confirmationLink = $"{baseUrl}/Account/ConfirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
 
                     await _emailSender.SendEmailAsync(email, "Підтвердження email",

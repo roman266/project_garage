@@ -98,7 +98,8 @@ namespace project_garage.Service
             try
             {
                 var list = await _friendRepository.GetByUserIdAsync(id);
-                return list.Count;
+                var accepted = list.Where(x => x.IsAccepted == true).ToList();
+                return accepted.Count;
             }
             catch (Exception ex)
             {
