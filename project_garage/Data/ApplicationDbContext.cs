@@ -11,6 +11,8 @@ namespace project_garage.Data
     {
         public DbSet<PostModel> Posts { get; set; }
         public DbSet<FriendModel> Friends { get; set; }
+        public DbSet<ConversationModel> Conversations { get; set; }
+        public DbSet<MessageModel> Messages { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -40,6 +42,30 @@ namespace project_garage.Data
                 .WithMany()
                 .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ConversationModel>()
+                .HasOne(u1 => u1.User1)
+                .WithMany()
+                .HasForeignKey(u1 => u1.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ConversationModel>()
+                .HasOne(u2 => u2.User2)
+                .WithMany()
+                .HasForeignKey(u2 => u2.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MessageModel>()
+                .HasOne(m => m.Conversation) // Зв'язок із діалогом
+                .WithMany(c => c.Messages) // Діалог має багато повідомлень
+                .HasForeignKey(m => m.ConversationId) // Зовнішній ключ
+                .OnDelete(DeleteBehavior.Cascade); // Каскадне видалення, якщо видалено діалог
+
+            modelBuilder.Entity<MessageModel>()
+                .HasOne(m => m.Sender) // Зв'язок із відправником
+                .WithMany() // Користувач може відправляти багато повідомлень
+                .HasForeignKey(m => m.SenderId) // Зовнішній ключ
+                .OnDelete(DeleteBehavior.Restrict); // Забороняємо видалення користувача, якщо є повідомлення
         }
     }
 }

@@ -25,7 +25,7 @@ namespace project_garage.Service
 
             if (await _userService.CheckPasswordAsync(userModel, password))
             {
-                if (userModel.IsEmailConfirmed)
+                if (userModel.EmailConfirmed)
                 {
                     await _authRepository.SignInAsync(userModel);
                     return userModel.Id;

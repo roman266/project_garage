@@ -102,7 +102,7 @@ namespace project_garage.Controllers
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("invalid");
-                return View(model);
+                return Json(new { success = false, message = "Invalid model" });
             }
             Console.WriteLine(model.Email);
 

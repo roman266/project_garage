@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using project_garage.Data;
 using project_garage.Interfaces.IService;
 using project_garage.Models.ViewModels;
@@ -6,6 +7,7 @@ using project_garage.Service;
 
 namespace project_garage.Controllers
 {
+    [Authorize]
     public class FriendController : Controller
     {
         private readonly IFriendService _friendService;

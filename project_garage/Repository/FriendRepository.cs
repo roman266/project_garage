@@ -26,7 +26,7 @@ namespace project_garage.Repository
 
         public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
         {
-            var list = await _context.Friends.Where(x => x.UserId == userId).ToListAsync();
+            var list = await _context.Friends.Where(x => x.UserId == userId || x.FriendId == userId).ToListAsync();
             return list;
         }
 
