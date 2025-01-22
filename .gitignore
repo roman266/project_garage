@@ -167,3 +167,4 @@ ApplicationInsights.config
 AppPackages/
 project_garage/app.db-shm
 project_garage/app.db-wal
+project_garage/app.db-wal

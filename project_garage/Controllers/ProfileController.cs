@@ -4,6 +4,7 @@ using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Models.DbModels;
 using project_garage.Data;
+using System.Security.Claims;
 
 namespace project_garage.Controllers
 {
@@ -189,6 +190,34 @@ namespace project_garage.Controllers
             }
 
             return PartialView("_UserList", new List<UserModel>());
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreatePost(CreatePostViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid post data");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var post = new PostModel
+            {
+                Title = model.Title,
+                Description = model.Description,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _postService.CreatePostAsync(post);
+
+            return RedirectToAction("ProfileIndex");
         }
     }
 }

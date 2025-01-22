@@ -25,6 +25,11 @@ namespace project_garage.Service
             {
                 return 0;
             }
-        } 
+        }
+
+        public async Task CreatePostAsync(PostModel post)
+        {
+            await _postRepository.CreatePostAsync(post);
+        }
     }
 }

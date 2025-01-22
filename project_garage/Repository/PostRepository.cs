@@ -15,7 +15,7 @@ namespace project_garage.Repository
 
         public async Task CreatePostAsync(PostModel post)
         {
-            await _context.Posts.AddAsync(post);
+            _context.Posts.Add(post);
             await _context.SaveChangesAsync();
         }
 
@@ -56,5 +56,6 @@ namespace project_garage.Repository
                 await _context.SaveChangesAsync();
             }
         }
+
     }
 }
