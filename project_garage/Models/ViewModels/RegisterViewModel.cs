@@ -18,7 +18,7 @@ namespace project_garage.Models.ViewModels
 
         [Required]
         [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Паролі не співпадають")]
+        [Compare("Password", ErrorMessage = "Password don't matches")]
         public string СonfirmPassword { get; set; }
     }
 }

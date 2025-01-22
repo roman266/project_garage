@@ -42,6 +42,8 @@ namespace project_garage.Service
                     Console.WriteLine("sended");
                     return result;
                 }
+
+                throw new Exception("This username is used");
             }
             throw new Exception("User with this email already exist");
         }
