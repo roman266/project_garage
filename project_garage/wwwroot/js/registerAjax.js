@@ -19,7 +19,7 @@ $(document).ready(function () {
                 
                 if (response.success) {
                     const emailInput = $("[name='Email']");
-                    const usernameInput = $("[name='Username']");
+                    const usernameInput = $("[name='UserName']");
                     const passwordInput = $("[name='Password']");
                     const confirmPasswordInput = $("[name='СonfirmPassword']");
 
@@ -35,17 +35,41 @@ $(document).ready(function () {
                     }   
                     else {
 
+                        if (response.message) {
+                            console.log("Error message:", response.message); 
+
+                            if (response.message.includes("User with this email already exist")) {
+                                const emailInput = $("[name='Email']");
+                                emailInput.addClass("is-invalid");
+                                emailInput.after(`<div class="invalid-feedback">Користувач з таким email вже існує.</div>`);
+                            } 
+                            
+                            else if (response.message.includes("This username is used")) {
+                                const usernameInput = $("[name='UserName']");
+                                usernameInput.addClass("is-invalid");
+                                usernameInput.after(`<div class="invalid-feedback">Користувач з таким UserName вже існує.</div>`);
+                            } 
+                            else {
+                                alert(response.message); 
+                            }
+                        }
                     if (response.errors && response.errors.length > 0) {
                         response.errors.forEach(function (errorMessage) {
-                            console.log("Ошибка сервера:", errorMessage);
-                            
+                            console.log("Помилка сервера:", errorMessage);
+
                             if (errorMessage.includes("email") || errorMessage.includes("Email")) {
                                 const emailInput = $("[name='Email']");
                                 emailInput.addClass("is-invalid");
                                 emailInput.after(`<div class="invalid-feedback">${errorMessage}</div>`);
                                 
                             } 
-                            else if (errorMessage.includes("Паролі не співпадають") || errorMessage.includes("Password mismatch") || errorMessage.includes("passwords don't match")) {
+                            else if (errorMessage.includes("username") || errorMessage.includes("UserName")) {
+                                const usernameInput = $("[name='UserName']");
+                                usernameInput.addClass("is-invalid");
+                                usernameInput.after(`<div class="invalid-feedback">${errorMessage}</div>`);
+                                
+                            } 
+                            else if (errorMessage.includes("Password don't matches")) {
                                 const passwordInput = $("[name='Password']");
                                 const confirmPasswordInput = $("[name='СonfirmPassword']");
                             
@@ -56,6 +80,7 @@ $(document).ready(function () {
                                 // Виводимо лише одну помилку: "Паролі не співпадають"
                                 confirmPasswordInput.after(`<div class="invalid-feedback">Паролі не співпадають</div>`);
                             } 
+
                             else if (errorMessage.includes("The Password field is required.") || errorMessage.includes("The ConfirmPassword field is required.")) {
                                 const passwordInput = $("[name='Password']");
                                 const confirmPasswordInput = $("[name='СonfirmPassword']");
@@ -73,9 +98,7 @@ $(document).ready(function () {
                                 console.log("Unknown error:", errorMessage); 
                             }
                         });
-                    } else {
-                        alert("Щось пішло не так. Спробуйте ще раз.");
-                    }
+                    } 
                 }
             },
             error: function (xhr, status, error) {
