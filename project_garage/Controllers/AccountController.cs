@@ -62,18 +62,18 @@ namespace project_garage.Controllers
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
-                return BadRequest("Недійсний запит.");
+                return Json(new { success = false, message = "Wrong input data" });
             }
 
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
             {
-                return NotFound("Користувача не знайдено.");
+                return Json(new { success = false, message = "User not founded" });
             }
 
             if (user.EmailConfirmationCode != code)
             {
-                return View("InvalidCodeEmail");
+                return Json(new { success = false, message = "Invalid confirmation code" });
             }
 
             
@@ -81,10 +81,10 @@ namespace project_garage.Controllers
 
             if (result.Succeeded)
             {
-                return View("EmailConfirmed"); // Сторінка успішного підтвердження
+                return Json(new { success = true, message = "Email successfully confirmed" });
             }
 
-            return BadRequest("Щось пішло не так.");
+            return Json(new { success = false, message = "Wrong input data" });
         }
 
         [HttpGet]
