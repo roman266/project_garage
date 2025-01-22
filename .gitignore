@@ -165,3 +165,5 @@ ApplicationInsights.config
 
 # Windows Store app package directory
 AppPackages/
+project_garage/app.db-shm
+project_garage/app.db-wal
