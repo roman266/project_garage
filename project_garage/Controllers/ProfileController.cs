@@ -38,7 +38,8 @@ namespace project_garage.Controllers
 
             var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
 
-            Console.WriteLine($"USER ID: {userId}");
+            // Отримання постів користувача
+            var userPosts = await _postService.GetPostsByUserIdAsync(userId);
 
             var viewModel = new ProfileViewModel
             {
@@ -47,11 +48,13 @@ namespace project_garage.Controllers
                 Description = user.Description,
                 FriendsCount = await _friendService.GetFriendsCount(userId),
                 PostsCount = await _postService.GetCountOfPosts(userId),
-                CanAddFriend = canAddFriend
+                CanAddFriend = canAddFriend,
+                Posts = userPosts // Передаємо список постів у ViewModel
             };
 
             return View(viewModel);
         }
+
 
         [HttpPost]
         [Route("Friends/Add")]
@@ -219,5 +222,6 @@ namespace project_garage.Controllers
 
             return RedirectToAction("ProfileIndex");
         }
+
     }
 }

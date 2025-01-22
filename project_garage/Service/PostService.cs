@@ -31,5 +31,10 @@ namespace project_garage.Service
         {
             await _postRepository.CreatePostAsync(post);
         }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _postRepository.GetPostsByUserIdAsync(userId);
+        }
     }
 }

@@ -9,5 +9,7 @@ namespace project_garage.Interfaces.IRepository
         Task<List<PostModel>> GetPostByUserId(string id);
         Task UpdatePostAsync(PostModel post);
         Task DeletePostAsync(Guid id);
+
+        Task<List<PostModel>> GetPostsByUserIdAsync(string userId);
     }
 }

@@ -56,6 +56,13 @@ namespace project_garage.Repository
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
 
     }
 }

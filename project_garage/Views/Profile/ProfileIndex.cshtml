@@ -4,21 +4,27 @@
 <div class="profile-page">
     <h1>@Model.Nickname</h1>
     <p>@Model.Description</p>
+
     <div>
         <span>Friends: @Model.FriendsCount</span>
         <span>Posts: @Model.PostsCount</span>
     </div>
+
     <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
-    @if(@Model.CanAddFriend){
-        
+
+    @if (Model.CanAddFriend)
+    {
         <form method="post" action="/Friends/Add">
             <input type="hidden" name="friendId" value="@Model.UserId" />
             <button type="submit">Додати в друзі</button>
         </form>
     }
+
     <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
     <a href="@Url.Action("GetAllRequests", "Profile")">Requests</a>
-    <a href="@Url.Action("CreatePost", "Profile")">Create Post</a>
+
+    <!-- Форма для створення поста -->
+    <h3>Створити пост</h3>
     <form method="post" action="@Url.Action("CreatePost", "Profile")">
         @Html.AntiForgeryToken()
         <div>
@@ -31,4 +37,41 @@
         </div>
         <button type="submit">Create Post</button>
     </form>
+
+    <!-- Вивід постів користувача -->
+    <h3>Мої пости</h3>
+    @if (Model.Posts != null && Model.Posts.Any())
+    {
+        <ul class="post-list">
+            @foreach (var post in Model.Posts)
+            {
+                <li class="post-item">
+                    <h4>@post.Title</h4>
+                    <p>@post.Description</p>
+                    <small>Створено: @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>У вас ще немає постів.</p>
+    }
 </div>
+
+<style>
+    .profile-page {
+        max-width: 600px;
+        margin: auto;
+    }
+    .post-list {
+        list-style: none;
+        padding: 0;
+    }
+    .post-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+</style>

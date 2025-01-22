@@ -7,5 +7,7 @@ namespace project_garage.Interfaces.IService
         Task<int> GetCountOfPosts(string id);
 
         Task CreatePostAsync(PostModel post);
+
+        Task<List<PostModel>> GetPostsByUserIdAsync(string userId);
     }
 }
