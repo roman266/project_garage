@@ -35,9 +35,10 @@ namespace project_garage.Controllers
                 return NotFound();
             }
 
-            var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
+            var canAddFriend = true;
 
-            Console.WriteLine($"USER ID: {userId}");
+            if (await _friendService.IsFriendAsync(loggedInUserId, userId))
+                canAddFriend = false;
 
             var viewModel = new ProfileViewModel
             {

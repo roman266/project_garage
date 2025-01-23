@@ -24,7 +24,6 @@ namespace project_garage.Controllers
         [Route("Conversation/Start")]
         public async Task<IActionResult> StartConversation(string user2Id)
         {
-            Console.WriteLine("in\'m here");
             Console.WriteLine(user2Id);
             try
             {
@@ -58,7 +57,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [Route("Conversation/User/{conversationId}")]
+        [Route("Conversation/{conversationId}")]
         public async Task<IActionResult> ShowConversationMessages(string conversationId)
         {
             try
@@ -96,9 +95,8 @@ namespace project_garage.Controllers
             }
         }
 
-
         [HttpPost]
-        [Route("Conversation/User")]
+        [Route("Conversation")]
         public async Task<IActionResult> ShowUserConversation()
         {
             try
