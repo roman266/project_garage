@@ -9,5 +9,8 @@ namespace project_garage.Interfaces.IService
         Task CreatePostAsync(PostModel post);
 
         Task<List<PostModel>> GetPostsByUserIdAsync(string userId);
+        Task<PostModel> GetPostByIdAsync(Guid id);
+        Task UpdatePostAsync(PostModel post);
+        Task DeletePostAsync(Guid id);
     }
 }

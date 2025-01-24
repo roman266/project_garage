@@ -16,12 +16,12 @@
     {
         <form method="post" action="/Friends/Add">
             <input type="hidden" name="friendId" value="@Model.UserId" />
-            <button type="submit">Додати в друзі</button>
+            <button type="submit" class="btn btn-success">Додати в друзі</button>
         </form>
     }
 
-    <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
-    <a href="@Url.Action("GetAllRequests", "Profile")">Requests</a>
+    <a href="@Url.Action("SearchUsers", "Profile")" class="btn btn-info">Search</a>
+    <a href="@Url.Action("GetAllRequests", "Profile")" class="btn btn-secondary">Requests</a>
 
     <!-- Форма для створення поста -->
     <h3>Створити пост</h3>
@@ -35,7 +35,7 @@
             <label for="description">Description:</label>
             <textarea id="description" name="Description" required maxlength="250"></textarea>
         </div>
-        <button type="submit">Create Post</button>
+        <button type="submit" class="btn btn-primary">Create Post</button>
     </form>
 
     <!-- Вивід постів користувача -->
@@ -49,6 +49,14 @@
                     <h4>@post.Title</h4>
                     <p>@post.Description</p>
                     <small>Створено: @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                    <div class="post-actions">
+                        <a href="@Url.Action("EditPost", "Profile", new { postId = post.Id })" class="btn btn-warning">Edit</a>
+                        <form method="post" action="@Url.Action("DeletePost", "Profile")" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@post.Id" />
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </li>
             }
         </ul>
@@ -64,14 +72,24 @@
         max-width: 600px;
         margin: auto;
     }
+
     .post-list {
         list-style: none;
         padding: 0;
     }
+
     .post-item {
         border: 1px solid #ddd;
         padding: 10px;
         margin: 10px 0;
         border-radius: 5px;
+    }
+
+    .post-actions {
+        margin-top: 10px;
+    }
+
+    .btn {
+        margin-right: 5px;
     }
 </style>

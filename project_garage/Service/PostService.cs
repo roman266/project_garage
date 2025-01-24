@@ -36,5 +36,19 @@ namespace project_garage.Service
         {
             return await _postRepository.GetPostsByUserIdAsync(userId);
         }
+        public async Task<PostModel> GetPostByIdAsync(Guid id)
+        {
+            return await _postRepository.GetPostByIdAsync(id);
+        }
+
+        public async Task UpdatePostAsync(PostModel post)
+        {
+            await _postRepository.UpdatePostAsync(post);
+        }
+
+        public async Task DeletePostAsync(Guid id)
+        {
+            await _postRepository.DeletePostAsync(id);
+        }
     }
 }

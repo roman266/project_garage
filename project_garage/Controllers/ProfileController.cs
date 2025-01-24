@@ -222,6 +222,73 @@ namespace project_garage.Controllers
 
             return RedirectToAction("ProfileIndex", new { userId = userId });
         }
+        [HttpGet]
+        [Route("Profile/EditPost/{postId}")]
+        public async Task<IActionResult> EditPost(Guid postId)
+        {
+            var post = await _postService.GetPostByIdAsync(postId);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditPostViewModel
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Profile/EditPost")]
+        public async Task<IActionResult> EditPost(EditPostViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var post = await _postService.GetPostByIdAsync(model.Id);
+                post.Title = model.Title;
+                post.Description = model.Description;
+                post.UpdatedAt = DateTime.UtcNow;
+
+                await _postService.UpdatePostAsync(post);
+                return RedirectToAction("ProfileIndex", new { userId = post.UserId });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error occurred while updating the post.");
+            }
+        }
+
+        [HttpPost]
+        [Route("Profile/DeletePost")]
+        public async Task<IActionResult> DeletePost(Guid postId)
+        {
+            try
+            {
+                var post = await _postService.GetPostByIdAsync(postId);
+                if (post == null)
+                {
+                    return NotFound();
+                }
+
+                await _postService.DeletePostAsync(postId);
+                return RedirectToAction("ProfileIndex", new { userId = post.UserId });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error occurred while deleting the post.");
+            }
+        }
+
 
     }
 }

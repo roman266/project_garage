@@ -1,0 +1,26 @@
+@model project_garage.Models.ViewModels.EditPostViewModel
+
+<div class="edit-post-page">
+    <h1>Редагувати пост</h1>
+    <form method="post" action="@Url.Action("EditPost", "Profile")">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="Title" value="@Model.Title" required maxlength="50" />
+        </div>
+        <div>
+            <label for="description">Description:</label>
+            <textarea id="description" name="Description" required maxlength="250">@Model.Description</textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+</div>
+
+<style>
+    .edit-post-page {
+        max-width: 600px;
+        margin: auto;
+    }
+</style>
