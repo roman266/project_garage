@@ -245,7 +245,7 @@ namespace project_garage.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Profile/EditPost")]
-        public async Task<IActionResult> EditPost(EditPostViewModel model)
+        public async Task<IActionResult> EditPostSave(EditPostViewModel model)
         {
             if (!ModelState.IsValid)
             {
