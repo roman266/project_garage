@@ -220,7 +220,7 @@ namespace project_garage.Controllers
 
             await _postService.CreatePostAsync(post);
 
-            return RedirectToAction("ProfileIndex");
+            return RedirectToAction("ProfileIndex", new { userId = userId });
         }
 
     }
