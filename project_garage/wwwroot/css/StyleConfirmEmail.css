@@ -1,0 +1,19 @@
+body {
+    font-family: "Roboto", sans-serif;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+a {
+    color: #365B87;
+    font-size: 18px;
+    transition: color 0.3s ease; 
+}
+
+a:hover {
+        text-decoration: underline;
+        color: #1e3550;
+    }

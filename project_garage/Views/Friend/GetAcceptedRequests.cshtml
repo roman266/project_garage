@@ -1,0 +1,26 @@
+﻿@using project_garage.Models.ViewModels;
+@model List<FriendRequestViewModel>
+
+<h2>Friend Requests</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var request in Model)
+        {
+            <li>
+                <strong>@request.SenderName</strong> (@request.SenderDescription)
+                <div>
+                    <form method="post" action="/Friend/Reject">
+                        <input type="hidden" name="friendId" value="@request.SenderId" />
+                        <button type="submit" class="btn btn-danger">Remove from friends</button>
+                    </form>
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No friend requests available.</p>
+}

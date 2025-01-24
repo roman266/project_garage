@@ -1,58 +1,126 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using project_garage.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using project_garage.Models.ViewModels;
+using project_garage.Interfaces.IService;
 
 namespace project_garage.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<UserModel> _userManager;
+        private readonly IUserService _userService;
+        private readonly IAuthService _authService;
+        
 
-        public AccountController(UserManager<UserModel> userManager, SignInManager<UserModel> signInManager)
+        public AccountController(IUserService userService, IAuthService authService)
         {
-            _userManager = userManager;
+            _userService = userService;
+            _authService = authService;
+            
         }
 
         [HttpGet]
         public IActionResult Register()
         {
-            Console.WriteLine("Molly");
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(UserModel model, string password)
+        [ValidateAntiForgeryToken]
+        [Route("Account/Register")]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
+                // Виведення помилок у консоль
+                Console.WriteLine("Model is invalid");
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
-                    Console.WriteLine(error.ErrorMessage);
+                    Console.WriteLine($"{error.ErrorMessage}");
                 }
-                return View(model);
+
+                // Повертаємо порожній JSON або об'єкт, який містить помилки
+                return Json(new { success = false, 
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
             }
 
-            var user = new UserModel
+            Console.WriteLine("i got data");
+
+            try
             {
-                UserName = model.UserName,
-                Email = model.Email,
-            };
-            Console.WriteLine($"{user.UserName}");
-            Console.WriteLine($"{user.Email}");
-            Console.WriteLine($"{password}");
-            var result = await _userManager.CreateAsync(user, password);
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var result = await _userService.CreateUserAsync(model.UserName, model.Email, model.Password, baseUrl);
+                return Json(new { success = true, message = "Email confirmation code has been sended on your email" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"{ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        [Route("Account/EmailConfirmed/{userId}")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                return Json(new { success = false, message = "Wrong input data" });
+            }
+
+            var user = await _userService.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not founded" });
+            }
+
+            if (user.EmailConfirmationCode != code)
+            {
+                return Json(new { success = false, message = "Invalid confirmation code" });
+            }
+
+            
+            var result = await _userService.ConfirmUserEmail(user);
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Login");
+                return Json(new { success = true, message = "Email successfully confirmed" });
             }
 
-            foreach (var error in result.Errors)
+            return Json(new { success = false, message = "Wrong input data" });
+        }
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Account/Login")]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            Console.WriteLine("Login POST called");
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("", error.Description);
+                Console.WriteLine("invalid");
+                return Json(new { success = false, message = "Invalid model" });
             }
+            Console.WriteLine(model.Email);
 
-            return View(model);
+            try
+            {
+                var profileIndex = await _authService.SignInAsync(model.Email, model.Password);
+                return Json(new { success = true, userId = profileIndex, message = "You successfully loged" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"{ex.Message}" });
+            }
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await _authService.SignOutAsync(); // Викликає розлогування
+            return Json(new { success = false, message = "You successfully loged out" }); // Перенаправлення на головну сторінку або іншу
         }
     }
 }

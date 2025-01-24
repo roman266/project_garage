@@ -1,0 +1,22 @@
+﻿@using project_garage.Models.ViewModels
+@model ProfileViewModel
+
+<div class="profile-page">
+    <h1>@Model.Nickname</h1>
+    <p>@Model.Description</p>
+    <div>
+        <span>Friends: @Model.FriendsCount</span>
+        <span>Posts: @Model.PostsCount</span>
+    </div>
+    <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
+    @if(@Model.CanAddFriend){
+        
+        <form method="post" action="/Friend/Add">
+            <input type="hidden" name="friendId" value="@Model.UserId" />
+            <button type="submit">Додати в друзі</button>
+        </form>
+    }
+    <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
+    <a href="@Url.Action("GetUnacceptedRequests", "Friend")">Requests</a>
+    <a href="@Url.Action("GetAcceptedRequests", "Friend")">Friends</a>
+</div>

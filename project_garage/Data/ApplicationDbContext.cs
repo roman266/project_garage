@@ -1,15 +1,71 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using project_garage.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using project_garage.Models.DbModels;
+using Microsoft.Extensions.Hosting;
+using System;
 
 namespace project_garage.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel>
     {
+        public DbSet<PostModel> Posts { get; set; }
+        public DbSet<FriendModel> Friends { get; set; }
+        public DbSet<ConversationModel> Conversations { get; set; }
+        public DbSet<MessageModel> Messages { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder); // Викликаємо базову конфігурацію Identity
+
+            // Налаштування таблиці Post
+            modelBuilder.Entity<PostModel>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.Posts)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Налаштування таблиці Friend
+            modelBuilder.Entity<FriendModel>()
+                .HasOne(f => f.User)
+                .WithMany(u => u.Friends)
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FriendModel>()
+                .HasOne(f => f.Friend)
+                .WithMany()
+                .HasForeignKey(f => f.FriendId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ConversationModel>()
+                .HasOne(u1 => u1.User1)
+                .WithMany()
+                .HasForeignKey(u1 => u1.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ConversationModel>()
+                .HasOne(u2 => u2.User2)
+                .WithMany()
+                .HasForeignKey(u2 => u2.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MessageModel>()
+                .HasOne(m => m.Conversation) // Зв'язок із діалогом
+                .WithMany(c => c.Messages) // Діалог має багато повідомлень
+                .HasForeignKey(m => m.ConversationId) // Зовнішній ключ
+                .OnDelete(DeleteBehavior.Cascade); // Каскадне видалення, якщо видалено діалог
+
+            modelBuilder.Entity<MessageModel>()
+                .HasOne(m => m.Sender) // Зв'язок із відправником
+                .WithMany() // Користувач може відправляти багато повідомлень
+                .HasForeignKey(m => m.SenderId) // Зовнішній ключ
+                .OnDelete(DeleteBehavior.Restrict); // Забороняємо видалення користувача, якщо є повідомлення
         }
     }
 }

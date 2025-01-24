@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Home\" />
-    <Folder Include="Views\Shared\" />
+    <Compile Remove="Views\Shared\**" />
+    <Content Remove="Views\Shared\**" />
+    <EmbeddedResource Remove="Views\Shared\**" />
+    <None Remove="Views\Shared\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +20,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\ActionModels\" />
   </ItemGroup>
 
 </Project>

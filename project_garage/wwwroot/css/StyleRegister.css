@@ -1,0 +1,87 @@
+
+        ::placeholder {
+            color: #15324350;
+        }
+
+        a {
+            color: #365B87;
+            font-size: 18px;
+            transition: color 0.3s ease; 
+        }
+
+        a:hover {
+                text-decoration: underline;
+                color: #1e3550;
+            }
+  
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+
+        .signup-form {
+            background: #DFDFDF;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px 0px #00000025;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+            .signup-form h2 {
+                margin-bottom: 20px;
+                font-size: 34px;
+                text-align: center;
+                color: #365B87;
+            }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-left: 15px;
+                color: #6A7788;
+            }
+
+            .form-group input {
+                width: 270px;
+                padding: 8px;
+                border: 1px solid #939393;
+                border-radius: 10px;
+            }
+
+                .form-group input:focus {
+                    border-color: #365B87;
+                    outline: none;
+                }
+
+        .error {
+            color: #A61212;
+            font-size: 0.9em;
+        }
+
+        .submit-btn {
+            width: 150px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #365B87;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+            .submit-btn:hover {
+                width: 150px;
+            }

@@ -1,154 +1,50 @@
-﻿@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "signup-form" }))
-{
-    @Html.AntiForgeryToken()
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+    @* стиль *@
+    <link rel="stylesheet" href="~/css/reset.css">
+    <link rel="stylesheet" href="~/css/StyleRegister.css">
+    @* шрифт *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:wght@300&display=swap" rel="stylesheet">
 
-        .signup-form {
-            background: #e0e0e0;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 350px;
-        }
 
-            .signup-form h2 {
-                margin-bottom: 20px;
-                font-size: 24px;
-                text-align: center;
-                color: #333;
-            }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-            .form-group label {
-                display: block;
-                font-weight: bold;
-                margin-bottom: 5px;
-                color: #555;
-            }
-
-            .form-group input {
-                width: 100%;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-            }
-
-                .form-group input:focus {
-                    border-color: #007bff;
-                    outline: none;
-                }
-
-        .error {
-            color: red;
-            font-size: 0.9em;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-            .submit-btn:hover {
-                background-color: #0056b3;
-            }
-    </style>
 </head>
 <body>
-    <form id="registrationForm" class="signup-form" method="post" action="/Account/Register">
+    <form id="registrationForm" class="signup-form" method="post" asp-controller="Account" asp-action="Register">
+        @Html.AntiForgeryToken()
         <h2>Sign Up</h2>
-
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="Email" placeholder="Type your email" required />
+            <input type="email" id="email" name="Email" placeholder="Type your email" />
         </div>
 
         <div class="form-group">
             <label for="username">User name</label>
-            <input type="text" id="username" name="UserName" placeholder="Type your user name" required />
+            <input type="text" id="username" name="UserName" placeholder="Type your user name" />
         </div>
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="Password" placeholder="Type your password" required />
+            <input type="password" id="password" name="Password" placeholder="Type your password" />
         </div>
 
         <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required />
+            <input type="password" id="confirmPassword" name="СonfirmPassword" placeholder="Confirm Password" />
         </div>
 
         <button type="submit" class="submit-btn">Sign Up</button>
+        <a id="register__SignInLink" href="http://localhost:5021/Account/Login">Sign In</a>
     </form>
-
-    <script>
-        document.getElementById('registrationForm').addEventListener('submit', function (event) {
-            const email = document.getElementById('email').value;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            const emailError = document.getElementById('emailError');
-            const usernameError = document.getElementById('usernameError');
-            const passwordError = document.getElementById('passwordError');
-
-            let isValid = true;
-
-            // Перевірка email
-            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-            if (!emailRegex.test(email)) {
-                emailError.style.display = 'block';
-                isValid = false;
-            } else {
-                emailError.style.display = 'none';
-            }
-
-            // Перевірка імені користувача
-            if (username.length < 3) {
-                usernameError.style.display = 'block';
-                isValid = false;
-            } else {
-                usernameError.style.display = 'none';
-            }
-
-            // Перевірка паролів
-            if (password !== confirmPassword) {
-                passwordError.style.display = 'block';
-                isValid = false;
-            } else {
-                passwordError.style.display = 'none';
-            }
-
-            // Якщо є помилки, форма не відправляється
-            if (!isValid) {
-                event.preventDefault();
-            }
-        });
-    </script>
+    <script src="~/js/registerAjax.js"></script>
 </body>
 </html>
-}

@@ -1,0 +1,14 @@
+﻿@using project_garage.Models.DbModels;
+@model List<UserModel>
+
+    <ul>
+    @foreach (var user in Model)
+    {
+        <li>
+            <a href="@Url.Action("ProfileIndex", "Profile", new { id = user.Id })">
+                @user.UserName
+            </a>
+        </li>
+    }
+    </ul>
+
