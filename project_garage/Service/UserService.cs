@@ -13,7 +13,7 @@ namespace project_garage.Service
     {
         private readonly IUserRepository _userRepository;
         private readonly IEmailSender _emailSender;
-        public UserService(IUserRepository userRepository) 
+        public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
             _emailSender = new EmailSender();
@@ -60,8 +60,8 @@ namespace project_garage.Service
                 return false;
             return true;
         }
-           
- 
+
+
         public async Task<UserModel> GetByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -81,44 +81,97 @@ namespace project_garage.Service
                 throw new InvalidDataException("Invalida data");
 
             var user = await _userRepository.GetByIdAsync(id);
+
             if (user == null)
                 throw new Exception("User not founded");
+
             return user;
         }
 
-        public async Task UpdateUserInfoAsync(UserModel user)
+        public async Task UpdateUserInfoAsync(string id, string userName, string description)
         {
-            if (user == null)
-                throw new InvalidDataException();
+            if (string.IsNullOrEmpty(id) && (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(description)))
+                throw new InvalidDataException("Invalid data");
 
-            var result = await _userRepository.UpdateUserInfoAsync(user);
+            var userByName = await _userRepository.FindByNameAsync(userName);
+
+            if (userByName != null)
+                throw new InvalidOperationException("This name is already used");
+
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new InvalidDataException("Wrong user Id");
+
+            if (description != null)
+                user.Description = description;
+            if (userByName != null)
+                user.UserName = userName;
+
+            await _userRepository.UpdateUserInfoAsync(user);
         }
 
-        public async Task<IdentityResult> ConfirmUserEmail(UserModel user)
+        public async Task ConfirmUserEmail(string id, string code)
         {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(code))
+                throw new InvalidDataException("Invalid data");
+            
+            var user = await GetByIdAsync(id);
+
+            if (user == null)
+                throw new InvalidOperationException("User not founded");
+
+            if (user.EmailConfirmationCode != code )
+                throw new InvalidOperationException("Worng confirmation code");
+
+            if (user.EmailConfirmed)
+                throw new InvalidOperationException("Email already confirmed");
+
             user.EmailConfirmed = true;
             user.EmailConfirmationCode = "none";
-            await UpdateUserInfoAsync(user);
+            await _userRepository.UpdateUserInfoAsync(user);
+
             return IdentityResult.Success;
         }
 
-        public async Task<bool> CheckPasswordAsync(UserModel user, string password)
+        public async Task<bool> CheckPasswordAsync(string id, string password)
         {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(password))
+                throw new InvalidDataException("Invalid input  data");
+
+            var user = await GetByIdAsync(id);
+
+            if (user == null)
+                throw new InvalidOperationException($"User not found");
+
             var result = await _userRepository.CheckPasswordAsync(user, password);
             return result;
         }
 
         public async Task DeleteUserAsync(string id)
         {
-            var result = await _userRepository.DeleteUserAsync(id);
+            if (!string.IsNullOrEmpty(id)) 
+                throw new InvalidDataException($"Invalid input data");
+
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new InvalidOperationException($"User not found");
+
+            await _userRepository.DeleteUserAsync(user);
         }
 
         public async Task<List<UserModel>> SearchUsersAsync(string query)
         {
+            if (!string.IsNullOrEmpty(query))
+                throw new InvalidDataException("Query is empty");
 
-            var users = await _userRepository.SearchUsersAsync(query);
-            
-            return users ?? new List<UserModel>();
+            var users = await _userRepository.SearchByQueryAsync(query);
+
+            if (!users.Any())
+                throw new InvalidOperationException($"User not found");
+
+            return users;
         }
     }
 }

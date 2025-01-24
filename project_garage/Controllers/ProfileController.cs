@@ -22,56 +22,72 @@ namespace project_garage.Controllers
             _postService = postService;
         }
 
-        [Route("Profile/ProfileIndex/{userId}")]
-        public async Task<IActionResult> ProfileIndex(string userId)
+        private IActionResult JsonResponse(object data, int statusCode = 200)
         {
-            var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
-
-            Console.WriteLine($"USER ID: {userId}, LOGGED IN USER ID: {loggedInUserId}");
-            var user = await _userService.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var canAddFriend = true;
-
-            if (await _friendService.IsFriendAsync(loggedInUserId, userId))
-                canAddFriend = false;
-
-            var viewModel = new ProfileViewModel
-            {
-                UserId = user.Id,
-                Nickname = user.UserName,
-                Description = user.Description,
-                FriendsCount = await _friendService.GetFriendsCount(userId),
-                PostsCount = await _postService.GetCountOfPosts(userId),
-                CanAddFriend = canAddFriend
-            };
-
-            return View(viewModel);
+            Response.StatusCode = statusCode;
+            return Json(data);
         }
 
         [HttpGet]
-        public IActionResult SearchUsers()
+        [Route("Profile/ProfileIndex/{userId}")]
+        public async Task<IActionResult> ProfileIndex(string userId)
         {
-            return View();
-        }
-
-        [HttpPost]
-        [Route("Profile/SearchUsers")]
-        public async Task<IActionResult> SearchUsers(SearchBoxViewModel model)
-        {
-            Console.WriteLine($"{model.Query} ---------------");
-            if (!string.IsNullOrEmpty(model.Query))
+            try
             {
-                var users = await _userService.SearchUsersAsync(model.Query);
-                Console.WriteLine($"{users.Count} USERS COUNT ------------------");
-                return PartialView("_UserList", users);
+                var loggedInUserId = User.GetUserId();
+
+                Console.WriteLine($"USER ID: {userId}, LOGGED IN USER ID: {loggedInUserId}");
+                var user = await _userService.GetByIdAsync(userId);
+
+
+                var canAddFriend = true;
+
+                if (await _friendService.IsFriendAsync(loggedInUserId, userId))
+                    canAddFriend = false;
+
+                var viewModel = new ProfileViewModel
+                {
+                    UserId = user.Id,
+                    Nickname = user.UserName,
+                    Description = user.Description,
+                    FriendsCount = await _friendService.GetFriendsCount(userId),
+                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    CanAddFriend = canAddFriend
+                };
+                return Json(new { success = true, message = $"Profile {userId}", info = viewModel });
+            }
+            catch (InvalidDataException ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
+            catch (Exception ex)
+            {
+                return JsonResponse(new { success = false, error = ex.Message }, 400);
             }
 
-            return PartialView("_UserList", new List<UserModel>());
+
         }
+
+        [HttpGet]
+        [Route("Profile/SearchUser/")]
+        public async Task<IActionResult> SearchUsers(SearchBoxViewModel query)
+        {
+            try
+            {
+                var users = await _userService.SearchUsersAsync(query.Query);
+                return Json(new { success = true, message = "Users successfully found", usersLst = users });
+
+            }
+            catch (InvalidDataException ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 400);
+            }
+        }
+
+
     }
 }

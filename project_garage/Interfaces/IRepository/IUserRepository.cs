@@ -9,9 +9,10 @@ namespace project_garage.Interfaces.IRepository
         Task<IdentityResult> CreateUserAsync(UserModel userModel, string password);
         Task<UserModel> GetByEmailAsync(string email);
         Task<UserModel> GetByIdAsync(string id);
-        Task<IdentityResult> UpdateUserInfoAsync(UserModel user);
+        Task UpdateUserInfoAsync(UserModel user);
         Task<bool> CheckPasswordAsync(UserModel user, string password);
-        Task<IdentityResult> DeleteUserAsync(string id);
-        Task<List<UserModel>> SearchUsersAsync(string query);
+        Task DeleteUserAsync(UserModel user);
+        Task<List<UserModel>> SearchByQueryAsync(string query);
+        Task<UserModel> FindByNameAsync(string userName);
     }
 }
