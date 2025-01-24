@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250121221708_AddNewFeature")]
-    partial class AddNewFeature
+    [Migration("20250124105137_UpdateMigrations")]
+    partial class UpdateMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -200,9 +200,8 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.MessageModel", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ConversationId")
                         .IsRequired()
@@ -305,9 +304,6 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastLogin")
