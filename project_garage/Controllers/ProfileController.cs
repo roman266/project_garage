@@ -28,7 +28,7 @@ namespace project_garage.Controllers
             return Json(data);
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("Profile/ProfileIndex/{userId}")]
         public async Task<IActionResult> ProfileIndex(string userId)
         {
@@ -64,9 +64,14 @@ namespace project_garage.Controllers
             {
                 return JsonResponse(new { success = false, error = ex.Message }, 400);
             }
-
-
         }
+
+        [HttpGet]
+        public IActionResult ProfileIndex()
+        {
+        return View(); 
+        }
+
 
         [HttpGet]
         [Route("Profile/SearchUser/")]

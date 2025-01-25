@@ -24,6 +24,12 @@ namespace project_garage.Controllers
             return Json(data);
         }
 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Account/Register")]
@@ -70,6 +76,12 @@ namespace project_garage.Controllers
             }
         }
 
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
 
         [HttpPost]
         //[ValidateAntiForgeryToken]
