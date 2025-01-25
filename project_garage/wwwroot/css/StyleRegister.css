@@ -64,7 +64,10 @@
                     outline: none;
                 }
 
-
+        .error {
+            color: #A61212;
+            font-size: 0.9em;
+        }
 
         .submit-btn {
             width: 150px;
@@ -81,22 +84,4 @@
 
             .submit-btn:hover {
                 width: 150px;
-            }
-            .is-invalid {
-                border-color: red !important;  /* Убираем !important, чтобы избежать перекрытия других стилей */
-            }
-            
-            .invalid-feedback {
-                color: red;
-                font-size: 12px;
-                margin-top: 5px;  /* Добавим отступ, чтобы не слипались с полем */
-            }
-
-            .successfully{
-                border-color: rgb(93, 152, 93)!important;
-            }
-            .successfully-feedback{
-                color: rgb(93, 152, 93);
-                font-size: 12px;
-                margin-top: 5px;
             }

@@ -11,11 +11,12 @@
     <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
     @if(@Model.CanAddFriend){
         
-        <form method="post" action="/Friends/Add">
+        <form method="post" action="/Friend/Add">
             <input type="hidden" name="friendId" value="@Model.UserId" />
             <button type="submit">Додати в друзі</button>
         </form>
     }
     <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
-    <a href="@Url.Action("GetAllRequests", "Profile")">Requests</a>
+    <a href="@Url.Action("GetUnacceptedRequests", "Friend")">Requests</a>
+    <a href="@Url.Action("GetAcceptedRequests", "Friend")">Friends</a>
 </div>
