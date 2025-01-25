@@ -23,9 +23,9 @@ namespace project_garage.Service
                 throw new Exception("No user founded");
 
 
-            if (await _userService.CheckPasswordAsync(userModel.Id, password))
+            if (await _userService.CheckPasswordAsync(userModel, password))
             {
-                if (userModel.EmailConfirmed)
+                if (userModel.IsEmailConfirmed)
                 {
                     await _authRepository.SignInAsync(userModel);
                     return userModel.Id;

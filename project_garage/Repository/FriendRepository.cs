@@ -18,7 +18,7 @@ namespace project_garage.Repository
             var request = await _context.Friends.FirstOrDefaultAsync(friend => friend.Id == id);
             if (request == null)
             {
-                throw new InvalidDataException("Invalid data");
+                throw new Exception("Somthing goes wrong");
             }
 
             return request;
@@ -26,7 +26,7 @@ namespace project_garage.Repository
 
         public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
         {
-            var list = await _context.Friends.Where(x => x.UserId == userId || x.FriendId == userId).ToListAsync();
+            var list = await _context.Friends.Where(x => x.UserId == userId).ToListAsync();
             return list;
         }
 

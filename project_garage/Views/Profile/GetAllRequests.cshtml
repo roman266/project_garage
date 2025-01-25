@@ -1,0 +1,34 @@
+﻿@using project_garage.Models.ViewModels;
+@model List<FriendRequestViewModel>
+
+<h2>Friend Requests</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var request in Model)
+        {
+            <li>
+                <strong>@request.SenderName</strong> (@request.SenderDescription)
+                <div>
+                    <!-- Форма для прийняття заявки -->
+                    <form method="post" action="/Profile/Accept">
+                        <input type="hidden" name="friendId" value="@request.SenderId" />
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+
+                    <!-- Форма для відхилення заявки -->
+                    <form method="post" action="/Profile/Reject">
+                        <input type="hidden" name="friendId" value="@request.SenderId" />
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No friend requests available.</p>
+}
+

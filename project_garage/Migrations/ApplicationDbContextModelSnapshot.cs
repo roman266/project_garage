@@ -145,31 +145,6 @@ namespace project_garage.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("User1Id")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("User2Id")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("User1Id");
-
-                    b.HasIndex("User2Id");
-
-                    b.ToTable("Conversations");
-                });
-
             modelBuilder.Entity("project_garage.Models.DbModels.FriendModel", b =>
                 {
                     b.Property<string>("Id")
@@ -193,45 +168,6 @@ namespace project_garage.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Friends");
-                });
-
-            modelBuilder.Entity("project_garage.Models.DbModels.MessageModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ConversationId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsReaden")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("SendedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SenderName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
@@ -301,6 +237,9 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastLogin")
@@ -413,25 +352,6 @@ namespace project_garage.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
-                {
-                    b.HasOne("project_garage.Models.DbModels.UserModel", "User1")
-                        .WithMany()
-                        .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("project_garage.Models.DbModels.UserModel", "User2")
-                        .WithMany()
-                        .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
-                });
-
             modelBuilder.Entity("project_garage.Models.DbModels.FriendModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "Friend")
@@ -451,25 +371,6 @@ namespace project_garage.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.MessageModel", b =>
-                {
-                    b.HasOne("project_garage.Models.DbModels.ConversationModel", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("project_garage.Models.DbModels.UserModel", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
@@ -479,11 +380,6 @@ namespace project_garage.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>

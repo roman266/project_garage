@@ -22,96 +22,170 @@ namespace project_garage.Controllers
             _postService = postService;
         }
 
-        private IActionResult JsonResponse(object data, int statusCode = 200)
-        {
-            Response.StatusCode = statusCode;
-            return Json(data);
-        }
-
-        [HttpGet]
         [Route("Profile/ProfileIndex/{userId}")]
         public async Task<IActionResult> ProfileIndex(string userId)
         {
-            try
+            var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
+
+            Console.WriteLine($"USER ID: {userId}, LOGGED IN USER ID: {loggedInUserId}");
+            var user = await _userService.GetByIdAsync(userId);
+
+            if (user == null)
             {
-                var loggedInUserId = User.GetUserId();
-
-                Console.WriteLine($"USER ID: {userId}, LOGGED IN USER ID: {loggedInUserId}");
-                var user = await _userService.GetByIdAsync(userId);
-
-
-                var canAddFriend = true;
-
-                if (await _friendService.IsFriendAsync(loggedInUserId, userId))
-                    canAddFriend = false;
-
-                var viewModel = new ProfileViewModel
-                {
-                    UserId = user.Id,
-                    Nickname = user.UserName,
-                    Description = user.Description,
-                    FriendsCount = await _friendService.GetFriendsCount(userId),
-                    PostsCount = await _postService.GetCountOfPosts(userId),
-                    CanAddFriend = canAddFriend
-                };
-                return Json(new { success = true, message = $"Profile {userId}", info = viewModel });
-            }
-            catch (InvalidDataException ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
-            }
-            catch (Exception ex)
-            {
-                return JsonResponse(new { success = false, error = ex.Message }, 400);
+                return NotFound();
             }
 
+            var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
 
-        }
+            Console.WriteLine($"USER ID: {userId}");
 
-        [HttpGet]
-        [Route("Profile/SearchUser/")]
-        public async Task<IActionResult> SearchUsers(SearchBoxViewModel query)
-        {
-            try
+            var viewModel = new ProfileViewModel
             {
-                var users = await _userService.SearchUsersAsync(query.Query);
-                return Json(new { success = true, message = "Users successfully found", usersLst = users });
+                UserId = user.Id,
+                Nickname = user.UserName,
+                Description = user.Description,
+                FriendsCount = await _friendService.GetFriendsCount(userId),
+                PostsCount = await _postService.GetCountOfPosts(userId),
+                CanAddFriend = canAddFriend
+            };
 
-            }
-            catch (InvalidDataException ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 400);
-            }
+            return View(viewModel);
         }
 
         [HttpPost]
-        [Route("Profile/Edit/{userId}")]
-        public async Task<IActionResult> EditProfile(string userId, EditViewModel viewModel)
+        [Route("Friends/Add")]
+        public async Task<IActionResult> AddFriend(string friendId)
         {
+            var userId = User.GetUserId();
+
             try
             {
-                if (userId != User.GetUserId())
-                    return JsonResponse(new { success = false, message = "You can't edit other users info" });
-                await _userService.UpdateUserInfoAsync(userId, viewModel.UserName, viewModel.Description);
-                return JsonResponse(new { success = true, message = "New profile info successfully added" });
-            }
-            catch (InvalidDataException ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                await _friendService.SendFriendRequestAsync(userId, friendId);
+                return Ok(new { message = "Friend request set successfully." });
             }
             catch (InvalidOperationException ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message });
+                return BadRequest(new { error = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return JsonResponse(new { success = false, error = ex.Message }, 400);
+                return StatusCode(500, new { error = "An error occurred while sending the friend request." });
             }
+
         }
 
+        [HttpPost]
+        [Route("Profile/Accept")]
+        public async Task<IActionResult> AcceptFriend(string friendId)
+        {
+            Console.WriteLine($"{friendId}");
+
+            var userId = User.GetUserId();
+            try
+            {
+
+                await _friendService.AcceptRequestAsync(userId, friendId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occured while accepting request" });
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Profile/Reject")]
+        public async Task<IActionResult> RejectFriend(string friendId)
+        {
+            var userId = User.GetUserId();
+            try
+            {
+                await _friendService.RejectOrDeleteAsync(userId, friendId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception)
+            { 
+                return StatusCode(500, new { error = "An error occured while rejecting" }); 
+            }
+            return View();
+        }
+
+        [HttpGet]
+        [Route("Profile/GetAllRequests")]
+        public async Task<IActionResult> GetAllRequests()
+        {
+            var userId = User.GetUserId();
+            Console.WriteLine("-------------------------");
+            try
+            {
+                var requests = await _friendService.GetByUserIdAsync(userId);
+
+                var viewModel = new List<FriendRequestViewModel>();
+
+                foreach (var request in requests)
+                {
+                    // Отримуємо дані друга через FriendId
+                    var friend = await _userService.GetByIdAsync(request.FriendId);
+
+                    if (friend != null)
+                    {
+                        viewModel.Add(new FriendRequestViewModel
+                        {
+                            RequestId = request.Id,
+                            SenderId = friend.Id, // ID друга (відправника заявки)
+                            SenderName = friend.UserName, // Ім'я друга
+                            SenderDescription = friend.Description // Опис друга
+                        });
+                    }
+
+                    return View(viewModel); // Передаємо список у View
+                }
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "An error occured while rejecting" });
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult GetAllRequests(FriendRequestViewModel model)
+        {
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult SearchUsers()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Profile/SearchUsers")]
+        public async Task<IActionResult> SearchUsers(SearchBoxViewModel model)
+        {
+            Console.WriteLine($"{model.Query} ---------------");
+            if (!string.IsNullOrEmpty(model.Query))
+            {
+                var users = await _userService.SearchUsersAsync(model.Query);
+                Console.WriteLine($"{users.Count} USERS COUNT ------------------");
+                return PartialView("_UserList", users);
+            }
+
+            return PartialView("_UserList", new List<UserModel>());
+        }
     }
 }
