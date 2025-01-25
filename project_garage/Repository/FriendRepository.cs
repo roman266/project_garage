@@ -18,7 +18,7 @@ namespace project_garage.Repository
             var request = await _context.Friends.FirstOrDefaultAsync(friend => friend.Id == id);
             if (request == null)
             {
-                throw new Exception("Somthing goes wrong");
+                throw new InvalidDataException("Invalid data");
             }
 
             return request;

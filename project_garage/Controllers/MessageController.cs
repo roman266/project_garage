@@ -18,7 +18,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [Route("Message/Send/{conversationId}")]
+        [Route("Message/Send")]
         public async Task<IActionResult> SendMessage(string text, string conversationId)
         {
             try
@@ -70,7 +70,7 @@ namespace project_garage.Controllers
             try
             {
                 await _messageService.DeleteMessageForMeAsync(messageId);
-                return Json(new { success = true, message = "Message successfully readen" });
+                return Json(new { success = true, message = "Message successfully deleted" });
             }
             catch (Exception ex)
             {
