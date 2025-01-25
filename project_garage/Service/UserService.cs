@@ -106,7 +106,7 @@ namespace project_garage.Service
             if (description != null)
                 user.Description = description;
             if (userByName != null)
-                user.UserName = userName;
+                await _userRepository.ChangeName(user, userName);
 
             await _userRepository.UpdateUserInfoAsync(user);
         }
@@ -130,8 +130,6 @@ namespace project_garage.Service
             user.EmailConfirmed = true;
             user.EmailConfirmationCode = "none";
             await _userRepository.UpdateUserInfoAsync(user);
-
-            return IdentityResult.Success;
         }
 
         public async Task<bool> CheckPasswordAsync(string id, string password)

@@ -2,13 +2,14 @@
 
 namespace project_garage.Models.ViewModels
 {
-    public class LoginViewModel
+    public class EditViewModel
     {
         [Required]
-        public string Email { get; set; }
+        public string UserName { get; set; }
 
         [Required]
-        public string Password { get; set; }
+        public string Description { get; set; }
+
 
     }
 }

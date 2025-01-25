@@ -88,6 +88,30 @@ namespace project_garage.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("Profile/Edit/{userId}")]
+        public async Task<IActionResult> EditProfile(string userId, EditViewModel viewModel)
+        {
+            try
+            {
+                if (userId != User.GetUserId())
+                    return JsonResponse(new { success = false, message = "You can't edit other users info" });
+                await _userService.UpdateUserInfoAsync(userId, viewModel.UserName, viewModel.Description);
+                return JsonResponse(new { success = true, message = "New profile info successfully added" });
+            }
+            catch (InvalidDataException ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return JsonResponse(new { success = false, error = ex.Message }, 400);
+            }
+        }
 
     }
 }

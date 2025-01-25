@@ -72,7 +72,7 @@ namespace project_garage.Controllers
 
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         [Route("Account/Login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {

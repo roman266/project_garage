@@ -61,6 +61,13 @@ namespace project_garage.Repository
             return user;
         }
 
+        public async Task ChangeName(UserModel user, string userName)
+        {
+            user.UserName = userName;
+            user.NormalizedUserName = _userManager.NormalizeName(userName);
+            await UpdateUserInfoAsync(user);
+        }
+
         public async Task<List<UserModel>> SearchByQueryAsync(string query)
         {
             var users = await _userManager.Users
