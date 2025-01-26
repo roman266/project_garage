@@ -21,7 +21,7 @@ namespace project_garage.Service
                 var count = posts.Count();
                 return count;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return 0;
             }

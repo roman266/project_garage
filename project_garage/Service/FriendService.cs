@@ -107,7 +107,7 @@ namespace project_garage.Service
                 var accepted = list.Where(x => x.IsAccepted == true).ToList();
                 return accepted.Count;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return 0;
             }

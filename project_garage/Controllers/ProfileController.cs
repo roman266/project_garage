@@ -28,9 +28,9 @@ namespace project_garage.Controllers
             return Json(data);
         }
 
-        [HttpPost]
-        [Route("Profile/ProfileIndex/{userId}")]
-        public async Task<IActionResult> ProfileIndex(string userId)
+        [HttpGet]
+        [Route("Profile/GetProfileData/{userId}")]
+        public async Task<IActionResult> GetProfileData(string userId)
         {
             try
             {
@@ -67,19 +67,21 @@ namespace project_garage.Controllers
         }
 
         [HttpGet]
-        public IActionResult ProfileIndex()
+        [Route("Profile/ProfileIndex/{userId}")]
+        public IActionResult ProfileIndex(string userId)
         {
-        return View(); 
+            ViewBag.UserId = userId;
+            return View(); 
         }
 
 
         [HttpGet]
         [Route("Profile/SearchUser/")]
-        public async Task<IActionResult> SearchUsers(SearchBoxViewModel query)
+        public async Task<IActionResult> SearchUsers(SearchBoxViewModel model)
         {
             try
             {
-                var users = await _userService.SearchUsersAsync(query.Query);
+                var users = await _userService.SearchUsersAsync(model.Query);
                 return Json(new { success = true, message = "Users successfully found", usersLst = users });
 
             }
