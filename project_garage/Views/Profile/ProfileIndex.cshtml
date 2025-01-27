@@ -25,7 +25,7 @@
 
     <!-- Форма для створення поста -->
     <h3>Створити пост</h3>
-    <form method="post" action="@Url.Action("CreatePost", "Profile")">
+    <form method="post" action="@Url.Action("CreatePost", "Posts")">
         @Html.AntiForgeryToken()
         <div>
             <label for="title">Title:</label>
@@ -50,8 +50,8 @@
                     <p>@post.Description</p>
                     <small>Створено: @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
                     <div class="post-actions">
-                        <a href="@Url.Action("EditPost", "Profile", new { postId = post.Id })" class="btn btn-warning">Edit</a>
-                        <form method="post" action="@Url.Action("DeletePost", "Profile")" style="display:inline;">
+                        <a href="@Url.Action("EditPost", "Posts", new { postId = post.Id })" class="btn btn-warning">Edit</a>
+                        <form method="post" action="@Url.Action("DeletePost", "Posts")" style="display:inline;">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
                             <button type="submit" class="btn btn-danger">Delete</button>

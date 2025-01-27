@@ -2,7 +2,7 @@
 
 <div class="edit-post-page">
     <h1>Редагувати пост</h1>
-    <form method="post" action="@Url.Action("EditPostSave", "Profile")">
+    <form method="post" action="@Url.Action("EditPostSave", "Posts")">
         @Html.AntiForgeryToken()
         <input type="hidden" name="Id" value="@Model.Id" />
 
