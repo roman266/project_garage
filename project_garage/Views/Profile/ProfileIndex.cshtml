@@ -1,19 +1,25 @@
-﻿@{
-    ViewBag.Title = "User Profile";
-}
-<div id="profile-root">
-    If you see this, React didn't render.
-</div>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+      @* шрифт *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:wght@300&display=swap" rel="stylesheet">
+    @* стиль *@
+    <link rel="stylesheet" href="~/css/profile.css">
 
-<script src="https://cdn.jsdelivr.net/npm/react/umd/react.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="/js/profile.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        ReactDOM.render(
-            React.createElement(Profile, { userId: "@ViewBag.UserId" }),
-            document.getElementById("profile-root")
-        );
-    });
-</script>
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="~/js/profile.js"></script>
+</body>
+</html>
