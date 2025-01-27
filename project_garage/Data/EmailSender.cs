@@ -1,16 +1,17 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using DotNetEnv;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace project_garage.Data
 {
     public class EmailSender : IEmailSender
     {
-        private readonly string _smtpServer = "smtp.gmail.com"; // SMTP сервер
-        private readonly int _smtpPort = 587;
-        private readonly string _smtpUsername = "lugovuy.roman@lll.kpi.ua";
-        private readonly string _smtpPassword = "fntytwkaolysornd";
+        private readonly string _smtpServer = Env.GetString("SERVER");
+        private readonly int _smtpPort = Env.GetInt("PORT");
+        private readonly string _smtpUsername = Env.GetString("EMAIL");
+        private readonly string _smtpPassword = Env.GetString("PASSWORD");
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
