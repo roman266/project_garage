@@ -78,7 +78,6 @@ namespace project_garage.Service
         public async Task<IdentityResult> ConfirmUserEmail(UserModel user)
         {
             user.EmailConfirmed = true;
-            user.IsEmailConfirmed = true;
             user.EmailConfirmationCode = "none";
             var result = await UpdateUserInfoAsync(user);
             return result;

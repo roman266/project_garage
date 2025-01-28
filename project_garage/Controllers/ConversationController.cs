@@ -22,16 +22,16 @@ namespace project_garage.Controllers
 
         [HttpPost]
         [Route("Conversation/Start")]
-        public async Task<IActionResult> StartConversation(string user2Id)
+        public async Task<IActionResult> StartConversation(string secondUserId)
         {
-            Console.WriteLine(user2Id);
+            Console.WriteLine(secondUserId + "----------------------------------");
             try
             {
                 //if users don't exist we get exception
                 var user1 = await _userService.GetByIdAsync(User.GetUserId());
-                var user2 = await _userService.GetByIdAsync(user2Id);
+                var user2 = await _userService.GetByIdAsync(secondUserId);
 
-                await _conversationService.CreateConversationAsync(User.GetUserId(), user2Id);
+                await _conversationService.CreateConversationAsync(User.GetUserId(), secondUserId);
 
                 return Json(new { success = true, message = "New conversation successfully started" });
             }
