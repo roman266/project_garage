@@ -1,0 +1,56 @@
+@using System.Security.Claims
+@using project_garage.Models.ViewModels
+@model HomeViewModel
+
+<div class="main-page">
+    <h1>Welcome, @Model.User.UserName!</h1>
+    <h2>Posts from You and Friends</h2>
+
+    <div class="user-actions">
+        <a href="@Url.Action("ProfileIndex", "Profile", new { userId = Model.User.Id })" class="btn btn-primary">My Profile</a>
+        <a href="@Url.Action("GetAcceptedRequests", "Friend")" class="btn btn-secondary">My Friends (@Model.FriendsCount)</a>
+    </div>
+
+    <div class="posts-section">
+        @if (Model.Posts != null && Model.Posts.Any())
+        {
+            <ul class="post-list">
+                @foreach (var post in Model.Posts)
+                {
+                    <li class="post-item">
+                        <h4>@post.Title</h4>
+                        <p>@post.Description</p>
+                        <small>Posted by: @post.User.UserName on @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No posts available.</p>
+        }
+    </div>
+</div>
+
+<style>
+    .main-page {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .user-actions {
+        margin-bottom: 20px;
+    }
+
+    .post-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .post-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+</style>
