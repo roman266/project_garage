@@ -91,4 +91,20 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapControllerRoute(
+    name: "profile",
+    pattern: "User/Profile/{userId}",
+    defaults: new { controller = "Profile", action = "ProfileIndex" });
+
+app.MapControllerRoute(
+    name: "profile-search",
+    pattern: "Profile/SearchUsers",
+    defaults: new { controller = "ProfileController", action = "SearchUsers" });
+
+
+app.MapControllerRoute(
+    name: "post-actions",
+    pattern: "Posts/{action}/{postId?}",
+    defaults: new { controller = "Post" });
+
 app.Run();

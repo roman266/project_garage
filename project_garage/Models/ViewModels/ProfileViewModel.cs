@@ -1,4 +1,6 @@
-﻿namespace project_garage.Models.ViewModels
+﻿using project_garage.Models.DbModels;
+
+namespace project_garage.Models.ViewModels
 {
     public class ProfileViewModel
     {
@@ -8,5 +10,6 @@
         public int FriendsCount { get; set; }
         public int PostsCount { get; set; }
         public bool CanAddFriend { get; set; }
+        public List<PostModel> Posts { get; set; }
     }
 }
