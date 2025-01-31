@@ -4,6 +4,7 @@ using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Models.DbModels;
 using project_garage.Data;
+using System.Diagnostics.Contracts;
 
 namespace project_garage.Controllers
 {
@@ -22,48 +23,52 @@ namespace project_garage.Controllers
             _postService = postService;
         }
 
+        private IActionResult JsonResponse(object data, int statusCode = 200)
+        {
+            Response.StatusCode = statusCode;
+            return Json(data);
+        }
+
         [Route("Profile/ProfileIndex/{userId}")]
         public async Task<IActionResult> ProfileIndex(string userId)
         {
-            var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
-
-            Console.WriteLine($"USER ID: {userId}, LOGGED IN USER ID: {loggedInUserId}");
-            var user = await _userService.GetByIdAsync(userId);
-
-            if (user == null)
+            try
             {
-                return NotFound();
+                var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
+                var user = await _userService.GetByIdAsync(userId);
+                var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
+
+                var viewModel = new ProfileViewModel
+                {
+                    UserId = user.Id,
+                    Nickname = user.UserName,
+                    Description = user.Description,
+                    FriendsCount = await _friendService.GetFriendsCount(userId),
+                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    CanAddFriend = canAddFriend
+                };
+                return JsonResponse(new {success = true, message = viewModel} );
             }
-
-            var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
-
-            Console.WriteLine($"USER ID: {userId}");
-
-            var viewModel = new ProfileViewModel
+            catch (Exception ex)
             {
-                UserId = user.Id,
-                Nickname = user.UserName,
-                Description = user.Description,
-                FriendsCount = await _friendService.GetFriendsCount(userId),
-                PostsCount = await _postService.GetCountOfPosts(userId),
-                CanAddFriend = canAddFriend
-            };
-
-            return View(viewModel);
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
         }
 
         [HttpPost]
         [Route("Profile/SearchUsers")]
         public async Task<IActionResult> SearchUsers(SearchBoxViewModel model)
         {
-
-            if (!string.IsNullOrEmpty(model.Query))
+            try
             {
                 var users = await _userService.SearchUsersAsync(model.Query);
-                return PartialView("_UserList", users);
+                return JsonResponse(new { success = true, list = users });
+                
             }
-
-            return PartialView("_UserList", new List<UserModel>());
+            catch(Exception ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
         }
     }
 }
