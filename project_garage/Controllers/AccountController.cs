@@ -24,7 +24,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         [Route("Account/Register")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -57,7 +57,7 @@ namespace project_garage.Controllers
         }
 
         [HttpGet]
-        [Route("Account/EmailConfirmed/{userId}")]
+        [Route("Account/ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
@@ -94,7 +94,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         [Route("Account/Login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {

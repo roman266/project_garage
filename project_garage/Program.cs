@@ -8,9 +8,11 @@ using project_garage.Interfaces.IRepository;
 using project_garage.Repository;
 using project_garage.Interfaces.IService;
 using project_garage.Service;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Env.Load();
 // Налаштування служб
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -27,6 +29,10 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -84,16 +90,5 @@ Console.WriteLine($"Connection String: {connectionString}");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.MapControllerRoute(
-    name: "profile",
-    pattern: "User/Profile/{userId}",
-    defaults: new { controller = "Profile", action = "ProfileIndex" });
-
-app.MapControllerRoute(
-    name: "profile-search",
-    pattern: "Profile/SearchUsers",
-    defaults: new { controller = "ProfileController", action = "SearchUsers" });
-
 
 app.Run();
