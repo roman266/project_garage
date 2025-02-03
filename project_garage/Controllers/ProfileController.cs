@@ -48,7 +48,7 @@ namespace project_garage.Controllers
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = await _postService.GetCountOfPosts(userId),
-                    CanAddFriend = canAddFriend
+                    CanAddFriend = canAddFriend,
                     Posts = userPosts // Передаємо список постів
                 };
                 return JsonResponse(new {success = true, message = viewModel} );
