@@ -47,7 +47,7 @@ namespace project_garage.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("Account/ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {

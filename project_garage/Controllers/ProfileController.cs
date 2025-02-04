@@ -4,7 +4,6 @@ using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Models.DbModels;
 using project_garage.Data;
-using System.Security.Claims;
 using System.Diagnostics.Contracts;
 
 namespace project_garage.Controllers
@@ -30,6 +29,7 @@ namespace project_garage.Controllers
             return Json(data);
         }
 
+        [HttpGet]
         [Route("Profile/ProfileIndex/{userId}")]
         public async Task<IActionResult> ProfileIndex(string userId)
         {
@@ -38,8 +38,6 @@ namespace project_garage.Controllers
                 var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
                 var user = await _userService.GetByIdAsync(userId);
                 var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
-                // Отримання постів користувача
-                var userPosts = await _postService.GetPostsByUserIdAsync(userId);
 
                 var viewModel = new ProfileViewModel
                 {
@@ -48,8 +46,7 @@ namespace project_garage.Controllers
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = await _postService.GetCountOfPosts(userId),
-                    CanAddFriend = canAddFriend,
-                    Posts = userPosts // Передаємо список постів
+                    CanAddFriend = canAddFriend
                 };
                 return JsonResponse(new {success = true, message = viewModel} );
             }
@@ -59,7 +56,7 @@ namespace project_garage.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("Profile/SearchUsers")]
         public async Task<IActionResult> SearchUsers(SearchBoxViewModel model)
         {
