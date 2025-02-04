@@ -13,12 +13,12 @@ using DotNetEnv;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
-// Налаштування служб
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // Логування запитів до бази для відлагодження
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging(); // Для відлагодження
+           .EnableSensitiveDataLogging(); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -51,7 +51,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 
-// Налаштування автентифікації
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -59,36 +59,52 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Додаткові налаштування авторизації (можна кастомізувати)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Налаштування HTTP-конвеєра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ HTTP-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-// HTTPS і статика
+// HTTPS пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Маршрутизація
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseRouting();
 
-// Підключення автентифікації та авторизації
+// ПіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Перевірка рядка підключення під час запуску
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");
 
-// Налаштування маршрутів
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "profile",
+    pattern: "User/Profile/{userId}",
+    defaults: new { controller = "Profile", action = "ProfileIndex" });
+
+app.MapControllerRoute(
+    name: "profile-search",
+    pattern: "Profile/SearchUsers",
+    defaults: new { controller = "ProfileController", action = "SearchUsers" });
+
+
+app.MapControllerRoute(
+    name: "post-actions",
+    pattern: "Posts/{action}/{postId?}",
+    defaults: new { controller = "Post" });
 
 app.Run();

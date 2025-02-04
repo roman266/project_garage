@@ -15,7 +15,7 @@ namespace project_garage.Repository
 
         public async Task CreatePostAsync(PostModel post)
         {
-            await _context.Posts.AddAsync(post);
+            _context.Posts.Add(post);
             await _context.SaveChangesAsync();
         }
 
@@ -56,5 +56,13 @@ namespace project_garage.Repository
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
     }
 }
