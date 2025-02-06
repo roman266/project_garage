@@ -31,7 +31,8 @@ namespace project_garage.Controllers
         {
             try
             {
-                var user = await _userService.GetByIdAsync(User.GetUserId());
+                var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
+                var user = await _userService.GetByIdAsync(logedUserId);
                 await _messageService.SendMessageAsync(text, conversationId, user.Id, user.UserName);
                 return JsonResponse(new { success = true, message = "Message successfully sended" });
             }

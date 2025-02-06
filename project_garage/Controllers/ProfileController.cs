@@ -8,7 +8,6 @@ using System.Diagnostics.Contracts;
 
 namespace project_garage.Controllers
 {
-
     [Authorize]
     public class ProfileController : Controller
     {
@@ -35,7 +34,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
+                var loggedInUserId = UserHelper.GetCurrentUserId(HttpContext); // Отримуємо ID залогіненого користувача
                 var user = await _userService.GetByIdAsync(userId);
                 var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
 
@@ -62,7 +61,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
                 var user = await _userService.GetByIdAsync(userId);
                 var viewModel = new ProfileViewModel
                 {

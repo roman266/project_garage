@@ -4,7 +4,7 @@ namespace project_garage.Interfaces.IService
 {
     public interface IAuthService
     {
-        Task<string> SignInAsync(string email, string password);
+        Task<UserModel> SignInAsync(string email, string password);
         Task SignOutAsync();
         
     }

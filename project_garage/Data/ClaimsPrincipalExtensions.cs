@@ -1,12 +1,14 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace project_garage.Data
 {
-    public static class ClaimsPrincipalExtensions
+    public static class UserHelper
     {
-        public static string GetUserId(this ClaimsPrincipal user)
+        public static string? GetCurrentUserId(HttpContext httpContext)
         {
-            return user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
     }
+
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace project_garage.Controllers
 {
@@ -9,12 +9,13 @@ namespace project_garage.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
+        private readonly IJwtService _jwtService;
 
-        public AccountController(IUserService userService, IAuthService authService)
+        public AccountController(IUserService userService, IAuthService authService, IJwtService jwtService)
         {
             _userService = userService;
             _authService = authService;
-            
+            _jwtService = jwtService;
         }
 
         private IActionResult JsonResponse(object data, int statusCode = 200)
@@ -24,8 +25,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        [Route("Account/Register")]
+        [Route("register")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -33,7 +33,6 @@ namespace project_garage.Controllers
                 // Повертаємо порожній JSON або об'єкт, який містить помилки
                 return JsonResponse(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() }, 400);
             }
-
 
             try
             {
@@ -48,7 +47,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [Route("Account/ConfirmEmail")]
+        [Route("confirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             try
@@ -62,32 +61,62 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        [Route("Account/Login")]
+        [Route("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return JsonResponse(new { success = true, message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() }, 400);
+                return JsonResponse(new
+                {
+                    success = false,
+                    message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+                }, 400);
             }
 
             try
             {
-                var profileIndex = await _authService.SignInAsync(model.Email, model.Password);
-                return JsonResponse(new { success = true, userId = profileIndex, message = "You successfully loged" });
+                var user = await _authService.SignInAsync(model.Email, model.Password);
+                if (user == null)
+                {
+                    return JsonResponse(new { success = false, message = "Invalid email or password." }, 401);
+                }
+
+                // Генерація JWT-токена
+                var token = _jwtService.GenerateToken(user.Id, user.Email);
+
+                // Налаштування cookie з токеном
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true, // Захист від XSS
+                    Secure = true,   // Працює тільки через HTTPS
+                    SameSite = SameSiteMode.None, // Захист від CSRF
+                    Expires = DateTime.UtcNow.AddHours(1) // Термін дії токена
+                };
+
+                Response.Cookies.Append("AuthToken", token, cookieOptions);
+
+                return JsonResponse(new
+                {
+                    success = true,
+                    userId = user.Id,
+                    message = "You successfully logged in"
+                });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = $"{ex.Message}" }, 500);
+                Console.WriteLine($"Error: {ex.Message}");
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
 
-        public async Task<IActionResult> Logout()
+        [Authorize]
+        [HttpPost("logout")]
+        public IActionResult Logout()
         {
             try
             {
-                await _authService.SignOutAsync(); // Викликає розлогування
-                return JsonResponse(new { success = false, message = "You successfully loged out" }); // Перенаправлення на головну сторінку або іншу
+                Response.Cookies.Delete("AuthToken");
+                return JsonResponse(new { success = true, message = "Logged out" }, 200);
             }
             catch (Exception ex)
             {
