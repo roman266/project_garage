@@ -62,14 +62,15 @@ namespace project_garage.Controllers
         {
             try
             {
-                var user = await _userService.GetByIdAsync(User.GetUserId());
+                var userId = User.GetUserId();
+                var user = await _userService.GetByIdAsync(userId);
                 var viewModel = new ProfileViewModel
                 {
                     UserId = user.Id,
                     Nickname = user.UserName,
                     Description = user.Description,
-                    FriendsCount = await _friendService.GetFriendsCount(user.Id),
-                    PostsCount = await _postService.GetCountOfPosts(user.Id),
+                    FriendsCount = await _friendService.GetFriendsCount(userId),
+                    PostsCount = await _postService.GetCountOfPosts(userId),
                     CanAddFriend = false
                 };
                 return JsonResponse(new { success = true, message = viewModel });
