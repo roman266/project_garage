@@ -51,6 +51,15 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 
+var adress = Env.GetString("FRONTADRESS");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy => policy.WithOrigins(adress)
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+});
+
 // ������������ ��������������
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -70,6 +79,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseCors("AllowSpecificOrigin");
 
 // HTTPS � �������
 app.UseHttpsRedirection();
