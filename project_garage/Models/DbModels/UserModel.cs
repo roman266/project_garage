@@ -21,7 +21,6 @@ namespace project_garage.Models.DbModels
         public string ActiveStatus { get; set; } = "Online"; // Status like "Online", "Away", etc.
 
         public string AccountStatus { get; set; } = "Active"; // Account status: "Active", "Banned", etc.
-        public bool IsEmailConfirmed { get; set; }
         public string EmailConfirmationCode { get; set; }
         public ICollection<PostModel> Posts { get; set; }
         public ICollection<FriendModel> Friends { get; set; }

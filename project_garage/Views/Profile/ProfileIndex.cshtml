@@ -4,19 +4,92 @@
 <div class="profile-page">
     <h1>@Model.Nickname</h1>
     <p>@Model.Description</p>
+
     <div>
         <span>Friends: @Model.FriendsCount</span>
         <span>Posts: @Model.PostsCount</span>
     </div>
+
     <a href="@Url.Action("Logout", "Account")" class="btn btn-primary">Sign out</a>
-    @if(@Model.CanAddFriend){
-        
+
+    @if (Model.CanAddFriend)
+    {
         <form method="post" action="/Friend/Add">
             <input type="hidden" name="friendId" value="@Model.UserId" />
-            <button type="submit">Додати в друзі</button>
+            <button type="submit" class="btn btn-success">Додати в друзі</button>
         </form>
     }
-    <a href="@Url.Action("SearchUsers", "Profile")">Search</a>
-    <a href="@Url.Action("GetUnacceptedRequests", "Friend")">Requests</a>
-    <a href="@Url.Action("GetAcceptedRequests", "Friend")">Friends</a>
+
+    <a href="@Url.Action("SearchUsers", "Profile")" class="btn btn-info">Search</a>
+    <a href="@Url.Action("GetAllRequests", "Profile")" class="btn btn-secondary">Requests</a>
+
+    <!-- Форма для створення поста -->
+    <h3>Створити пост</h3>
+    <form method="post" action="@Url.Action("CreatePost", "Posts")">
+        @Html.AntiForgeryToken()
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="Title" required maxlength="50" />
+        </div>
+        <div>
+            <label for="description">Description:</label>
+            <textarea id="description" name="Description" required maxlength="250"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Post</button>
+    </form>
+
+    <!-- Вивід постів користувача -->
+    <h3>Мої пости</h3>
+    @if (Model.Posts != null && Model.Posts.Any())
+    {
+        <ul class="post-list">
+            @foreach (var post in Model.Posts)
+            {
+                <li class="post-item">
+                    <h4>@post.Title</h4>
+                    <p>@post.Description</p>
+                    <small>Створено: @post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                    <div class="post-actions">
+                        <a href="@Url.Action("EditPost", "Posts", new { postId = post.Id })" class="btn btn-warning">Edit</a>
+                        <form method="post" action="@Url.Action("DeletePost", "Posts")" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@post.Id" />
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>У вас ще немає постів.</p>
+    }
 </div>
+
+<style>
+    .profile-page {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    .post-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .post-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+
+    .post-actions {
+        margin-top: 10px;
+    }
+
+    .btn {
+        margin-right: 5px;
+    }
+</style>

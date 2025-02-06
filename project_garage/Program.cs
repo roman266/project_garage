@@ -8,15 +8,17 @@ using project_garage.Interfaces.IRepository;
 using project_garage.Repository;
 using project_garage.Interfaces.IService;
 using project_garage.Service;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Налаштування служб
+Env.Load();
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // Логування запитів до бази для відлагодження
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging(); // Для відлагодження
+           .EnableSensitiveDataLogging(); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -27,6 +29,10 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -45,7 +51,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 
-// Налаштування автентифікації
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -53,34 +59,34 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Додаткові налаштування авторизації (можна кастомізувати)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Налаштування HTTP-конвеєра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ HTTP-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-// HTTPS і статика
+// HTTPS пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Маршрутизація
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseRouting();
 
-// Підключення автентифікації та авторизації
+// ПіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Перевірка рядка підключення під час запуску
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");
 
-// Налаштування маршрутів
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -95,5 +101,10 @@ app.MapControllerRoute(
     pattern: "Profile/SearchUsers",
     defaults: new { controller = "ProfileController", action = "SearchUsers" });
 
+
+app.MapControllerRoute(
+    name: "post-actions",
+    pattern: "Posts/{action}/{postId?}",
+    defaults: new { controller = "Post" });
 
 app.Run();

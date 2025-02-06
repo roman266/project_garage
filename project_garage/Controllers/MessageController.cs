@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using project_garage.Data;
 using project_garage.Interfaces.IService;
 
 namespace project_garage.Controllers
 {
+    [Authorize]
     public class MessageController : Controller
     {
         private readonly IConversationService _conversationService;
@@ -17,6 +19,12 @@ namespace project_garage.Controllers
             _userService = userService;
         }
 
+        private IActionResult JsonResponse(object data, int statusCode = 200)
+        {
+            Response.StatusCode = statusCode;
+            return Json(data);
+        }
+
         [HttpPost]
         [Route("Message/Send")]
         public async Task<IActionResult> SendMessage(string text, string conversationId)
@@ -25,11 +33,11 @@ namespace project_garage.Controllers
             {
                 var user = await _userService.GetByIdAsync(User.GetUserId());
                 await _messageService.SendMessageAsync(text, conversationId, user.Id, user.UserName);
-                return Json(new { success = true, message = "Message successfully sended" });
+                return JsonResponse(new { success = true, message = "Message successfully sended" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
 
@@ -40,11 +48,11 @@ namespace project_garage.Controllers
             try
             {
                 await _messageService.DeleteMessageAsync(messageId);
-                return Json(new { success = true, message = "Message successfully deleted" });
+                return JsonResponse(new { success = true, message = "Message successfully deleted" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
 
@@ -55,11 +63,11 @@ namespace project_garage.Controllers
             try
             {
                 await _messageService.ReadMessageAsync(messageId);
-                return Json(new { success = true, message = "Message successfully readen" });
+                return JsonResponse(new { success = true, message = "Message successfully readen" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
 
@@ -70,11 +78,11 @@ namespace project_garage.Controllers
             try
             {
                 await _messageService.DeleteMessageForMeAsync(messageId);
-                return Json(new { success = true, message = "Message successfully deleted" });
+                return JsonResponse(new { success = true, message = "Message successfully deleted" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
     }

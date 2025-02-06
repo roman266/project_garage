@@ -25,6 +25,30 @@ namespace project_garage.Service
             {
                 return 0;
             }
-        } 
+        }
+
+        public async Task CreatePostAsync(PostModel post)
+        {
+            await _postRepository.CreatePostAsync(post);
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _postRepository.GetPostsByUserIdAsync(userId);
+        }
+        public async Task<PostModel> GetPostByIdAsync(Guid id)
+        {
+            return await _postRepository.GetPostByIdAsync(id);
+        }
+
+        public async Task UpdatePostAsync(PostModel post)
+        {
+            await _postRepository.UpdatePostAsync(post);
+        }
+
+        public async Task DeletePostAsync(Guid id)
+        {
+            await _postRepository.DeletePostAsync(id);
+        }
     }
 }

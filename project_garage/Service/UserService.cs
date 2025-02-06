@@ -75,10 +75,22 @@ namespace project_garage.Service
             return result;
         }
 
-        public async Task<IdentityResult> ConfirmUserEmail(UserModel user)
+        public async Task<IdentityResult> ConfirmUserEmail(string userId, string code)
         {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                throw new Exception("User is null here");
+            }
+
+            var user = await GetByIdAsync(userId);
+            if(user == null)
+            {
+                throw new Exception("User not founded");
+            }
+            if (user.EmailConfirmationCode != code)
+                throw new Exception("Wrong code");
+
             user.EmailConfirmed = true;
-            user.IsEmailConfirmed = true;
             user.EmailConfirmationCode = "none";
             var result = await UpdateUserInfoAsync(user);
             return result;
