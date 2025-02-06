@@ -4,6 +4,11 @@
 #DotEnv
 .env
 
+#Database
+*.db
+*.db-shm
+*.db-wal
+
 #React
 node_modules/
 
