@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace project_garage.Service
 {
     public class UserService : IUserService
-
     {
         private readonly IUserRepository _userRepository;
         private readonly IEmailSender _emailSender;
+
         public UserService(IUserRepository userRepository) 
         {
             _userRepository = userRepository;
@@ -21,7 +21,9 @@ namespace project_garage.Service
 
         public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl)
         {
-            if (!await CheckForExistanceByEmail(email))
+            var isUserExist = await CheckForExistanceByEmail(email);
+
+            if (!isUserExist)
             {
                 var user = new UserModel
                 {
@@ -51,21 +53,29 @@ namespace project_garage.Service
         public async Task<bool> CheckForExistanceByEmail(string email)
         {
             var user = await GetByEmailAsync(email);
+
             if (user == null)
                 return false;
             return true;
         }
            
- 
         public async Task<UserModel> GetByEmailAsync(string email)
         {
             var user = await _userRepository.GetByEmailAsync(email);
+
+            if (user == null)
+                throw new Exception("Wrong email");
+
             return user;
         }
 
         public async Task<UserModel> GetByIdAsync(string id)
         {
             var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new Exception("User not founded");
+
             return user;
         }
 
@@ -110,7 +120,6 @@ namespace project_garage.Service
 
         public async Task<List<UserModel>> SearchUsersAsync(string query)
         {
-
             var users = await _userRepository.SearchUsersAsync(query);
             
             return users ?? new List<UserModel>();

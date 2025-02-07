@@ -32,11 +32,12 @@ namespace project_garage.Controllers
         {
             try
             {
+                var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
                 //if users don't exist we get exception
-                var user1 = await _userService.GetByIdAsync(User.GetUserId());
+                var user1 = await _userService.GetByIdAsync(logedUserId);
                 var user2 = await _userService.GetByIdAsync(secondUserId);
 
-                await _conversationService.CreateConversationAsync(User.GetUserId(), secondUserId);
+                await _conversationService.CreateConversationAsync(logedUserId, secondUserId);
 
                 return JsonResponse(new { success = true, message = "New conversation successfully started" });
             }
@@ -68,11 +69,13 @@ namespace project_garage.Controllers
         {
             try
             {
+                var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
+
                 var conversation = await _conversationService.GetConversationByIdAsync(conversationId);
 
-                var currentUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, User.GetUserId());
+                var currentUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, logedUserId);
 
-                if (conversation.User1Id == User.GetUserId())
+                if (conversation.User1Id == logedUserId)
                 {
                     var secondUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, conversation.User2Id);
                     var jsonOptions = new JsonSerializerOptions
@@ -83,7 +86,7 @@ namespace project_garage.Controllers
                     Response.StatusCode = 200;
                     return Json(new { success = true, currentUserMessagesLst = currentUserMessages, secondUserMessagesLst = secondUserMessages }, jsonOptions);
                 }
-                else if (conversation.User2Id == User.GetUserId())
+                else if (conversation.User2Id == logedUserId)
                 {
                     var secondUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, conversation.User1Id);
                     var jsonOptions = new JsonSerializerOptions
@@ -109,7 +112,8 @@ namespace project_garage.Controllers
         {
             try
             {
-                var conversations = await _conversationService.GetConversationByUserIdAsync(User.GetUserId());
+                var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
+                var conversations = await _conversationService.GetConversationByUserIdAsync(logedUserId);
                 return JsonResponse(new { success = true, message = "Conversation successfully deleted", conversationList = conversations });
             }
             catch (Exception ex)

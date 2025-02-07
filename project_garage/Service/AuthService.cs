@@ -7,43 +7,34 @@ namespace project_garage.Service
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authRepository;
         private readonly IUserService _userService;
 
-        public AuthService(IAuthRepository authRepository, IUserService userService)
+        public AuthService(IUserService userService)
         {
-            _authRepository = authRepository;
             _userService = userService;
         }
 
-        public async Task<string> SignInAsync(string email, string password)
+        public async Task<UserModel> SignInAsync(string email, string password)
         {
-            var userModel = await _userService.GetByEmailAsync(email);
-            if (userModel == null)
+            var user = await _userService.GetByEmailAsync(email);
+            if (user == null)
                 throw new Exception("No user founded");
 
+            var isPasswordValid = await _userService.CheckPasswordAsync(user, password);
 
-            if (await _userService.CheckPasswordAsync(userModel, password))
-            {
-                if (userModel.EmailConfirmed)
-                {
-                    await _authRepository.SignInAsync(userModel);
-                    return userModel.Id;
-                }
-                else
-                {
-                    throw new Exception("Email isn't confirmed");
-                }
-            }
-            else 
-            { 
-                throw new Exception("Wrong password"); 
-            }
+            if (!isPasswordValid)
+                throw new Exception("Invalid email or password");
+            if (user.EmailConfirmed)
+                    return user;
+
+            throw new Exception("You need to confirm your email");
         }
 
         public async Task SignOutAsync()
         {
-            await _authRepository.SignOutAsync();
+            var user = await _userService.GetByIdAsync("1");
+            if (user == null)
+                Console.WriteLine("Logout");
         }
     }
 }

@@ -3,9 +3,11 @@ using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using System.Security.Claims;
 using project_garage.Models.DbModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace project_garage.Controllers
 {
+    [Authorize]
     public class PostsController : Controller
     {
         private readonly IPostService _postService;
@@ -16,7 +18,6 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePost(CreatePostViewModel model)
         {
             if (!ModelState.IsValid)
@@ -65,7 +66,6 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [Route("Posts/Edit")]
         public async Task<IActionResult> EditPostSave(EditPostViewModel model)
         {
