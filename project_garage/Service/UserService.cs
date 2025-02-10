@@ -37,7 +37,7 @@ namespace project_garage.Service
                 if (result.Succeeded)
                 {
                     Console.WriteLine("succed");
-                    var confirmationLink = $"{baseUrl}/Account/ConfirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
+                    var confirmationLink = $"{baseUrl}confirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
 
                     await _emailSender.SendEmailAsync(email, "Підтвердження email",
                         $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
@@ -52,7 +52,7 @@ namespace project_garage.Service
 
         public async Task<bool> CheckForExistanceByEmail(string email)
         {
-            var user = await GetByEmailAsync(email);
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
                 return false;
