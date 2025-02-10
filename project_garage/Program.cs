@@ -74,9 +74,10 @@ var adress = Env.GetString("FRONTADRESS");
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", policy => policy.WithOrigins(adress)
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
 
 builder.Services.AddAuthentication(options =>
@@ -118,7 +119,7 @@ var app = builder.Build();
 
 app.UseRouting();
 
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 
 app.UseAuthentication(); // Перевірка JWT-токена
 app.UseAuthorization();  // Використання ролей та політик
