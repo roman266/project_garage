@@ -128,6 +128,8 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
+app.UseCors("AllowSpecificOrigin");
+
 // HTTPS � �������
 app.UseHttpsRedirection();
 app.UseStaticFiles();
