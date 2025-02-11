@@ -52,21 +52,15 @@ namespace project_garage.Service
 
         public async Task<bool> CheckForExistanceByEmail(string email)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await GetByEmailAsync(email);
 
             if (user == null)
                 return false;
             return true;
-        }
-           
+        } 
         public async Task<UserModel> GetByEmailAsync(string email)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-                throw new Exception("Wrong email");
-
-            return user;
+            return await _userRepository.GetByEmailAsync(email);
         }
 
         public async Task<UserModel> GetByIdAsync(string id)
