@@ -8,7 +8,6 @@ using System.Diagnostics.Contracts;
 
 namespace project_garage.Controllers
 {
-
     [Authorize]
     public class ProfileController : Controller
     {
@@ -30,12 +29,12 @@ namespace project_garage.Controllers
         }
 
         [HttpGet]
-        [Route("Profile/ProfileIndex/{userId}")]
-        public async Task<IActionResult> ProfileIndex(string userId)
+        [Route("Profile/GetUserProfileInfo/{userId}")]
+        public async Task<IActionResult> GetUserProfileInfo(string userId)
         {
             try
             {
-                var loggedInUserId = User.GetUserId(); // Отримуємо ID залогіненого користувача
+                var loggedInUserId = UserHelper.GetCurrentUserId(HttpContext); // Отримуємо ID залогіненого користувача
                 var user = await _userService.GetByIdAsync(userId);
                 var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
 
@@ -48,13 +47,39 @@ namespace project_garage.Controllers
                     PostsCount = await _postService.GetCountOfPosts(userId),
                     CanAddFriend = canAddFriend
                 };
-                return JsonResponse(new {success = true, message = viewModel} );
+                return JsonResponse(new { success = true, message = viewModel });
             }
             catch (Exception ex)
             {
                 return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
+
+        [HttpGet]
+        [Route("Profile/GetCurrentUserProfileInfo")]
+        public async Task<IActionResult> GetCurrentUserProfileInfo()
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                var user = await _userService.GetByIdAsync(userId);
+                var viewModel = new ProfileViewModel
+                {
+                    UserId = user.Id,
+                    Nickname = user.UserName,
+                    Description = user.Description,
+                    FriendsCount = await _friendService.GetFriendsCount(userId),
+                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    CanAddFriend = false
+                };
+                return JsonResponse(new { success = true, message = viewModel });
+            }
+            catch (Exception ex)
+            {
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
+            }
+        }
+        
 
         [HttpGet]
         [Route("Profile/SearchUsers")]

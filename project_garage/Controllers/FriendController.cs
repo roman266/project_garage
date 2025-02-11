@@ -31,7 +31,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
                 Console.WriteLine(userId);
                 await _friendService.SendFriendRequestAsync(friendId, userId);
                 return JsonResponse(new { success = true, message = "Request sended" });
@@ -52,7 +52,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
                 await _friendService.AcceptRequestAsync(userId, friendId);
                 return JsonResponse(new { success = true, message = "Request accepted"});
             }
@@ -72,7 +72,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
                 await _friendService.RejectOrDeleteAsync(userId, friendId);
                 return JsonResponse(new { success = true, message = "Request rejected" });
             }
@@ -92,7 +92,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
 
                 var requests = await _friendService.GetByUserIdAsync(userId);
 
@@ -130,7 +130,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.GetUserId();
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
                 var requests = await _friendService.GetByUserIdAsync(userId);
                 var viewModel = new List<FriendRequestViewModel>();
 

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using project_garage.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using project_garage.Models.DbModels;
@@ -9,8 +8,12 @@ using project_garage.Repository;
 using project_garage.Interfaces.IService;
 using project_garage.Service;
 using DotNetEnv;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 Env.Load();
 // ������������ �����
@@ -22,7 +25,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
@@ -33,6 +35,8 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -47,64 +51,97 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.Expiration = TimeSpan.Zero; // Кука не зберігається
+    options.SlidingExpiration = false;
+    options.LoginPath = PathString.Empty; // Вимикає редірект на сторінку логіну
+    options.AccessDeniedPath = PathString.Empty; // Вимикає редірект на сторінку доступу
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+});
+
+
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 
-// ������������ ��������������
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+var adress = Env.GetString("FRONTADRESS");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.Events = new JwtBearerEvents
     {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-    });
+        OnMessageReceived = context =>
+        {
+            if (context.Request.Cookies.ContainsKey("AuthToken"))
+            {
+                context.Token = context.Request.Cookies["AuthToken"];
+            }
+            return Task.CompletedTask;
+        }
+    };
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = configuration["Jwt:Issuer"],
+        ValidAudience = configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+    };
+});
+
 
 // �������� ������������ ����������� (����� ������������)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// ������������ HTTP-�������
-if (!app.Environment.IsDevelopment())
+app.UseRouting();
+
+app.UseCors("AllowAll");
+
+app.UseAuthentication(); // Перевірка JWT-токена
+app.UseAuthorization();  // Використання ролей та політик
+
+app.UseEndpoints(endpoints =>
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+    endpoints.MapControllers();
+});
 
 // HTTPS � �������
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // �������������
-app.UseRouting();
 
-// ϳ��������� �������������� �� �����������
-app.UseAuthentication();
-app.UseAuthorization();
 
 // �������� ����� ���������� �� ��� �������
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");
 
-// ������������ ��������
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.MapControllerRoute(
-    name: "profile",
-    pattern: "User/Profile/{userId}",
-    defaults: new { controller = "Profile", action = "ProfileIndex" });
-
-app.MapControllerRoute(
-    name: "profile-search",
-    pattern: "Profile/SearchUsers",
-    defaults: new { controller = "ProfileController", action = "SearchUsers" });
 
 
-app.MapControllerRoute(
-    name: "post-actions",
-    pattern: "Posts/{action}/{postId?}",
-    defaults: new { controller = "Post" });
+app.MapControllers();
 
 app.Run();
