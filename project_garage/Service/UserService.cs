@@ -20,8 +20,7 @@ namespace project_garage.Service
         }
 
         public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl)
-        {   
-            Console.WriteLine(email);
+        {
             var isUserExist = await CheckForExistanceByEmail(email);
 
             if (!isUserExist)
@@ -38,7 +37,7 @@ namespace project_garage.Service
                 if (result.Succeeded)
                 {
                     Console.WriteLine("succed");
-                    var confirmationLink = $"{baseUrl}/Account/ConfirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
+                    var confirmationLink = $"{baseUrl}confirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
 
                     await _emailSender.SendEmailAsync(email, "Підтвердження email",
                         $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
