@@ -20,7 +20,8 @@ namespace project_garage.Service
         }
 
         public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl)
-        {
+        {   
+            Console.WriteLine(email);
             var isUserExist = await CheckForExistanceByEmail(email);
 
             if (!isUserExist)
@@ -57,16 +58,10 @@ namespace project_garage.Service
             if (user == null)
                 return false;
             return true;
-        }
-           
+        } 
         public async Task<UserModel> GetByEmailAsync(string email)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-                throw new Exception("Wrong email");
-
-            return user;
+            return await _userRepository.GetByEmailAsync(email);
         }
 
         public async Task<UserModel> GetByIdAsync(string id)

@@ -2,6 +2,7 @@
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace project_garage.Controllers
 {
@@ -26,7 +27,7 @@ namespace project_garage.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -62,7 +63,7 @@ namespace project_garage.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login([FromBody]LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -72,7 +73,7 @@ namespace project_garage.Controllers
                     message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
                 }, 400);
             }
-
+            
             try
             {
                 var user = await _authService.SignInAsync(model.Email, model.Password);
