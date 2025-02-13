@@ -21,7 +21,6 @@ namespace project_garage.Repository
 
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
-            Console.WriteLine($"Searching post with ID: {id}");
             return await _context.Posts
                 .Include(p => p.Images)
                 .FirstOrDefaultAsync(x => x.Id == id)

@@ -118,7 +118,6 @@ namespace project_garage.Controllers
         [Route("Posts/Delete")]
         public async Task<IActionResult> DeletePost([FromBody] DeletePostRequest request)
         {
-            Console.WriteLine($"Received postId: {request.PostId}");
 
             if (request.PostId == Guid.Empty)
             {
@@ -134,6 +133,5 @@ namespace project_garage.Controllers
             await _postService.DeletePostAsync(request.PostId);
             return JsonResponse(new { success = true, message = "Post deleted successfully" });
         }
-
     }
 }
