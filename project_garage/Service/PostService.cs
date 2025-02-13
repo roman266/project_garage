@@ -50,5 +50,10 @@ namespace project_garage.Service
         {
             await _postRepository.DeletePostAsync(id);
         }
+        public async Task AddImagesToPostAsync(Guid postId, List<string> imageUrls)
+        {
+            await _postRepository.AddImagesToPostAsync(postId, imageUrls);
+        }
+
     }
 }

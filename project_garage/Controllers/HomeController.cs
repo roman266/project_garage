@@ -5,6 +5,8 @@ using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace project_garage.Controllers
 {
@@ -22,17 +24,27 @@ namespace project_garage.Controllers
             _userService = userService;
         }
 
+        private IActionResult JsonResponse(object data, int statusCode = 200)
+        {
+            Response.StatusCode = statusCode;
+            return Json(data);
+        }
+
         [HttpGet]
+        [Route("Home/Index")]
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (userId == null)
             {
-                return RedirectToAction("Login", "Account");
+                return JsonResponse(new { success = false, message = "Unauthorized" }, 401);
             }
 
             var user = await _userService.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return JsonResponse(new { success = false, message = "User not found" }, 404);
+            }
 
             var friends = await _friendService.GetByUserIdAsync(userId);
             var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
@@ -56,7 +68,7 @@ namespace project_garage.Controllers
                 FriendsCount = friends.Count
             };
 
-            return View(viewModel);
+            return JsonResponse(new { success = true, data = viewModel });
         }
     }
 }

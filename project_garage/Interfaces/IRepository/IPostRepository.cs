@@ -11,5 +11,6 @@ namespace project_garage.Interfaces.IRepository
         Task DeletePostAsync(Guid id);
 
         Task<List<PostModel>> GetPostsByUserIdAsync(string userId);
+        Task AddImagesToPostAsync(Guid postId, List<string> imageUrls);
     }
 }

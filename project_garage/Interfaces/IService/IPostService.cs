@@ -12,5 +12,7 @@ namespace project_garage.Interfaces.IService
         Task<PostModel> GetPostByIdAsync(Guid id);
         Task UpdatePostAsync(PostModel post);
         Task DeletePostAsync(Guid id);
+        Task AddImagesToPostAsync(Guid postId, List<string> imageUrls);
+
     }
 }
