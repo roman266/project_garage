@@ -7,7 +7,6 @@
 #DataBase
 *.db-shm
 *.db-wal
-*.db
 
 #React
 node_modules/
