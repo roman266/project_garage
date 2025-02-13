@@ -17,19 +17,25 @@ namespace project_garage.Controllers
             _postService = postService;
         }
 
+        private IActionResult JsonResponse(object data, int statusCode = 200)
+        {
+            Response.StatusCode = statusCode;
+            return Json(data);
+        }
+
         [HttpPost]
         [Route("Posts/Create")]
-        public async Task<IActionResult> CreatePost(CreatePostViewModel model)
+        public async Task<IActionResult> CreatePost([FromBody] CreatePostViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid post data");
+                return JsonResponse(new { success = false, message = "Invalid post data" }, 400);
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
-                return Unauthorized();
+                return JsonResponse(new { success = false, message = "Unauthorized" }, 401);
             }
 
             var post = new PostModel
@@ -43,7 +49,7 @@ namespace project_garage.Controllers
 
             await _postService.CreatePostAsync(post);
 
-            return RedirectToAction("ProfileIndex", "Profile", new { userId = userId });
+            return JsonResponse(new { success = true, message = "Post created successfully", postId = post.Id });
         }
 
         [HttpGet]
@@ -53,7 +59,7 @@ namespace project_garage.Controllers
             var post = await _postService.GetPostByIdAsync(postId);
             if (post == null)
             {
-                return NotFound();
+                return JsonResponse(new { success = false, message = "Post not found" }, 404);
             }
 
             var model = new EditPostViewModel
@@ -63,52 +69,57 @@ namespace project_garage.Controllers
                 Description = post.Description
             };
 
-            return View("EditPost", model); //без явного вказання не працює
+            return JsonResponse(new { success = true, post = model });
         }
 
         [HttpPost]
         [Route("Posts/Edit")]
-        public async Task<IActionResult> EditPostSave(EditPostViewModel model)
+        public async Task<IActionResult> EditPostSave([FromBody] EditPostViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return JsonResponse(new { success = false, message = "Invalid post data" }, 400);
             }
 
             try
             {
                 var post = await _postService.GetPostByIdAsync(model.Id);
+                if (post == null)
+                {
+                    return JsonResponse(new { success = false, message = "Post not found" }, 404);
+                }
+
                 post.Title = model.Title;
                 post.Description = model.Description;
                 post.UpdatedAt = DateTime.UtcNow;
 
                 await _postService.UpdatePostAsync(post);
-                return RedirectToAction("ProfileIndex", "Profile", new { userId = post.UserId });
+                return JsonResponse(new { success = true, message = "Post updated successfully" });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Error occurred while updating the post.");
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
 
         [HttpPost]
         [Route("Posts/Delete")]
-        public async Task<IActionResult> DeletePost(Guid postId)
+        public async Task<IActionResult> DeletePost([FromBody] Guid postId)
         {
             try
             {
                 var post = await _postService.GetPostByIdAsync(postId);
                 if (post == null)
                 {
-                    return NotFound();
+                    return JsonResponse(new { success = false, message = "Post not found" }, 404);
                 }
 
                 await _postService.DeletePostAsync(postId);
-                return RedirectToAction("ProfileIndex", "Profile", new { userId = post.UserId });
+                return JsonResponse(new { success = true, message = "Post deleted successfully" });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Error occurred while deleting the post.");
+                return JsonResponse(new { success = false, message = ex.Message }, 500);
             }
         }
     }

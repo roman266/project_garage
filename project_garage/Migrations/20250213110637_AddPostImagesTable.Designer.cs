@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250206202742_NewMigrations")]
-    partial class NewMigrations
+    [Migration("20250213110637_AddPostImagesTable")]
+    partial class AddPostImagesTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -235,6 +235,26 @@ namespace project_garage.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
@@ -473,6 +493,17 @@ namespace project_garage.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.HasOne("project_garage.Models.DbModels.PostModel", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
@@ -487,6 +518,11 @@ namespace project_garage.Migrations
             modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
+                {
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
