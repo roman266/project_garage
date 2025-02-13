@@ -49,6 +49,11 @@ namespace project_garage.Controllers
 
             await _postService.CreatePostAsync(post);
 
+            if (model.ImageUrls != null && model.ImageUrls.Any())
+            {
+                await _postService.AddImagesToPostAsync(post.Id, model.ImageUrls);
+            }
+
             return JsonResponse(new { success = true, message = "Post created successfully", postId = post.Id });
         }
 
@@ -66,7 +71,8 @@ namespace project_garage.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Description = post.Description
+                Description = post.Description,
+                ImageUrls = post.Images.Select(i => i.ImageUrl).ToList()
             };
 
             return JsonResponse(new { success = true, post = model });
@@ -94,6 +100,7 @@ namespace project_garage.Controllers
                 post.UpdatedAt = DateTime.UtcNow;
 
                 await _postService.UpdatePostAsync(post);
+
                 return JsonResponse(new { success = true, message = "Post updated successfully" });
             }
             catch (Exception ex)
@@ -102,25 +109,31 @@ namespace project_garage.Controllers
             }
         }
 
+        public class DeletePostRequest
+        {
+            public Guid PostId { get; set; }
+        }
+
         [HttpPost]
         [Route("Posts/Delete")]
-        public async Task<IActionResult> DeletePost([FromBody] Guid postId)
+        public async Task<IActionResult> DeletePost([FromBody] DeletePostRequest request)
         {
-            try
-            {
-                var post = await _postService.GetPostByIdAsync(postId);
-                if (post == null)
-                {
-                    return JsonResponse(new { success = false, message = "Post not found" }, 404);
-                }
+            Console.WriteLine($"Received postId: {request.PostId}");
 
-                await _postService.DeletePostAsync(postId);
-                return JsonResponse(new { success = true, message = "Post deleted successfully" });
-            }
-            catch (Exception ex)
+            if (request.PostId == Guid.Empty)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return JsonResponse(new { success = false, message = "Invalid post ID" }, 400);
             }
+
+            var post = await _postService.GetPostByIdAsync(request.PostId);
+            if (post == null)
+            {
+                return JsonResponse(new { success = false, message = "No post with this id" }, 404);
+            }
+
+            await _postService.DeletePostAsync(request.PostId);
+            return JsonResponse(new { success = true, message = "Post deleted successfully" });
         }
+
     }
 }
