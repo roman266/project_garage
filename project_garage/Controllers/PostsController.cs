@@ -109,29 +109,29 @@ namespace project_garage.Controllers
             }
         }
 
-        public class DeletePostRequest
-        {
-            public Guid PostId { get; set; }
-        }
-
         [HttpPost]
         [Route("Posts/Delete")]
-        public async Task<IActionResult> DeletePost([FromBody] DeletePostRequest request)
+        public async Task<IActionResult> DeletePost([FromBody] Dictionary<string, string> request)
         {
-
-            if (request.PostId == Guid.Empty)
+            if (request == null || !request.ContainsKey("postId"))
             {
                 return JsonResponse(new { success = false, message = "Invalid post ID" }, 400);
             }
 
-            var post = await _postService.GetPostByIdAsync(request.PostId);
+            if (!Guid.TryParse(request["postId"], out Guid postId) || postId == Guid.Empty)
+            {
+                return JsonResponse(new { success = false, message = "Invalid post ID" }, 400);
+            }
+
+            var post = await _postService.GetPostByIdAsync(postId);
             if (post == null)
             {
                 return JsonResponse(new { success = false, message = "No post with this id" }, 404);
             }
 
-            await _postService.DeletePostAsync(request.PostId);
+            await _postService.DeletePostAsync(postId);
             return JsonResponse(new { success = true, message = "Post deleted successfully" });
         }
+
     }
 }
