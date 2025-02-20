@@ -9,6 +9,7 @@ namespace project_garage.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel>
     {
+        public DbSet<CommentModel> Comments { get; set; }
         public DbSet<PostModel> Posts { get; set; }
         public DbSet<FriendModel> Friends { get; set; }
         public DbSet<MessageModel> Messages { get; set; }
@@ -22,6 +23,20 @@ namespace project_garage.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder); // Викликаємо базову конфігурацію Identity
+
+            // Налаштування таблиці Comment
+            modelBuilder.Entity<CommentModel>()
+                .HasOne(c => c.Post) 
+                .WithMany(p => p.Comments) 
+                .HasForeignKey(c => c.PostId) 
+                .OnDelete(DeleteBehavior.Cascade); 
+
+            
+            modelBuilder.Entity<CommentModel>()
+                .HasOne(c => c.User) 
+                .WithMany(u => u.Comments) 
+                .HasForeignKey(c => c.UserId) 
+                .OnDelete(DeleteBehavior.Restrict); 
 
             // Налаштування таблиці Post
             modelBuilder.Entity<PostModel>()
