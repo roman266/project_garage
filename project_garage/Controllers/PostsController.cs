@@ -18,6 +18,7 @@ namespace project_garage.Controllers
         }
 
         [HttpPost]
+        [Route("Posts/Create")]
         public async Task<IActionResult> CreatePost(CreatePostViewModel model)
         {
             if (!ModelState.IsValid)
