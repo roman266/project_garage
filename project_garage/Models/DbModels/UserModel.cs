@@ -9,7 +9,8 @@ namespace project_garage.Models.DbModels
         public string ProfilePicture { get; set; } = "None";
         [Required]
         public string Role { get; set; } = "User"; // Default role
-
+        public string FirstName { get; set; } = "None";
+        public string LastName { get; set; } = "None";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Automatically set current time
 
         public DateTime? UpdatedAt { get; set; }

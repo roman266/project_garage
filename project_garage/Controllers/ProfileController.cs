@@ -3,6 +3,7 @@ using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Data;
+using project_garage.Service;
 
 namespace project_garage.Controllers
 {
@@ -15,13 +16,16 @@ namespace project_garage.Controllers
         private readonly IPostService _postService;
         private readonly IFriendService _friendService;
         private readonly IReactionService _reactionService;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService, IReactionService reactionService)
+        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService, 
+            IReactionService reactionService, ICloudinaryService cloudinaryService)
         {
             _userService = userRepository;
             _friendService = friendService;
             _postService = postService;
             _reactionService = reactionService;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet]
@@ -38,6 +42,9 @@ namespace project_garage.Controllers
                 {
                     UserId = user.Id,
                     Nickname = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = await _postService.GetCountOfPosts(userId),
@@ -63,6 +70,9 @@ namespace project_garage.Controllers
                 {
                     UserId = user.Id,
                     Nickname = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = await _postService.GetCountOfPosts(userId),
@@ -76,9 +86,25 @@ namespace project_garage.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("me/edit")]
+        public async Task<IActionResult> EditProfile([FromBody]EditProfileDto editProfileDto)
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                await _userService.UpdateUserInfoAsync(userId, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description);
+                return Ok(new { message = "User info successfully updated" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error ocurred", details =ex.Message });
+            }
+        }
+
         [HttpGet]
-        [Route("searchUsers")]
-        public async Task<IActionResult> SearchUsers([FromBody]SearchBoxViewModel model)
+        [Route("search-users")]
+        public async Task<IActionResult> SearchUsers([FromBody]SearchBoxDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
             {
@@ -94,6 +120,26 @@ namespace project_garage.Controllers
             catch(Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("upload-avatar")]
+        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+
+                if (userId == null)
+                    return NotFound(new { message = "User not found" });
+
+                var avatarUrl = await _cloudinaryService.UploadImageAsync(file);
+                await _userService.UpdateProfilePictureAsync(userId, avatarUrl);
+                return Ok(new { avatarUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Upload failed", error = ex.Message });
             }
         }
     }

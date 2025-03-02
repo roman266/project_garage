@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace project_garage.Models.ViewModels
 {
-    public class RegisterViewModel
+    public class RegisterDto
     {
 
         [Required]
