@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using project_garage.Models.DbModels;
 using Microsoft.Extensions.Hosting;
 using System;
+using static System.Collections.Specialized.BitVector32;
 
 namespace project_garage.Data
 {
@@ -14,6 +15,7 @@ namespace project_garage.Data
         public DbSet<FriendModel> Friends { get; set; }
         public DbSet<MessageModel> Messages { get; set; }
         public DbSet<ConversationModel> Conversations { get; set; }
+        public DbSet<ReactionModel> ReactionActions { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -81,6 +83,16 @@ namespace project_garage.Data
                 .WithMany() // Користувач може відправляти багато повідомлень
                 .HasForeignKey(m => m.SenderId) // Зовнішній ключ
                 .OnDelete(DeleteBehavior.Restrict); // Забороняємо видалення користувача, якщо є повідомлення
+
+            modelBuilder.Entity<ReactionModel>()
+                .HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ReactionModel>()
+            .HasIndex(r => new { r.EntityId, r.EntityType });
+
         }
     }
 }
