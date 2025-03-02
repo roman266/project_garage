@@ -21,7 +21,7 @@ namespace project_garage.Service
                 .GetByEntityAndUserIdAsync(userId, entityType, entityId) != null;
         }
 
-        public async Task SendReactionAsync(string entityId, string actionId, ReactionType reactionType, EntityType entityType, string userId)
+        public async Task SendReactionAsync(string entityId, ReactionType reactionType, EntityType entityType, string userId)
         {
             if (await CheckForExistanceAsync(userId, entityId, entityType) == true)
             {
