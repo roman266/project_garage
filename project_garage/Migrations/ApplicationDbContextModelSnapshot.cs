@@ -294,6 +294,37 @@ namespace project_garage.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.ReactionModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReactionType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EntityId", "EntityType");
+
+                    b.ToTable("ReactionActions");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
                 {
                     b.Property<string>("Id")
@@ -524,6 +555,17 @@ namespace project_garage.Migrations
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.ReactionModel", b =>
+                {
+                    b.HasOne("project_garage.Models.DbModels.UserModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
