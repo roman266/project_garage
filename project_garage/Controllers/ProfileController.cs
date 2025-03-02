@@ -2,9 +2,7 @@
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
-using project_garage.Models.DbModels;
 using project_garage.Data;
-using System.Diagnostics.Contracts;
 
 namespace project_garage.Controllers
 {
