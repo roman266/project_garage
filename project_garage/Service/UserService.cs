@@ -4,7 +4,6 @@ using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
-using Microsoft.AspNetCore.Mvc;
 
 namespace project_garage.Service
 {
@@ -81,13 +80,41 @@ namespace project_garage.Service
             return user;
         }
 
-        public async Task<IdentityResult> UpdateUserInfoAsync(UserModel user)
+        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description)
         {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentException($"Wrong userId");
+            
+            var user = await GetByIdAsync(userId);
+
+            if (!string.IsNullOrEmpty(firstName))
+                user.FirstName = firstName;
+
+            if (!string.IsNullOrEmpty(lastName))
+                user.LastName = lastName;
+
+            if (!string.IsNullOrEmpty(description))
+                user.Description = description;
+
             var result = await _userRepository.UpdateUserInfoAsync(user);
             return result;
         }
 
-        public async Task<IdentityResult> ConfirmUserEmail(string userId, string code)
+        public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
+        {
+            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(picture))
+                throw new ArgumentException("Wrong input data");
+
+            var user = await GetByIdAsync(userId);
+
+            user.ProfilePicture = picture;
+
+            var result = await _userRepository.UpdateUserInfoAsync(user);
+
+            return result;
+        }
+
+        public async Task ConfirmUserEmail(string userId, string code)
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
             {
@@ -104,8 +131,7 @@ namespace project_garage.Service
 
             user.EmailConfirmed = true;
             user.EmailConfirmationCode = "none";
-            var result = await UpdateUserInfoAsync(user);
-            return result;
+            await _userRepository.UpdateUserInfoAsync(user);
         }
 
         public async Task<bool> CheckPasswordAsync(UserModel user, string password)

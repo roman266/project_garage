@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace project_garage.Models.ViewModels
 {
-    public class LoginViewModel
+    public class LoginDto
     {
         [Required]
         [DataType(DataType.EmailAddress)]
