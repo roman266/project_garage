@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import {
   AppBar,
@@ -18,13 +18,15 @@ import {
 const drawerWidth = 240;
 
 const menuItems = [
-  { text: "My profile", imgSrc: "/profile.svg" },
-  { text: "Friends", imgSrc: "/friends.svg" },
-  { text: "Messages", imgSrc: "/messages.svg" },
-  { text: "My posts", imgSrc: "/posts.svg" },
+  { text: "My profile", imgSrc: "/profile.svg", path: "/my-profile" },
+  { text: "Friends", imgSrc: "/friends.svg", path: "/friends" },
+  { text: "Messages", imgSrc: "/messages.svg", path: "/messages" },
+  { text: "My posts", imgSrc: "/posts.svg", path: "/my-posts" },
 ];
 
 const Layout = () => {
+  const navigate = useNavigate();
+
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
       {/* Sidebar */}
@@ -59,8 +61,8 @@ const Layout = () => {
         <div style={{ backgroundColor: "#DDDDDD", width: "75%", height: "1px", margin: "0 auto" }} />
         <ProfileCard />
         <List>
-          {menuItems.map(({ text, imgSrc }) => (
-            <ListItem button key={text} sx={{ cursor: "pointer" }}>
+          {menuItems.map(({ text, imgSrc, path }) => (
+            <ListItem button key={text} sx={{ cursor: "pointer" }} onClick={() => navigate(path)}>
               <ListItemIcon>
                 <img src={imgSrc} alt={text} style={{ width: 24, height: 24 }} />
               </ListItemIcon>
@@ -75,7 +77,7 @@ const Layout = () => {
         </Box>
       </Drawer>
 
-      {/* Основная часть */}
+      {/* Основна частина */}
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", marginLeft: `${drawerWidth}px` }}>
         {/* Header */}
         <AppBar position="fixed" sx={{ backgroundColor: "#2b2b2b", boxShadow: "none", zIndex: 1100 }}>
