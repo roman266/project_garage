@@ -12,6 +12,6 @@ namespace project_garage.Models.DbModels
         public DateTime UpdatedAt { get; set; }
         public UserModel User { get; set; }
         public ICollection<CommentModel> Comments { get; set; }
-        
+        public List<PostImageModel> Images { get; set; } = new List<PostImageModel>();
     }
 }

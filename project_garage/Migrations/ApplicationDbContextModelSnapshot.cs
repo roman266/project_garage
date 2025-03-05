@@ -263,6 +263,26 @@ namespace project_garage.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -557,6 +577,17 @@ namespace project_garage.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.HasOne("project_garage.Models.DbModels.PostModel", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
@@ -584,10 +615,6 @@ namespace project_garage.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
-                {
-                    b.Navigation("Comments");
-                });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
                 {
@@ -596,6 +623,8 @@ namespace project_garage.Migrations
                     b.Navigation("Friends");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }
