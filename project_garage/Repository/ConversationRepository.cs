@@ -8,6 +8,7 @@ namespace project_garage.Repository
     public class ConversationRepository : IConversationRepository
     {
         ApplicationDbContext _context;
+
         public ConversationRepository(ApplicationDbContext context) 
         {
             _context = context;
@@ -21,7 +22,11 @@ namespace project_garage.Repository
 
         public async Task<List<ConversationModel>> GetByUserIdAsync(string id)
         {
-           var conversation = await _context.Conversations.Where(c => c.User1Id == id || c.User2Id == id).ToListAsync();
+           var conversation = await _context.Conversations
+                .Where(c => c.User1Id == id || c.User2Id == id)
+                .OrderBy(c => c.StartedAt)
+                .ToListAsync();
+
            return conversation;
         }
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Models.ViewModels;
+using project_garage.Data;
 
 namespace project_garage.Controllers
 {
@@ -22,11 +23,13 @@ namespace project_garage.Controllers
         {
             try
             {
+                var currentUserId = UserHelper.GetCurrentUserId(HttpContext);
+
                 await _reactionService.SendReactionAsync(
                     reactionDto.EntityId,
                     reactionDto.ReactionType,
                     reactionDto.EntityType,
-                    reactionDto.UserId
+                    currentUserId
                 );
 
                 return Ok(new { message = "Reaction added successfully" });
