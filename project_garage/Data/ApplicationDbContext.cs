@@ -4,15 +4,19 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using project_garage.Models.DbModels;
 using Microsoft.Extensions.Hosting;
 using System;
+using static System.Collections.Specialized.BitVector32;
 
 namespace project_garage.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel>
     {
+        public DbSet<CommentModel> Comments { get; set; }
         public DbSet<PostModel> Posts { get; set; }
         public DbSet<FriendModel> Friends { get; set; }
         public DbSet<MessageModel> Messages { get; set; }
         public DbSet<ConversationModel> Conversations { get; set; }
+        public DbSet<PostImageModel> PostImages { get; set; }
+        public DbSet<ReactionModel> ReactionActions { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -23,11 +27,31 @@ namespace project_garage.Data
         {
             base.OnModelCreating(modelBuilder); // Викликаємо базову конфігурацію Identity
 
+            // Налаштування таблиці Comment
+            modelBuilder.Entity<CommentModel>()
+                .HasOne(c => c.Post) 
+                .WithMany(p => p.Comments) 
+                .HasForeignKey(c => c.PostId) 
+                .OnDelete(DeleteBehavior.Cascade); 
+
+            
+            modelBuilder.Entity<CommentModel>()
+                .HasOne(c => c.User) 
+                .WithMany(u => u.Comments) 
+                .HasForeignKey(c => c.UserId) 
+                .OnDelete(DeleteBehavior.Restrict); 
+
             // Налаштування таблиці Post
             modelBuilder.Entity<PostModel>()
                 .HasOne(p => p.User)
                 .WithMany(u => u.Posts)
                 .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PostImageModel>()
+                .HasOne(pi => pi.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Налаштування таблиці Friend
@@ -66,6 +90,16 @@ namespace project_garage.Data
                 .WithMany() // Користувач може відправляти багато повідомлень
                 .HasForeignKey(m => m.SenderId) // Зовнішній ключ
                 .OnDelete(DeleteBehavior.Restrict); // Забороняємо видалення користувача, якщо є повідомлення
+
+            modelBuilder.Entity<ReactionModel>()
+                .HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ReactionModel>()
+            .HasIndex(r => new { r.EntityId, r.EntityType });
+
         }
     }
 }

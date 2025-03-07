@@ -14,19 +14,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.4" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\ActionModels\" />
   </ItemGroup>
 
 </Project>

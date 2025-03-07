@@ -1,6 +1,6 @@
 ﻿namespace project_garage.Models.ViewModels
 {
-    public class SearchBoxViewModel
+    public class SearchBoxDto
     {
         public string Query { get; set; }
     }

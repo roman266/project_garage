@@ -7,7 +7,9 @@ using System.Text.Json;
 namespace project_garage.Controllers
 {
     [Authorize]
-    public class ConversationController : Controller
+    [Route("api/conversation")]
+    [ApiController]
+    public class ConversationController : ControllerBase
     {
         private readonly IConversationService _conversationService;
         private readonly IMessageService _messageService;
@@ -20,14 +22,8 @@ namespace project_garage.Controllers
             _userService = userService;
         }
 
-        private IActionResult JsonResponse(object data, int statusCode = 200)
-        {
-            Response.StatusCode = statusCode;
-            return Json(data);
-        }
-
         [HttpPost]
-        [Route("Conversation/Start")]
+        [Route("start")]
         public async Task<IActionResult> StartConversation(string secondUserId)
         {
             try
@@ -39,86 +35,65 @@ namespace project_garage.Controllers
 
                 await _conversationService.CreateConversationAsync(logedUserId, secondUserId);
 
-                return JsonResponse(new { success = true, message = "New conversation successfully started" });
+                return Ok(new { message = "New conversation successfully started" });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        [HttpPost]
-        [Route("Conversation/Delete")]
+        [HttpDelete]
+        [Route("delete")]
         public async Task<IActionResult> DeleteConversation(string conversationId)
         {
             try
             {
                 await _conversationService.DeleteConversationAsync(conversationId);
 
-                return JsonResponse(new { success = true, message = "Conversation successfully deleted" });
+                return Ok(new { message = "Conversation successfully deleted" });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
-        [Route("Conversation/GetConversationMessages/{conversationId}")]
+        [Route("get-messages/{conversationId}")]
         public async Task<IActionResult> GetConversationMessages(string conversationId)
         {
             try
             {
                 var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
 
-                var conversation = await _conversationService.GetConversationByIdAsync(conversationId);
+                var messages = await _messageService.GetUserMessagesByConversationIdAsync(conversationId, logedUserId);
 
-                var currentUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, logedUserId);
-
-                if (conversation.User1Id == logedUserId)
-                {
-                    var secondUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, conversation.User2Id);
-                    var jsonOptions = new JsonSerializerOptions
-                    {
-                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                        WriteIndented = true
-                    };
-                    Response.StatusCode = 200;
-                    return Json(new { success = true, currentUserMessagesLst = currentUserMessages, secondUserMessagesLst = secondUserMessages }, jsonOptions);
-                }
-                else if (conversation.User2Id == logedUserId)
-                {
-                    var secondUserMessages = await _conversationService.GetMessagesForUserByConversationIdAsync(conversationId, conversation.User1Id);
-                    var jsonOptions = new JsonSerializerOptions
-                    {
-                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                        WriteIndented = true
-                    };
-                    Response.StatusCode = 200;
-                    return Json(new { success = true, currentUserMessagesLst = currentUserMessages, secondUserMessagesLst = secondUserMessages }, jsonOptions);
-                }
-
-                return JsonResponse(new { success = false, message = "Something went wrong" }, 500);
+                return Ok(messages);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
         [HttpGet]
-        [Route("Conversation/GetCurrUserConversations")]
+        [Route("my-conversations")]
         public async Task<IActionResult> GetCurrUserConversations()
         {
             try
             {
                 var logedUserId = UserHelper.GetCurrentUserId(HttpContext);
                 var conversations = await _conversationService.GetConversationByUserIdAsync(logedUserId);
-                return JsonResponse(new { success = true, message = "Conversation successfully deleted", conversationList = conversations });
+                return Ok(new { conversationList = conversations });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }

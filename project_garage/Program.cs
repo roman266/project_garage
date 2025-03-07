@@ -11,23 +11,27 @@ using DotNetEnv;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
+using project_garage.Models.CloudinarySettings;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 Env.Load();
-// ������������ �����
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // ��������� ������ �� ���� ��� ������������
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging(); // ��� ������������
+           .EnableSensitiveDataLogging();
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -35,8 +39,9 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
+builder.Services.AddScoped<IReactionService, ReactionService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -54,10 +59,10 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.Expiration = TimeSpan.Zero; // Кука не зберігається
+    options.Cookie.Expiration = TimeSpan.Zero;
     options.SlidingExpiration = false;
-    options.LoginPath = PathString.Empty; // Вимикає редірект на сторінку логіну
-    options.AccessDeniedPath = PathString.Empty; // Вимикає редірект на сторінку доступу
+    options.LoginPath = PathString.Empty;
+    options.AccessDeniedPath = PathString.Empty;
     options.Events.OnRedirectToLogin = context =>
     {
         context.Response.StatusCode = 401;
@@ -111,8 +116,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
-// �������� ������������ ����������� (����� ������������)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -121,26 +127,18 @@ app.UseRouting();
 
 app.UseCors("AllowAll");
 
-app.UseAuthentication(); // Перевірка JWT-токена
-app.UseAuthorization();  // Використання ролей та політик
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
 });
 
-// HTTPS � �������
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// �������������
-
-
-// �������� ����� ���������� �� ��� �������
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");
-
-
 
 app.MapControllers();
 

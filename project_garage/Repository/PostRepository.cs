@@ -9,7 +9,7 @@ namespace project_garage.Repository
     {
         private readonly ApplicationDbContext _context;
         public PostRepository(ApplicationDbContext context)
-        { 
+        {
             _context = context;
         }
 
@@ -21,24 +21,35 @@ namespace project_garage.Repository
 
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
-            var post = await _context.Posts.FirstOrDefaultAsync(x => x.Id == id);
-            if (post == null)
-            {
-                throw new Exception("No post with this id");
-            }
-
-            return post;
+            return await _context.Posts
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(x => x.Id == id)
+                ?? throw new Exception("No post with this id");
         }
+
 
         public async Task<List<PostModel>> GetPostByUserId(string id)
         {
-            var posts = await _context.Posts.Where(x => x.UserId == id).ToListAsync();
+            var posts = await _context.Posts
+                .Where(x => x.UserId == id)
+                .Include(p => p.Images)
+                .ToListAsync();
+
             if (posts == null || !posts.Any())
             {
                 throw new Exception("No posts found for this user");
             }
 
             return posts;
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == userId)
+                .Include(p => p.Images)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task UpdatePostAsync(PostModel post)
@@ -56,13 +67,12 @@ namespace project_garage.Repository
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
-        {
-            return await _context.Posts
-                .Where(p => p.UserId == userId)
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
-        }
 
+        public async Task AddImagesToPostAsync(Guid postId, List<string> imageUrls)
+        {
+            var images = imageUrls.Select(url => new PostImageModel { PostId = postId, ImageUrl = url }).ToList();
+            await _context.PostImages.AddRangeAsync(images);
+            await _context.SaveChangesAsync();
+        }
     }
 }

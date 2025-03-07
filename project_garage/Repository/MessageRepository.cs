@@ -2,6 +2,7 @@
 using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Repository
 {
@@ -35,6 +36,27 @@ namespace project_garage.Repository
         {
             var messages = await _context.Messages.Where(m => m.ConversationId == id).ToListAsync();
             return messages;
+        }
+
+        public async Task<List<MessageDto>> GetMessagesForUserByConversationIdAsync(string conversationId, string userId)
+        {
+            var formattedMessages = await _context.Messages
+                .Where(msg => msg.ConversationId == conversationId)
+                .OrderBy(msg => msg.SendedAt)
+                .Select(msg => new MessageDto
+            {
+                Id = msg.Id,
+                ConversationId = msg.ConversationId,
+                SenderId = msg.SenderId,
+                SenderName = msg.SenderName,
+                Text = msg.Text,
+                SendedAt = msg.SendedAt,
+                IsReaden = msg.IsReaden,
+                IsVisible = msg.IsVisible,
+                IsCurrentUser = msg.SenderId == userId 
+                }).ToListAsync();
+
+            return formattedMessages;
         }
 
         public async Task UpdateAsync(MessageModel messageModel)
