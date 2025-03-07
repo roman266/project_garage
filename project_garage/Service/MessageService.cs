@@ -44,17 +44,17 @@ namespace project_garage.Service
             await _messageRepository.UpdateAsync(message);
         }
 
-        public async Task<List<MessageModel>> GetConversationMessagesAsync(string conversationId)
+        public async Task<List<MessageModel>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit)
         {
             if (string.IsNullOrEmpty(conversationId))
                 throw new ArgumentException("Wrong conversation id");
 
-            var messages = await _messageRepository.GetByConversationId(conversationId);
+                var messages = await _messageRepository.GetPaginatedMessagesByConversationId(conversationId, lastMessageId, messageCountLimit);
 
-            if (!messages.Any())
-                throw new KeyNotFoundException("You dont have messages with this user");
+                if (!messages.Any())
+                    throw new KeyNotFoundException("You dont have messages with this user");
 
-            return messages;
+                return messages;
         }
 
         public async Task<List<MessageModel>> GetMessagesByUserIdAsync(string userId)

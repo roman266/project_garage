@@ -25,12 +25,6 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-
-                
-
-                /* if (!await _userConversationService.IsUserInConversationAsync(userId, conversation.Id)
-                    && !await _userConversationService.IsUserInConversationAsync(recipientId, conversation.Id))
-                    return StatusCode(500, new { message = "Conversation between this users already exist" }); */
                 
                 var conversation = await _conversationService.AddConversationAsync(true);
 

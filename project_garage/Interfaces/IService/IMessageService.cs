@@ -7,7 +7,7 @@ namespace project_garage.Interfaces.IService
     {
         Task<MessageModel> AddMessageAsync(MessageOnCreationDto messageOnCreationDto);
         Task ReadMessageAsync(string messageId);
-        Task<List<MessageModel>> GetConversationMessagesAsync(string conversationId);
+        Task<List<MessageModel>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit);
         Task<List<MessageModel>> GetMessagesByUserIdAsync(string userId);
         Task<List<MessageDto>> GetUserMessagesByConversationIdAsync(string conversationId, string userId);
         Task DeleteMessageAsync(string messageId);

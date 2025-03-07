@@ -8,7 +8,7 @@ namespace project_garage.Interfaces.IRepository
         Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageOnCreationDto);
         Task<MessageModel> GetByIdAsync(string id);
         Task<List<MessageModel>> GetByUserIdAsync(string id);
-        Task<List<MessageModel>> GetByConversationId(string id);
+        Task<List<MessageModel>> GetPaginatedMessagesByConversationId(string conversationId, string lastMessageId, int messageCountLimit);
         Task<List<MessageDto>> GetMessagesForUserByConversationIdAsync(string conversationId, string userId);
         Task UpdateAsync(MessageModel message);
         Task DeleteAsync(MessageModel message);

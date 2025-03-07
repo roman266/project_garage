@@ -32,7 +32,7 @@ namespace project_garage.Controllers
 
                     if (await _userConversationService.IsUserInConversationAsync(userId, conversationId))
                     {
-                        var messages = _messageService.GetConversationMessagesAsync(conversationId);
+                        var messages = _messageService.GetPaginatedConversationMessagesAsync(conversationId, lastMessageId, messageLimit);
                         return Ok(messages);
                     }
 

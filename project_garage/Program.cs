@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
 using project_garage.Models.CloudinarySettings;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -75,7 +76,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 
 var adress = Env.GetString("FRONTADRESS");
 
