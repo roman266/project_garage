@@ -142,7 +142,7 @@ app.UseWebSockets();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
-    endpoints.MapHub<ChatHub>("/chatHub");
+    endpoints.MapHub<ChatHub>("/chatHub").RequireAuthorization();
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

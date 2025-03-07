@@ -39,7 +39,17 @@ namespace project_garage.Service
 
             throw new Exception("No conversation with this id found");
         }
-                                                                                                                                                                                                                 
+        
+        public async Task<bool> CheckConversationExistance(string conversationId)
+        {
+            if (string.IsNullOrEmpty(conversationId)) 
+                throw new ArgumentException("ConversationId cannot be null");
+
+            var conversation = await _conversationRepository.GetByIdAsync(conversationId);
+
+            return conversation != null;
+        }
+        
         public async Task DeleteConversationAsync(string conversationId)
         {
             if (string.IsNullOrEmpty(conversationId))

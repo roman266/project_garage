@@ -23,9 +23,8 @@ namespace project_garage.Service
 
             if (!await _conversationRepository.IsUserInConversationAsync(messageOnCreationDto.SenderId, 
                 messageOnCreationDto.ConversationId))
-
                 throw new Exception($"User with id: {messageOnCreationDto.SenderId} " + 
-                    "isn't in conversation with id: {messageOnCreationDto.ConversationId}");
+                    $"isn't in conversation with id: {messageOnCreationDto.ConversationId}");
 
             var message = await _messageRepository.CreateNewAsync(messageOnCreationDto);
             
@@ -48,12 +47,12 @@ namespace project_garage.Service
         public async Task<List<MessageModel>> GetConversationMessagesAsync(string conversationId)
         {
             if (string.IsNullOrEmpty(conversationId))
-                throw new Exception("Wrong conversation id");
+                throw new ArgumentException("Wrong conversation id");
 
             var messages = await _messageRepository.GetByConversationId(conversationId);
 
-            if (messages == null)
-                throw new Exception("No conversation with this id");
+            if (!messages.Any())
+                throw new KeyNotFoundException("You dont have messages with this user");
 
             return messages;
         }

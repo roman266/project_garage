@@ -1,40 +1,61 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using project_garage.Interfaces.IService;
 using project_garage.Models.ViewModels;
+using System.Security.Claims;
 
 namespace project_garage.Data
 {
     public class ChatHub : Hub
     {
         private readonly IMessageService _messageService;
-        private readonly IConversationService _conversationService;
         private readonly IUserConversationService _userConversationService;
 
-        public ChatHub(IMessageService messageService, IConversationService conversationService, IUserConversationService userConversationService)
+        public ChatHub(IMessageService messageService, IUserConversationService userConversationService)
         {
             _messageService = messageService;
-            _conversationService = conversationService;
             _userConversationService = userConversationService;
         }
 
-        // Підключення користувача до чату (групи)
         public async Task JoinChat(string conversationId)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
-            await _userConversationService.AddUserToConversationAsync(userId, conversationId);
+            try
+            {
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    throw new HubException("Unauthorized");
+                }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-            await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} joined the chat.");
+                await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+                await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {userId} joined the chat.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        // Відправка повідомлення в конкретну групу
-        public async Task SendMessage(MessageOnCreationDto messageDto)
+        public async Task SendMessage(string conversationId, string text)
         {
-            await _messageService.AddMessageAsync(messageDto);
-            await Clients.Group(messageDto.ConversationId).SendAsync("ReceiveMessage", messageDto.SenderId, messageDto.Text);
+            try
+            {
+                var message = new MessageOnCreationDto
+                {
+                    ConversationId = conversationId,
+                    SenderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    Text = text,
+                };
+                
+
+                await _messageService.AddMessageAsync(message);
+                await Clients.Group(conversationId).SendAsync("ReceiveMessage", message.SenderId, text);
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
         }
 
-        // Відключення користувача від чату (групи)
         public async Task LeaveChat(string conversationId)
         {
             var userId = Context.User?.FindFirst("sub")?.Value;
@@ -44,10 +65,8 @@ namespace project_garage.Data
             await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} left the chat.");
         }
 
-        // Обробка відключення користувача
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            // Тут можна видаляти користувача з груп, якщо потрібно
             await base.OnDisconnectedAsync(exception);
         }
     }

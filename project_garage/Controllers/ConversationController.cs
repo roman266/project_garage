@@ -26,11 +26,13 @@ namespace project_garage.Controllers
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
 
-                var conversation = await _conversationService.AddConversationAsync(true);
+                
 
-                if (!await _userConversationService.IsUserInConversationAsync(userId, conversation.Id)
+                /* if (!await _userConversationService.IsUserInConversationAsync(userId, conversation.Id)
                     && !await _userConversationService.IsUserInConversationAsync(recipientId, conversation.Id))
-                    return StatusCode(500, new { message = "Conversation between this users already exist" });
+                    return StatusCode(500, new { message = "Conversation between this users already exist" }); */
+                
+                var conversation = await _conversationService.AddConversationAsync(true);
 
                 await _userConversationService.AddUserToConversationAsync(userId, conversation.Id);
                 await _userConversationService.AddUserToConversationAsync(recipientId, conversation.Id);
