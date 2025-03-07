@@ -15,7 +15,7 @@ namespace project_garage.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -271,14 +271,20 @@ namespace project_garage.Migrations
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("PostId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserModelId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
+
+                    b.HasIndex("UserModelId");
 
                     b.ToTable("PostImages");
                 });
@@ -585,6 +591,10 @@ namespace project_garage.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("project_garage.Models.DbModels.UserModel", null)
+                        .WithMany("Images")
+                        .HasForeignKey("UserModelId");
+
                     b.Navigation("Post");
                 });
 
@@ -615,6 +625,12 @@ namespace project_garage.Migrations
                     b.Navigation("Messages");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Images");
+                });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
                 {
@@ -622,9 +638,9 @@ namespace project_garage.Migrations
 
                     b.Navigation("Friends");
 
-                    b.Navigation("Posts");
-
                     b.Navigation("Images");
+
+                    b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
         }

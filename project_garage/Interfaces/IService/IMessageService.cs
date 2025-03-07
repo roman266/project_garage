@@ -5,7 +5,7 @@ namespace project_garage.Interfaces.IService
 {
     public interface IMessageService
     {
-        Task SendMessageAsync(string messageText, string conversationId, string senderId, string senderName);
+        Task<MessageModel> AddMessageAsync(MessageOnCreationDto messageOnCreationDto);
         Task ReadMessageAsync(string messageId);
         Task<List<MessageModel>> GetConversationMessagesAsync(string conversationId);
         Task<List<MessageModel>> GetMessagesByUserIdAsync(string userId);

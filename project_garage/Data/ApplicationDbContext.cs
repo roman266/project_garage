@@ -11,8 +11,9 @@ namespace project_garage.Data
         public DbSet<FriendModel> Friends { get; set; }
         public DbSet<MessageModel> Messages { get; set; }
         public DbSet<ConversationModel> Conversations { get; set; }
-        //public DbSet<PostImageModel> PostImages { get; set; }
+        public DbSet<PostImageModel> PostImages { get; set; }
         public DbSet<ReactionModel> ReactionActions { get; set; }
+        public DbSet<UserConversationModel> UserConversations { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -56,19 +57,6 @@ namespace project_garage.Data
                 .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Налаштування таблиці Conversation
-            modelBuilder.Entity<ConversationModel>()
-               .HasOne(c => c.User1)
-               .WithMany()
-               .HasForeignKey(c => c.User1Id)
-               .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ConversationModel>()
-                .HasOne(c => c.User2)
-                .WithMany()
-                .HasForeignKey(c => c.User2Id)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // Налаштування таблиці Message
             modelBuilder.Entity<MessageModel>()
                 .HasOne(m => m.Conversation)
@@ -92,20 +80,33 @@ namespace project_garage.Data
             modelBuilder.Entity<ReactionModel>()
                 .HasIndex(r => new { r.EntityId, r.EntityType });
 
-            // Налаштування таблиці PostImage
-            //modelBuilder.Entity<PostImageModel>()
-                //.HasKey(pi => pi.Id);
+            //Налаштування таблиці PostImage
+            modelBuilder.Entity<PostImageModel>()
+                .HasKey(pi => pi.Id);
 
-            //modelBuilder.Entity<PostImageModel>()
-                //.Property(pi => pi.ImageUrl)
-                //.IsRequired()
-                //.HasMaxLength(500);
+            modelBuilder.Entity<PostImageModel>()
+                .Property(pi => pi.ImageUrl)
+                .IsRequired()
+                .HasMaxLength(500);
 
-            //modelBuilder.Entity<PostImageModel>()
-               // .HasOne(pi => pi.Post)
-                //.WithMany(p => p.Images)
-                //.HasForeignKey(pi => pi.PostId)
-                //.OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<PostImageModel>()
+                .HasOne(pi => pi.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserConversationModel>()
+                .HasOne(uc => uc.User)
+                .WithMany(u => u.UserConversations)
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserConversationModel>()
+                .HasOne(uc => uc.Conversation)
+                .WithMany(c => c.UserConversations)
+                .HasForeignKey(uc => uc.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

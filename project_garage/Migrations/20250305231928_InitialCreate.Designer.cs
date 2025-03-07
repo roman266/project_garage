@@ -11,14 +11,14 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250302211243_NewUserModelProperties")]
-    partial class NewUserModelProperties
+    [Migration("20250305231928_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {

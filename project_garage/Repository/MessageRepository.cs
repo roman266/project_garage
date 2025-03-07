@@ -14,10 +14,29 @@ namespace project_garage.Repository
             _context = context;
         }
 
-        public async Task CreateNewAsync(MessageModel messageModel)
+        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto)
         {
-            _context.Messages.Add(messageModel);
+            var userName = await _context.Users
+                .Where(u => u.Id == messageDto.SenderId)
+                .Select(u => u.UserName)
+                .FirstOrDefaultAsync();
+
+            var message = new MessageModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                ConversationId = messageDto.ConversationId,
+                SenderId = messageDto.SenderId,
+                SenderName = userName,
+                Text = messageDto.Text,
+                SendedAt = DateTime.UtcNow,
+                IsReaden = false,
+                IsVisible = true,
+            };
+
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
+
+            return message;
         }
 
         public async Task<MessageModel> GetByIdAsync(string id)

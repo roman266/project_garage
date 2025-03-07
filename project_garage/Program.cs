@@ -41,6 +41,8 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
 builder.Services.AddScoped<IReactionService, ReactionService>();
+builder.Services.AddScoped<IUserConversationRepository, UserConversationRepository>();
+builder.Services.AddScoped<IUserConversationService, UserConversationService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
@@ -118,10 +120,15 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseRouting();
 
@@ -129,13 +136,14 @@ app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseWebSockets();
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chatHub");
 });
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");

@@ -22,7 +22,8 @@ namespace project_garage.Models.DbModels
         public ICollection<PostModel> Posts { get; set; }
         public ICollection<FriendModel> Friends { get; set; }
         public ICollection<CommentModel> Comments { get; set; }
-        //public ICollection<PostImageModel> Images { get; set; }
+        public ICollection<PostImageModel> Images { get; set; }
+        public ICollection<UserConversationModel> UserConversations { get; set; }
 
 
     }
