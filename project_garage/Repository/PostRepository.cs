@@ -22,7 +22,6 @@ namespace project_garage.Repository
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
             return await _context.Posts
-                .Include(p => p.Images)
                 .FirstOrDefaultAsync(x => x.Id == id)
                 ?? throw new Exception("No post with this id");
         }
@@ -32,7 +31,6 @@ namespace project_garage.Repository
         {
             var posts = await _context.Posts
                 .Where(x => x.UserId == id)
-                .Include(p => p.Images)
                 .ToListAsync();
 
             if (posts == null || !posts.Any())
@@ -47,7 +45,6 @@ namespace project_garage.Repository
         {
             return await _context.Posts
                 .Where(p => p.UserId == userId)
-                .Include(p => p.Images)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
@@ -70,9 +67,9 @@ namespace project_garage.Repository
 
         public async Task AddImagesToPostAsync(Guid postId, List<string> imageUrls)
         {
-            var images = imageUrls.Select(url => new PostImageModel { PostId = postId, ImageUrl = url }).ToList();
-            await _context.PostImages.AddRangeAsync(images);
-            await _context.SaveChangesAsync();
+        //    var images = imageUrls.Select(url => new PostImageModel { PostId = postId, ImageUrl = url }).ToList();
+        //    await _context.PostImages.AddRangeAsync(images);
+        //    await _context.SaveChangesAsync();
         }
     }
 }

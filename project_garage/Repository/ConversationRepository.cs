@@ -20,16 +20,6 @@ namespace project_garage.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<ConversationModel>> GetByUserIdAsync(string id)
-        {
-           var conversation = await _context.Conversations
-                .Where(c => c.User1Id == id || c.User2Id == id)
-                .OrderBy(c => c.StartedAt)
-                .ToListAsync();
-
-           return conversation;
-        }
-
         public async Task<ConversationModel> GetByIdAsync(string id)
         {
             var conversation = await _context.Conversations.FirstOrDefaultAsync(c => c.Id == id);

@@ -72,7 +72,7 @@ namespace project_garage.Controllers
                 Id = post.Id,
                 Title = post.Title,
                 Description = post.Description,
-                ImageUrls = post.Images.Select(i => i.ImageUrl).ToList()
+                //ImageUrls = post.Images.Select(i => i.ImageUrl).ToList()
             };
 
             return JsonResponse(new { success = true, post = model });

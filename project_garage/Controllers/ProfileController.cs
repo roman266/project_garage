@@ -41,7 +41,7 @@ namespace project_garage.Controllers
                 var viewModel = new ProfileDto
                 {
                     UserId = user.Id,
-                    Nickname = user.UserName,
+                    UserName = user.UserName,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePicture = user.ProfilePicture,
@@ -69,7 +69,7 @@ namespace project_garage.Controllers
                 var viewModel = new ProfileDto
                 {
                     UserId = user.Id,
-                    Nickname = user.UserName,
+                    UserName = user.UserName,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePicture = user.ProfilePicture,

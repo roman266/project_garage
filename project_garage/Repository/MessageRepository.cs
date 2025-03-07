@@ -14,10 +14,29 @@ namespace project_garage.Repository
             _context = context;
         }
 
-        public async Task CreateNewAsync(MessageModel messageModel)
+        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto)
         {
-            _context.Messages.Add(messageModel);
+            var userName = await _context.Users
+                .Where(u => u.Id == messageDto.SenderId)
+                .Select(u => u.UserName)
+                .FirstOrDefaultAsync();
+
+            var message = new MessageModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                ConversationId = messageDto.ConversationId,
+                SenderId = messageDto.SenderId,
+                SenderName = userName,
+                Text = messageDto.Text,
+                SendedAt = DateTime.UtcNow,
+                IsReaden = false,
+                IsVisible = true,
+            };
+
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
+
+            return message;
         }
 
         public async Task<MessageModel> GetByIdAsync(string id)
@@ -32,10 +51,23 @@ namespace project_garage.Repository
             return messages;
         }
 
-        public async Task<List<MessageModel>> GetByConversationId(string id)
+        public async Task<List<MessageModel>> GetPaginatedMessagesByConversationId(string conversationId, string? lastMessageId, int messageCountLimit)
         {
-            var messages = await _context.Messages.Where(m => m.ConversationId == id).ToListAsync();
-            return messages;
+            var query = _context.Messages
+                .Where(m => m.ConversationId == conversationId)
+                .OrderByDescending(m => m.SendedAt);
+
+            if (!string.IsNullOrEmpty(lastMessageId))
+            {
+                var lastMessage = await _context.Messages.FindAsync(lastMessageId);
+                if (lastMessage != null)
+                {
+                    query = query.Where(m => m.SendedAt < lastMessage.SendedAt)
+                         .OrderByDescending(m => m.SendedAt);
+                }
+            }
+
+            return await query.Take(messageCountLimit).ToListAsync();
         }
 
         public async Task<List<MessageDto>> GetMessagesForUserByConversationIdAsync(string conversationId, string userId)
