@@ -17,7 +17,7 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/login", {
+        const response = await fetch("http://localhost:5021/api/account/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -32,7 +32,7 @@ const LoginForm = () => {
           console.log("Login successful");
 
           // Перенаправление на защищенную страницу после логина
-          window.location.href = "/home"; // или используйте react-router-dom для навигации
+          window.location.href = "/"; // или используйте react-router-dom для навигации
         } else {
           setErrors({ email: "Invalid email or password" });
         }

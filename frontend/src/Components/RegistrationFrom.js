@@ -24,7 +24,7 @@ const RegisterForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/register", {
+        const response = await fetch("http://localhost:5021/api/account/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
