@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using project_garage.Data;
-using project_garage.Interfaces.IRepository;
+﻿using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
@@ -10,18 +8,18 @@ namespace project_garage.Service
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepository;
-        private readonly IUserConversationRepository _conversationRepository;
+        private readonly IConversationService _conversationService;
 
-        public MessageService(IMessageRepository messageRepository, IUserConversationRepository conversationRepository)
+        public MessageService(IMessageRepository messageRepository, IConversationService conversationService)
         {
             _messageRepository = messageRepository;
-            _conversationRepository = conversationRepository;
+            _conversationService = conversationService;
         }
 
         public async Task<MessageModel> AddMessageAsync(MessageOnCreationDto messageOnCreationDto)
         {
 
-            if (!await _conversationRepository.IsUserInConversationAsync(messageOnCreationDto.SenderId, 
+            if (!await _conversationService.IsUserInConversationAsync(messageOnCreationDto.SenderId, 
                 messageOnCreationDto.ConversationId))
                 throw new Exception($"User with id: {messageOnCreationDto.SenderId} " + 
                     $"isn't in conversation with id: {messageOnCreationDto.ConversationId}");
@@ -34,27 +32,30 @@ namespace project_garage.Service
         public async Task ReadMessageAsync(string messageId)
         {
             if (string.IsNullOrEmpty(messageId))
-                throw new Exception("Wrong message id");
+                throw new ArgumentException("Wrong message id");
             var message = await _messageRepository.GetByIdAsync(messageId);
 
             if (message == null)
-                throw new Exception("No message with this id found");
+                throw new ArgumentException("No message with this id found");
 
             message.IsReaden = true;
             await _messageRepository.UpdateAsync(message);
         }
 
-        public async Task<List<MessageModel>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit)
+        public async Task<List<MessageModel>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit, string userId)
         {
             if (string.IsNullOrEmpty(conversationId))
                 throw new ArgumentException("Wrong conversation id");
 
-                var messages = await _messageRepository.GetPaginatedMessagesByConversationId(conversationId, lastMessageId, messageCountLimit);
+            if (!await _conversationService.IsUserInConversationAsync(userId, conversationId))
+                throw new InvalidOperationException($"User is not part of conversation {conversationId}");
 
-                if (!messages.Any())
-                    throw new KeyNotFoundException("You dont have messages with this user");
+            var messages = await _messageRepository.GetPaginatedMessagesByConversationId(conversationId, lastMessageId, messageCountLimit);
 
-                return messages;
+            if (!messages.Any())
+                throw new KeyNotFoundException("You dont have messages with this user");
+
+            return messages;
         }
 
         public async Task<List<MessageModel>> GetMessagesByUserIdAsync(string userId)

@@ -8,12 +8,10 @@ namespace project_garage.Data
     public class ChatHub : Hub
     {
         private readonly IMessageService _messageService;
-        private readonly IUserConversationService _userConversationService;
 
-        public ChatHub(IMessageService messageService, IUserConversationService userConversationService)
+        public ChatHub(IMessageService messageService)
         {
             _messageService = messageService;
-            _userConversationService = userConversationService;
         }
 
         public async Task JoinChat(string conversationId)
@@ -32,6 +30,7 @@ namespace project_garage.Data
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                throw;
             }
         }
 
@@ -59,7 +58,6 @@ namespace project_garage.Data
         public async Task LeaveChat(string conversationId)
         {
             var userId = Context.User?.FindFirst("sub")?.Value;
-            await _userConversationService.RemoveUserFromConversationAsync(userId, conversationId);
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
             await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} left the chat.");

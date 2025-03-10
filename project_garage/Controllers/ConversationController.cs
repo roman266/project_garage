@@ -11,12 +11,10 @@ namespace project_garage.Controllers
     public class ConversationController : ControllerBase
     {
         private readonly IConversationService _conversationService;
-        private readonly IUserConversationService _userConversationService;
 
-        public ConversationController(IConversationService conversationService, IUserConversationService userConversationService) 
+        public ConversationController(IConversationService conversationService)
         {
             _conversationService = conversationService;
-            _userConversationService = userConversationService;
         }
 
         [HttpPost("start/{recipientId}")]
@@ -25,13 +23,29 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                
-                var conversation = await _conversationService.AddConversationAsync(true);
-
-                await _userConversationService.AddUserToConversationAsync(userId, conversation.Id);
-                await _userConversationService.AddUserToConversationAsync(recipientId, conversation.Id);
+                await _conversationService.CreatePrivateConversationBetweenUsersAsync(userId, recipientId);
 
                 return Ok(new { message = "Conversation started successfully" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("my-conversations")]
+        public async Task<IActionResult> GetCurrentUserConversations(string lastConversationId, int limit = 15)
+        {
+            try
+            {
+                string userId = UserHelper.GetCurrentUserId(HttpContext);
+                var conversations = await _conversationService.GetPaginatedConversationsByUserIdAsync(userId, lastConversationId, limit);
+
+                return Ok(conversations);
             }
             catch (ArgumentException ex)
             {
