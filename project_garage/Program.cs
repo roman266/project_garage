@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
 using project_garage.Models.CloudinarySettings;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -41,6 +42,8 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
 builder.Services.AddScoped<IReactionService, ReactionService>();
+builder.Services.AddScoped<IUserConversationRepository, UserConversationRepository>();
+builder.Services.AddScoped<IUserConversationService, UserConversationService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
@@ -73,7 +76,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 
 var adress = Env.GetString("FRONTADRESS");
 
@@ -118,10 +124,15 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseRouting();
 
@@ -129,13 +140,14 @@ app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseWebSockets();
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chatHub").RequireAuthorization();
 });
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection String: {connectionString}");

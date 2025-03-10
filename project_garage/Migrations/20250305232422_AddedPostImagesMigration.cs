@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace project_garage.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPostImagesTable : Migration
+    public partial class AddedPostImagesMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,12 +16,18 @@ namespace project_garage.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ImageUrl = table.Column<string>(type: "TEXT", nullable: false),
-                    PostId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ImageUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    PostId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserModelId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PostImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostImages_AspNetUsers_UserModelId",
+                        column: x => x.UserModelId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PostImages_Posts_PostId",
                         column: x => x.PostId,
@@ -34,6 +40,11 @@ namespace project_garage.Migrations
                 name: "IX_PostImages_PostId",
                 table: "PostImages",
                 column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostImages_UserModelId",
+                table: "PostImages",
+                column: "UserModelId");
         }
 
         /// <inheritdoc />
