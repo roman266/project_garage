@@ -130,9 +130,6 @@ namespace project_garage.Controllers
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
 
-                if (userId == null)
-                    return NotFound(new { message = "User not found" });
-
                 var avatarUrl = await _cloudinaryService.UploadImageAsync(file);
                 await _userService.UpdateProfilePictureAsync(userId, avatarUrl);
                 return Ok(new { avatarUrl });

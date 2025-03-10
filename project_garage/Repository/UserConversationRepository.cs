@@ -37,29 +37,39 @@ namespace project_garage.Repository
                 await _context.SaveChangesAsync();
             }
         }
-        
-        public async Task<List<ConversationModel>> GetUserConversationsAsync(string userId)
+
+        public async Task<bool> ExistsPrivateConversationAsync(string userId, string anotherUserId)
         {
-            var conversationIds = await _context.UserConversations
+            return await _context.UserConversations
                 .Where(uc => uc.UserId == userId)
-                .Select(uc => uc.ConversationId)
-                .ToListAsync();
+                .Select(uc => uc.Conversation)
+                .Where(c => c.IsPrivate) 
+                .AnyAsync(c => c.UserConversations.Any(uc => uc.UserId == anotherUserId));
+        }
 
-            var conversations = new List<ConversationModel>();
+        public async Task<List<ConversationModel>> GetPaginatedUserConversationsAsync(
+            string userId, string? lastConversationId, int limit)
+        {
+            var query = _context.UserConversations
+                .Where(uc => uc.UserId == userId)
+                .Join(_context.Conversations, uc => uc.ConversationId, c => c.Id, (uc, c) => c)
+                .OrderByDescending(c => c.StartedAt);
 
-            foreach (var conversationId in conversationIds)
+            if (!string.IsNullOrEmpty(lastConversationId))
             {
-               var conversation = await _context.Conversations.FirstOrDefaultAsync(c => c.Id == conversationId);
+                var lastConversation = await _context.Conversations
+                    .Where(c => c.Id == lastConversationId)
+                    .Select(c => c.StartedAt)
+                    .FirstOrDefaultAsync();
 
-                if (conversation != null)
+                if (lastConversation != default)
                 {
-                    conversations.Add(conversation);
+                    query = query.Where(c => c.StartedAt < lastConversation).OrderByDescending(c => c.StartedAt);
                 }
             }
 
-            conversations.GroupBy(c => c.StartedAt);
-
-            return conversations;
+            return await query.Take(limit).ToListAsync();
         }
+
     }
 }

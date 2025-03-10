@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace project_garage.Controllers
 {
     [Route("api/account")]
+    [ApiController]
     public class AccountController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -22,15 +23,6 @@ namespace project_garage.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]RegisterDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                // Повертаємо порожній JSON або об'єкт, який містить помилки
-                return BadRequest(new 
-                { 
-                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() 
-                });
-            }
-
             try
             {
                 var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -50,7 +42,7 @@ namespace project_garage.Controllers
             try
             {
                 await _userService.ConfirmUserEmail(userId, code);
-                return Ok(new { message = "Email successfully confirmed" }); // Сторінка успішного підтвердження
+                return Ok(new { message = "Email successfully confirmed" });
             }
             catch (Exception ex) {
                 return StatusCode(500, new { success = false, message = ex.Message });
@@ -61,14 +53,6 @@ namespace project_garage.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody]LoginDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new
-                {
-                    message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
-            }
-            
             try
             {
                 var user = await _authService.SignInAsync(model.Email, model.Password);
@@ -77,16 +61,14 @@ namespace project_garage.Controllers
                     return StatusCode(401, new { message = "Invalid email or password." });
                 }
 
-                // Генерація JWT-токена
                 var token = _jwtService.GenerateToken(user.Id, user.Email);
 
-                // Налаштування cookie з токеном
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true, // Захист від XSS
-                    Secure = true,   // Працює тільки через HTTPS
-                    SameSite = SameSiteMode.None, // Захист від CSRF
-                    Expires = DateTime.UtcNow.AddHours(1) // Термін дії токена
+                    HttpOnly = true,
+                    Secure = true,   
+                    SameSite = SameSiteMode.None, 
+                    Expires = DateTime.UtcNow.AddHours(1)
                 };
 
                 Response.Cookies.Append("AuthToken", token, cookieOptions);

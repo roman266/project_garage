@@ -13,5 +13,4 @@ namespace project_garage.Models.DbModels
 
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }
-
 }
