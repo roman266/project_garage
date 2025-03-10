@@ -24,7 +24,18 @@ const LoginForm = () => {
           },
           body: JSON.stringify(values),
         });
-        console.log("Login successful:", response.data);
+
+        if (response.ok) {
+          const data = await response.json();
+          // Сохранение JWT в localStorage
+          localStorage.setItem("token", data.token);
+          console.log("Login successful");
+
+          // Перенаправление на защищенную страницу после логина
+          window.location.href = "/home"; // или используйте react-router-dom для навигации
+        } else {
+          setErrors({ email: "Invalid email or password" });
+        }
       } catch (error) {
         console.error("Login error:", error);
         setErrors({ email: "Invalid email or password" });

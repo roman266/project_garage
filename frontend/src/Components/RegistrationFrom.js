@@ -30,7 +30,7 @@ const RegisterForm = () => {
           body: JSON.stringify(values),
         });
     
-        const data = await response.json(); // ✅ Correctly parse JSON response
+        const data = await response.json(); 
     
         if (!response.ok) {
           throw new Error(data.message || "Something went wrong");
