@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using project_garage.Models.Enums;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace project_garage.Models.DbModels
 {
@@ -20,8 +21,11 @@ namespace project_garage.Models.DbModels
         public string EmailConfirmationCode { get; set; }
         public ICollection<PostModel> Posts { get; set; }
         public ICollection<FriendModel> Friends { get; set; }
-       public ICollection<CommentModel> Comments { get; set; }
-        
+        public ICollection<CommentModel> Comments { get; set; }
+        public ICollection<PostImageModel> Images { get; set; }
+        public ICollection<UserConversationModel> UserConversations { get; set; }
+
+
     }
 }
 

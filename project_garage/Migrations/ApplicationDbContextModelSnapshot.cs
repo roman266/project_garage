@@ -15,7 +15,7 @@ namespace project_garage.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -179,22 +179,13 @@ namespace project_garage.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("User1Id")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("User2Id")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("User1Id");
-
-                    b.HasIndex("User2Id");
 
                     b.ToTable("Conversations");
                 });
@@ -271,14 +262,20 @@ namespace project_garage.Migrations
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("PostId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserModelId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
+
+                    b.HasIndex("UserModelId");
 
                     b.ToTable("PostImages");
                 });
@@ -343,6 +340,31 @@ namespace project_garage.Migrations
                     b.HasIndex("EntityId", "EntityType");
 
                     b.ToTable("ReactionActions");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.UserConversationModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConversationId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserConversations");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
@@ -520,25 +542,6 @@ namespace project_garage.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
-                {
-                    b.HasOne("project_garage.Models.DbModels.UserModel", "User1")
-                        .WithMany()
-                        .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("project_garage.Models.DbModels.UserModel", "User2")
-                        .WithMany()
-                        .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
-                });
-
             modelBuilder.Entity("project_garage.Models.DbModels.FriendModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "Friend")
@@ -585,6 +588,10 @@ namespace project_garage.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("project_garage.Models.DbModels.UserModel", null)
+                        .WithMany("Images")
+                        .HasForeignKey("UserModelId");
+
                     b.Navigation("Post");
                 });
 
@@ -610,11 +617,38 @@ namespace project_garage.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.UserConversationModel", b =>
+                {
+                    b.HasOne("project_garage.Models.DbModels.ConversationModel", "Conversation")
+                        .WithMany("UserConversations")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("project_garage.Models.DbModels.UserModel", "User")
+                        .WithMany("UserConversations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.ConversationModel", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("UserConversations");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Images");
+                });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
                 {
@@ -622,9 +656,11 @@ namespace project_garage.Migrations
 
                     b.Navigation("Friends");
 
+                    b.Navigation("Images");
+
                     b.Navigation("Posts");
 
-                    b.Navigation("Images");
+                    b.Navigation("UserConversations");
                 });
 #pragma warning restore 612, 618
         }

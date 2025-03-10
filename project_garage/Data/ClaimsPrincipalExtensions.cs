@@ -10,5 +10,4 @@ namespace project_garage.Data
             return httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
     }
-
 }

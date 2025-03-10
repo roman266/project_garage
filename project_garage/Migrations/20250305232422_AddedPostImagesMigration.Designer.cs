@@ -11,14 +11,14 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250302211243_NewUserModelProperties")]
-    partial class NewUserModelProperties
+    [Migration("20250305232422_AddedPostImagesMigration")]
+    partial class AddedPostImagesMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -264,6 +264,32 @@ namespace project_garage.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserModelId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserModelId");
+
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
@@ -560,6 +586,21 @@ namespace project_garage.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
+                {
+                    b.HasOne("project_garage.Models.DbModels.PostModel", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("project_garage.Models.DbModels.UserModel", null)
+                        .WithMany("Images")
+                        .HasForeignKey("UserModelId");
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
@@ -590,6 +631,8 @@ namespace project_garage.Migrations
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserModel", b =>
@@ -597,6 +640,8 @@ namespace project_garage.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Friends");
+
+                    b.Navigation("Images");
 
                     b.Navigation("Posts");
                 });
