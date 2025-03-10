@@ -43,7 +43,6 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
 builder.Services.AddScoped<IReactionService, ReactionService>();
 builder.Services.AddScoped<IUserConversationRepository, UserConversationRepository>();
-builder.Services.AddScoped<IUserConversationService, UserConversationService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>

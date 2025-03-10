@@ -5,9 +5,14 @@ namespace project_garage.Data
 {
     public static class UserHelper
     {
-        public static string? GetCurrentUserId(HttpContext httpContext)
+        public static string GetCurrentUserId(HttpContext httpContext)
         {
-            return httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var user = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(user))
+                throw new UnauthorizedAccessException("Unauthorized");
+            
+            return user;
         }
     }
 }

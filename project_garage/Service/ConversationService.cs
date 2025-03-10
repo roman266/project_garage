@@ -7,10 +7,12 @@ namespace project_garage.Service
     public class ConversationService : IConversationService
     {
         private readonly IConversationRepository _conversationRepository;
+        private readonly IUserConversationRepository _userConversationRepository;
 
-        public ConversationService(IConversationRepository conversationRepository)
+        public ConversationService(IConversationRepository conversationRepository, IUserConversationRepository userConversationRepository)
         {
             _conversationRepository = conversationRepository;
+            _userConversationRepository = userConversationRepository;
         }
 
         public async Task<ConversationModel> AddConversationAsync(bool isPrivate)
@@ -40,6 +42,42 @@ namespace project_garage.Service
             throw new Exception("No conversation with this id found");
         }
         
+        public async Task CreatePrivateConversationBetweenUsersAsync(string userId, string anotherUserId)
+        {
+            if (await _userConversationRepository.ExistsPrivateConversationAsync(userId, anotherUserId))
+                throw new InvalidOperationException("Those users already have private conversation");
+
+            var conversation = await AddConversationAsync(true);
+
+            var firstUserModel = new UserConversationModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                ConversationId = conversation.Id,
+            };
+
+            var secondUserModel = new UserConversationModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = anotherUserId,
+                ConversationId = conversation.Id,
+            };
+
+            await _userConversationRepository.AddUserToConversationAsync(firstUserModel);
+            await _userConversationRepository.AddUserToConversationAsync(secondUserModel);
+        }
+
+        public async Task<bool> IsUserInConversationAsync(string userId, string conversationId)
+        {
+            return await _userConversationRepository.IsUserInConversationAsync(userId, conversationId);
+        }
+
+        public async Task<List<ConversationModel>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit)
+        {
+            var conversations = await _userConversationRepository.GetPaginatedUserConversationsAsync(userId, lastConversationId, limit);
+            return conversations;
+        }
+
         public async Task<bool> CheckConversationExistance(string conversationId)
         {
             if (string.IsNullOrEmpty(conversationId)) 

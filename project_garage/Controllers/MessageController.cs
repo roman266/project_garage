@@ -12,13 +12,11 @@ namespace project_garage.Controllers
     {
         private readonly IMessageService _messageService;
         private readonly IConversationService _conversationService;
-        private readonly IUserConversationService _userConversationService;
 
-        public MessageController(IMessageService messageService, IConversationService conversationService, IUserConversationService userConversationService)
+        public MessageController(IMessageService messageService, IConversationService conversationService)
         {
             _messageService = messageService;
             _conversationService = conversationService;
-            _userConversationService = userConversationService;
         }
 
         [HttpGet("{conversationId}")]
@@ -26,19 +24,9 @@ namespace project_garage.Controllers
         {
             try
             {
-                if (await _conversationService.CheckConversationExistance(conversationId))
-                {
-                    var userId = UserHelper.GetCurrentUserId(HttpContext);
-
-                    if (await _userConversationService.IsUserInConversationAsync(userId, conversationId))
-                    {
-                        var messages = _messageService.GetPaginatedConversationMessagesAsync(conversationId, lastMessageId, messageLimit);
-                        return Ok(messages);
-                    }
-
-                    return StatusCode(500, "You don't have access to this conversation");
-                }
-                return StatusCode(500, "Conversation does not exist");
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                var messages = await _messageService.GetPaginatedConversationMessagesAsync(conversationId, lastMessageId, messageLimit, userId);
+                return Ok(messages);
             }
             catch(ArgumentException ex) 
             {
