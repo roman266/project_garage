@@ -18,7 +18,7 @@ namespace project_garage.Controllers
         private readonly IReactionService _reactionService;
         private readonly ICloudinaryService _cloudinaryService;
 
-        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService, 
+        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService,
             IReactionService reactionService, ICloudinaryService cloudinaryService)
         {
             _userService = userRepository;
@@ -82,13 +82,13 @@ namespace project_garage.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An unexpected error ocurred", delatils = ex.Message });
+                return StatusCode(500, new { message = "An unexpected error ocurred", details = ex.Message });
             }
         }
 
         [Authorize]
         [HttpPost("me/edit")]
-        public async Task<IActionResult> EditProfile([FromBody]EditProfileDto editProfileDto)
+        public async Task<IActionResult> EditProfile([FromBody] EditProfileDto editProfileDto)
         {
             try
             {
@@ -98,13 +98,13 @@ namespace project_garage.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An unexpected error ocurred", details =ex.Message });
+                return StatusCode(500, new { message = "An unexpected error ocurred", details = ex.Message });
             }
         }
 
         [HttpGet]
         [Route("search-users")]
-        public async Task<IActionResult> SearchUsers([FromBody]SearchBoxDto model)
+        public async Task<IActionResult> SearchUsers([FromBody] SearchBoxDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
             {
@@ -115,9 +115,9 @@ namespace project_garage.Controllers
             {
                 var users = await _userService.SearchUsersAsync(model.Query);
                 return Ok(new { message = users });
-                
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }

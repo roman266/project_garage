@@ -52,7 +52,7 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric= false;
+    options.Password.RequireNonAlphanumeric = false;
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -72,7 +72,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -84,10 +83,11 @@ var adress = Env.GetString("FRONTADRESS");
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
+    options.AddPolicy("AllowSpecificOrigin",
+        policy => policy.WithOrigins("http://localhost:3000")
                         .AllowAnyMethod()
-                        .AllowAnyHeader());
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 });
 
 builder.Services.AddAuthentication(options =>
@@ -135,7 +135,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();

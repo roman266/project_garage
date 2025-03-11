@@ -12,7 +12,17 @@ export default function MyProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("/api/profile/me");
+        const token = localStorage.getItem("token"); // Получение токена из localStorage
+		console.log("Token:", token); 
+        if (!token) {
+          throw new Error("No token found");
+        }
+
+        const response = await axios.get("http://localhost:5021/api/profile/me", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Добавление токена в заголовок запроса
+          },
+        });
         setProfile(response.data.profile);
       } catch (error) {
         console.error("Error fetching profile data", error);
