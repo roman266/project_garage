@@ -13,7 +13,7 @@ export default function MyProfilePage() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token"); // Получение токена из localStorage
-		console.log("Token:", token); 
+        console.log("Token:", token); // Логирование токена для отладки
         if (!token) {
           throw new Error("No token found");
         }
@@ -23,6 +23,8 @@ export default function MyProfilePage() {
             Authorization: `Bearer ${token}`, // Добавление токена в заголовок запроса
           },
         });
+
+        console.log("Profile data:", response.data.profile); // Логирование данных профиля
         setProfile(response.data.profile);
       } catch (error) {
         console.error("Error fetching profile data", error);
