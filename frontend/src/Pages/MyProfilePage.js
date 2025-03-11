@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Avatar, Container } from "@mui/material";
+import { Box, Typography, Button, Avatar, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import axios from "axios";
 
 export default function MyProfilePage() {
@@ -7,6 +7,13 @@ export default function MyProfilePage() {
     userName: "",
     email: "",
     profilePicture: "",
+  });
+
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    userName: "",
+    email: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -33,6 +40,49 @@ export default function MyProfilePage() {
 
     fetchProfile();
   }, []);
+
+  const handleClickOpen = () => {
+    setFormData({
+      userName: profile.userName,
+      email: profile.email,
+      password: "",
+    });
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Получение токена из localStorage
+      if (!token) {
+        throw new Error("No token found");
+      }
+
+      await axios.post("http://localhost:5021/api/profile/me/edit", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Добавление токена в заголовок запроса
+        },
+      });
+
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        userName: formData.userName,
+        email: formData.email,
+      }));
+
+      handleClose();
+    } catch (error) {
+      console.error("Error saving profile data", error);
+    }
+  };
 
   return (
     <Box
@@ -83,11 +133,54 @@ export default function MyProfilePage() {
           <Button
             variant="contained"
             sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, width: "100px", height: "26px" }}
+            onClick={handleClickOpen}
           >
             Edit
           </Button>
         </Box>
       </Container>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Edit Profile</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="userName"
+            label="Username"
+            type="text"
+            fullWidth
+            value={formData.userName}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="email"
+            label="Email Address"
+            type="email"
+            fullWidth
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="password"
+            label="Password"
+            type="password"
+            fullWidth
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

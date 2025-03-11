@@ -1,7 +1,6 @@
 ﻿using project_garage.Models.DbModels;
 using Microsoft.AspNetCore.Identity;
 
-
 namespace project_garage.Interfaces.IService
 {
     public interface IUserService
@@ -9,7 +8,7 @@ namespace project_garage.Interfaces.IService
         Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl);
         Task<UserModel> GetByEmailAsync(string email);
         Task<UserModel> GetByIdAsync(string id);
-        Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description);
+        Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description, string email, string password);
         Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture);
         Task ConfirmUserEmail(string userId, string code);
         Task<bool> CheckPasswordAsync(UserModel user, string password);

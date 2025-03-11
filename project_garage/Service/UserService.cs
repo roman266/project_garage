@@ -80,11 +80,11 @@ namespace project_garage.Service
             return user;
         }
 
-        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description)
+        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description, string email, string password)
         {
             if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException($"Wrong userId");
-            
+
             var user = await GetByIdAsync(userId);
 
             if (!string.IsNullOrEmpty(firstName))
@@ -95,6 +95,15 @@ namespace project_garage.Service
 
             if (!string.IsNullOrEmpty(description))
                 user.Description = description;
+
+            if (!string.IsNullOrEmpty(email))
+                user.Email = email;
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                var passwordHasher = new PasswordHasher<UserModel>();
+                user.PasswordHash = passwordHasher.HashPassword(user, password);
+            }
 
             var result = await _userRepository.UpdateUserInfoAsync(user);
             return result;
