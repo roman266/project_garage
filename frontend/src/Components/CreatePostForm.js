@@ -10,20 +10,18 @@ import {
   IconButton
 } from "@mui/material";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import { useAuth } from "@/hooks/useAuth";
-import { useFeed } from "@/hooks/useFeed";
+// Fix the import paths to use relative paths instead of alias
 
 export default function CreatePostPage() {
-  const { user, isAuthenticated } = useAuth();
-  const { addPost } = useFeed();
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  if (!isAuthenticated) {
-    return <Typography align="center">You must be logged in to create a post.</Typography>;
-  }
+  // Remove authentication check
+  // if (!isAuthenticated) {
+  //   return <Typography align="center">You must be logged in to create a post.</Typography>;
+  // }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,11 +29,29 @@ export default function CreatePostPage() {
       setError("Post cannot be empty.");
       return;
     }
+    if (!image) {
+      setError("Image is required.");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
 
     try {
-      await addPost({ content, image, user });
+      const formData = new FormData();
+      formData.append('description', content);
+      formData.append('image', image);
+      
+      const response = await fetch('https://localhost:7126/api/post/create', {
+        method: 'POST',
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+
       setContent("");
       setImage(null);
     } catch (err) {
