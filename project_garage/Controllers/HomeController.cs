@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 
 namespace project_garage.Controllers
 {
+    [Route("api/home")]
     [Authorize]
-    public class HomeController : Controller
+    [ApiController]
+    public class HomeController : ControllerBase
     {
         private readonly IPostService _postService;
         private readonly IFriendService _friendService;
@@ -24,51 +26,54 @@ namespace project_garage.Controllers
             _userService = userService;
         }
 
-        private IActionResult JsonResponse(object data, int statusCode = 200)
+        [HttpGet("feed")]
+        public async Task<IActionResult> GetUserFeed()
         {
-            Response.StatusCode = statusCode;
-            return Json(data);
-        }
-
-        [HttpGet]
-        [Route("Home/Index")]
-        public async Task<IActionResult> Index()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            try
             {
-                return JsonResponse(new { success = false, message = "Unauthorized" }, 401);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return Unauthorized(new { success = false, message = "Unauthorized" });
+                }
+
+                var user = await _userService.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = "User not found" });
+                }
+
+                var friends = await _friendService.GetByUserIdAsync(userId);
+                var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
+
+                var posts = new List<PostModel>();
+                foreach (var friendId in friendIds)
+                {
+                    var friendPosts = await _postService.GetPostsByUserIdAsync(friendId);
+                    posts.AddRange(friendPosts);
+                }
+
+                var userPosts = await _postService.GetPostsByUserIdAsync(userId);
+                posts.AddRange(userPosts);
+                posts = posts.OrderByDescending(p => p.CreatedAt).ToList();
+
+                var response = new
+                {
+                    success = true,
+                    data = new
+                    {
+                        user,
+                        posts,
+                        friendsCount = friends.Count
+                    }
+                };
+
+                return Ok(response);
             }
-
-            var user = await _userService.GetByIdAsync(userId);
-            if (user == null)
+            catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = "User not found" }, 404);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
-
-            var friends = await _friendService.GetByUserIdAsync(userId);
-            var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
-
-            var posts = new List<PostModel>();
-            foreach (var friendId in friendIds)
-            {
-                var friendPosts = await _postService.GetPostsByUserIdAsync(friendId);
-                posts.AddRange(friendPosts);
-            }
-
-            var userPosts = await _postService.GetPostsByUserIdAsync(userId);
-            posts.AddRange(userPosts);
-
-            posts = posts.OrderByDescending(p => p.CreatedAt).ToList();
-
-            var viewModel = new HomeViewModel
-            {
-                User = user,
-                Posts = posts,
-                FriendsCount = friends.Count
-            };
-
-            return JsonResponse(new { success = true, data = viewModel });
         }
     }
 }
