@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import {
   AppBar,
@@ -17,17 +17,17 @@ import {
 
 const drawerWidth = 240;
 
+// Используйте относительные пути для ссылок
 const menuItems = [
-  { text: "My profile", imgSrc: "/profile.svg" },
-  { text: "Friends", imgSrc: "/friends.svg" },
-  { text: "Messages", imgSrc: "/messages.svg" },
-  { text: "My posts", imgSrc: "/posts.svg" },
+  { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
+  { text: "Friends", imgSrc: "/friends.svg", pageHref: "/friends" },
+  { text: "Messages", imgSrc: "/messages.svg", pageHref: "/messages" },
+  { text: "My posts", imgSrc: "/posts.svg", pageHref: "/my-posts" },
 ];
 
 const Layout = () => {
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
-      {/* Sidebar */}
       <Drawer
         variant="permanent"
         sx={{
@@ -56,26 +56,38 @@ const Layout = () => {
             <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
           </Typography>
         </Box>
-        <div style={{ backgroundColor: "#DDDDDD", width: "75%", height: "1px", margin: "0 auto" }} />
         <ProfileCard />
         <List>
-          {menuItems.map(({ text, imgSrc }) => (
-            <ListItem button key={text} sx={{ cursor: "pointer" }}>
-              <ListItemIcon>
-                <img src={imgSrc} alt={text} style={{ width: 24, height: 24 }} />
-              </ListItemIcon>
-              <ListItemText primary={text} sx={{ margin: "0" }} />
+          {menuItems.map(({ text, imgSrc, pageHref }) => (
+            <ListItem key={text} sx={{ cursor: "pointer", paddingY: 1 }}>
+              <Link to={pageHref} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ListItemIcon sx={{ minWidth: 30 }}>
+                    <img src={imgSrc} alt={text} style={{ width: 24, height: 24 }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={text}
+                    sx={{
+                      marginLeft: 1,
+                      fontSize: "16px",
+                      fontWeight: 500,
+                      color: "#2B2B2B",
+                    }}
+                  />
+                </Box>
+              </Link>
             </ListItem>
           ))}
         </List>
         <Box sx={{ padding: 2 }}>
-          <Button variant="contained" color="primary" fullWidth sx={{ borderRadius: "40px", backgroundColor: "#365B87" }}>
-            Post
-          </Button>
+          <Link to={"create-post"}>
+            <Button variant="contained" color="primary" fullWidth sx={{ borderRadius: "40px", backgroundColor: "#365B87" }}>
+              Post
+            </Button>
+          </Link>
         </Box>
       </Drawer>
 
-      {/* Основная часть */}
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", marginLeft: `${drawerWidth}px` }}>
         {/* Header */}
         <AppBar position="fixed" sx={{ backgroundColor: "#2b2b2b", boxShadow: "none", zIndex: 1100 }}>
@@ -99,7 +111,7 @@ const Layout = () => {
         </AppBar>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", padding: "20px", marginTop: "64px" }}>
+        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px" }}>
           <Outlet />
         </Box>
       </Box>
