@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Button, 
   TextField, 
@@ -7,21 +7,31 @@ import {
   Typography, 
   Box, 
   CircularProgress,
-  IconButton
+  IconButton,
+  Container
 } from "@mui/material";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-// Fix the import paths to use relative paths instead of alias
+import ClearIcon from '@mui/icons-material/Clear';
 
 export default function CreatePostPage() {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Remove authentication check
-  // if (!isAuthenticated) {
-  //   return <Typography align="center">You must be logged in to create a post.</Typography>;
-  // }
+  // Generate image preview when image changes
+  useEffect(() => {
+    if (image) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(image);
+    } else {
+      setImagePreview(null);
+    }
+  }, [image]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,69 +71,119 @@ export default function CreatePostPage() {
   };
 
   const handleEmojiClick = () => {
-    // Simple emoji insertion - in a real app, you'd use a proper emoji picker
     setContent(prev => prev + "😊");
   };
 
+  const clearImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
   return (
-    <Card sx={{ maxWidth: "600px", mx: "auto", mt: 3, p: 2 }}>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="What's on your mind?"
-              multiline
-              rows={4}
-              fullWidth
-              variant="outlined"
+    <Container maxWidth="md">
+      <Box
+        sx={{
+          backgroundColor: "#DFDFDF",
+          padding: "30px",
+          borderRadius: "12px",
+          boxShadow: "2px 2px 15px rgba(0,0,0,0.3)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "450px",
+          margin: "auto",
+          mt: "100px",
+          fontFamily: "Roboto, sans-serif",
+        }}
+      >
+        <Typography variant="h4" gutterBottom sx={{ display: "flex", alignItems: "center", fontFamily: "Roboto, sans-serif", color: "#365B87" }}>
+          Create Post
+        </Typography>
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+          <TextField
+            fullWidth
+            placeholder="What's on your mind?"
+            multiline
+            rows={4}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            variant="outlined"
+            margin="normal"
+            sx={{ fontFamily: "Roboto, sans-serif" }}
+          />
+          
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <IconButton onClick={handleEmojiClick} color="primary">
+              <EmojiEmotionsIcon />
+            </IconButton>
+          </Box>
+          
+          <Button
+            variant="contained"
+            component="label"
+            sx={{ 
+              backgroundColor: "#1F4A7C", 
+              color: "white", 
+              fontFamily: "Roboto, sans-serif",
+              mt: 1,
+              width: "100%"
+            }}
+          >
+            Upload Image
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => setImage(e.target.files[0])}
             />
-            
-            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-              <IconButton onClick={handleEmojiClick} color="primary">
-                <EmojiEmotionsIcon />
+          </Button>
+          
+          {imagePreview && (
+            <Box sx={{ position: 'relative', mt: 2, width: '100%' }}>
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                style={{ width: '100%', borderRadius: '4px' }} 
+              />
+              <IconButton 
+                onClick={clearImage}
+                sx={{ 
+                  position: 'absolute', 
+                  top: 5, 
+                  right: 5, 
+                  bgcolor: 'rgba(255,255,255,0.7)',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                }}
+                size="small"
+              >
+                <ClearIcon />
               </IconButton>
             </Box>
-            
-            <Button
-              variant="contained"
-              component="label"
-              sx={{ mt: 1 }}
-            >
-              Upload Image
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => setImage(e.target.files[0])}
-              />
-            </Button>
-            
-            {image && (
-              <Typography variant="body2">
-                Selected file: {image.name}
-              </Typography>
-            )}
-            
-            {error && (
-              <Typography color="error" variant="body2">
-                {error}
-              </Typography>
-            )}
-            
-            <Button 
-              type="submit" 
-              variant="contained" 
-              color="primary"
-              disabled={loading}
-              sx={{ mt: 1 }}
-            >
-              {loading ? <CircularProgress size={24} /> : "Post"}
-            </Button>
-          </Box>
+          )}
+          
+          {error && (
+            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+              {error}
+            </Typography>
+          )}
+          
+          <Button 
+            type="submit" 
+            variant="contained" 
+            disabled={loading}
+            sx={{ 
+              backgroundColor: "#1F4A7C", 
+              color: "white", 
+              fontFamily: "Roboto, sans-serif",
+              mt: 2,
+              width: "100%"
+            }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Post"}
+          </Button>
         </form>
-      </CardContent>
-    </Card>
+      </Box>
+    </Container>
   );
 }
