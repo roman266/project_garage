@@ -19,7 +19,7 @@ namespace project_garage.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<PostModel> GetPostByIdAsync(Guid id)
+        public async Task<PostModel> GetPostByIdAsync(string id)
         {
             return await _context.Posts
                 .FirstOrDefaultAsync(x => x.Id == id)
@@ -55,21 +55,14 @@ namespace project_garage.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletePostAsync(Guid id)
+        public async Task DeletePostAsync(string postId)
         {
-            var post = await GetPostByIdAsync(id);
+            var post = await GetPostByIdAsync(postId);
             if (post != null)
             {
                 _context.Posts.Remove(post);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task AddImagesToPostAsync(Guid postId, List<string> imageUrls)
-        {
-        //    var images = imageUrls.Select(url => new PostImageModel { PostId = postId, ImageUrl = url }).ToList();
-        //    await _context.PostImages.AddRangeAsync(images);
-        //    await _context.SaveChangesAsync();
         }
     }
 }

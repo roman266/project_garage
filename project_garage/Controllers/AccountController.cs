@@ -2,6 +2,8 @@
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
 
 namespace project_garage.Controllers
 {
@@ -55,30 +57,10 @@ namespace project_garage.Controllers
         {
             try
             {
-                var user = await _authService.SignInAsync(model.Email, model.Password);
-                if (user == null)
-                {
-                    return StatusCode(401, new { message = "Invalid email or password." });
-                }
+                var authDto = await _authService.SignInAsync(model.Email, model.Password);
+                Response.Cookies.Append("AuthToken", authDto.JwtToken, authDto.CookieOptions);
 
-                var token = _jwtService.GenerateToken(user.Id, user.Email);
-
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,   
-                    SameSite = SameSiteMode.None, 
-                    Expires = DateTime.UtcNow.AddHours(1)
-                };
-
-                Response.Cookies.Append("AuthToken", token, cookieOptions);
-
-                return Ok(new
-                {
-                    success = true,
-                    userId = user.Id,
-                    message = "You successfully logged in"
-                });
+                return Ok( new { message = "You successfully logged in" });
             }
             catch (Exception ex)
             {

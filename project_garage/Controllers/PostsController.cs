@@ -4,11 +4,14 @@ using project_garage.Interfaces.IService;
 using System.Security.Claims;
 using project_garage.Models.DbModels;
 using Microsoft.AspNetCore.Authorization;
+using project_garage.Data;
 
 namespace project_garage.Controllers
 {
+    [Route("api/post")]
     [Authorize]
-    public class PostsController : Controller
+    [ApiController]
+    public class PostsController : ControllerBase
     {
         private readonly IPostService _postService;
 
@@ -17,65 +20,45 @@ namespace project_garage.Controllers
             _postService = postService;
         }
 
-        private IActionResult JsonResponse(object data, int statusCode = 200)
+        [HttpPost("create")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreatePost([FromForm] PostOnCreationDto model)
         {
-            Response.StatusCode = statusCode;
-            return Json(data);
-        }
-
-        [HttpPost]
-        [Route("Posts/Create")]
-        public async Task<IActionResult> CreatePost([FromBody] CreatePostViewModel model)
-        {
-            if (!ModelState.IsValid)
+            try
             {
-                return JsonResponse(new { success = false, message = "Invalid post data" }, 400);
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+
+                await _postService.CreatePostAndUploadImageToCloudAsync(userId, model);
+
+                return Ok(new { message = "Post created successfully"});
             }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            catch (ArgumentException ex)
             {
-                return JsonResponse(new { success = false, message = "Unauthorized" }, 401);
+                return BadRequest(ex.Message);
             }
-
-            var post = new PostModel
+            catch (Exception ex)
             {
-                Title = model.Title,
-                Description = model.Description,
-                UserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            await _postService.CreatePostAsync(post);
-
-            if (model.ImageUrls != null && model.ImageUrls.Any())
-            {
-                await _postService.AddImagesToPostAsync(post.Id, model.ImageUrls);
+                return StatusCode(500, ex.Message);
             }
-
-            return JsonResponse(new { success = true, message = "Post created successfully", postId = post.Id });
         }
 
         [HttpGet]
         [Route("Posts/Edit/{postId}")]
-        public async Task<IActionResult> EditPost(Guid postId)
+        public async Task<IActionResult> EditPost(string postId)
         {
             var post = await _postService.GetPostByIdAsync(postId);
             if (post == null)
             {
-                return JsonResponse(new { success = false, message = "Post not found" }, 404);
+                return StatusCode(404, new { success = false, message = "Post not found" });
             }
 
             var model = new EditPostViewModel
             {
                 Id = post.Id,
-                Title = post.Title,
                 Description = post.Description,
-                //ImageUrls = post.Images.Select(i => i.ImageUrl).ToList()
             };
 
-            return JsonResponse(new { success = true, post = model });
+            return Ok(new { success = true, post = model });
         }
 
         [HttpPost]
@@ -84,7 +67,7 @@ namespace project_garage.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonResponse(new { success = false, message = "Invalid post data" }, 400);
+                return BadRequest(new { success = false, message = "Invalid post data" });
             }
 
             try
@@ -92,46 +75,33 @@ namespace project_garage.Controllers
                 var post = await _postService.GetPostByIdAsync(model.Id);
                 if (post == null)
                 {
-                    return JsonResponse(new { success = false, message = "Post not found" }, 404);
+                    return StatusCode(404, new { success = false, message = "Post not found" });
                 }
 
-                post.Title = model.Title;
                 post.Description = model.Description;
                 post.UpdatedAt = DateTime.UtcNow;
 
                 await _postService.UpdatePostAsync(post);
 
-                return JsonResponse(new { success = true, message = "Post updated successfully" });
+                return Ok(new { success = true, message = "Post updated successfully" });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        [HttpPost]
-        [Route("Posts/Delete")]
-        public async Task<IActionResult> DeletePost([FromBody] Dictionary<string, string> request)
-        {
-            if (request == null || !request.ContainsKey("postId"))
-            {
-                return JsonResponse(new { success = false, message = "Invalid post ID" }, 400);
-            }
-
-            if (!Guid.TryParse(request["postId"], out Guid postId) || postId == Guid.Empty)
-            {
-                return JsonResponse(new { success = false, message = "Invalid post ID" }, 400);
-            }
-
+        [HttpDelete("delete/{postId}")]
+        public async Task<IActionResult> DeletePost(string postId)
+        { 
             var post = await _postService.GetPostByIdAsync(postId);
             if (post == null)
             {
-                return JsonResponse(new { success = false, message = "No post with this id" }, 404);
+                return StatusCode(404, new { success = false, message = "No post with this id" });
             }
 
             await _postService.DeletePostAsync(postId);
-            return JsonResponse(new { success = true, message = "Post deleted successfully" });
+            return Ok(new { success = true, message = "Post deleted successfully" });
         }
-
     }
 }

@@ -12,7 +12,7 @@ namespace project_garage.Service {
             _commentRepository = commentRepository;
         }
 
-        public async Task<CommentModel> AddCommentAsync(Guid postId, string userId, string content)
+        public async Task<CommentModel> AddCommentAsync(string postId, string userId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
@@ -29,7 +29,7 @@ namespace project_garage.Service {
             return await _commentRepository.CreateCommentAsync(comment);
         }
 
-        public async Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(Guid postId)
+        public async Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(string postId)
         {
            return await _commentRepository.GetCommentsByPostIdAsync(postId);
         }

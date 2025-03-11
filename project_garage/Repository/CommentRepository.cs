@@ -25,7 +25,7 @@ namespace project_garage.Repository {
             return await _context.Comments.FindAsync(commentId);
         }
 
-        public async Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(Guid postId)
+        public async Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(string postId)
         {
             return await _context.Comments
                 .Where(c => c.PostId == postId)

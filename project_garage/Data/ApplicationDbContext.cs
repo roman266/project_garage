@@ -11,7 +11,7 @@ namespace project_garage.Data
         public DbSet<FriendModel> Friends { get; set; }
         public DbSet<MessageModel> Messages { get; set; }
         public DbSet<ConversationModel> Conversations { get; set; }
-        public DbSet<PostImageModel> PostImages { get; set; }
+        //public DbSet<PostImageModel> PostImages { get; set; }
         public DbSet<ReactionModel> ReactionActions { get; set; }
         public DbSet<UserConversationModel> UserConversations { get; set; }
 
@@ -81,19 +81,19 @@ namespace project_garage.Data
                 .HasIndex(r => new { r.EntityId, r.EntityType });
 
             //Налаштування таблиці PostImage
-            modelBuilder.Entity<PostImageModel>()
-                .HasKey(pi => pi.Id);
+            //modelBuilder.Entity<PostImageModel>()
+            //    .HasKey(pi => pi.Id);
 
-            modelBuilder.Entity<PostImageModel>()
-                .Property(pi => pi.ImageUrl)
-                .IsRequired()
-                .HasMaxLength(500);
+            //modelBuilder.Entity<PostImageModel>()
+            //    .Property(pi => pi.ImageUrl)
+            //    .IsRequired()
+            //    .HasMaxLength(500);
 
-            modelBuilder.Entity<PostImageModel>()
-                .HasOne(pi => pi.Post)
-                .WithMany(p => p.Images)
-                .HasForeignKey(pi => pi.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<PostImageModel>()
+            //    .HasOne(pi => pi.Post)
+            //    .WithMany(p => p.Images)
+            //    .HasForeignKey(pi => pi.PostId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UserConversationModel>()
                 .HasOne(uc => uc.User)

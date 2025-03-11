@@ -5,12 +5,10 @@ namespace project_garage.Interfaces.IRepository
     public interface IPostRepository
     {
         Task CreatePostAsync(PostModel post);
-        Task<PostModel> GetPostByIdAsync(Guid id);
-        Task<List<PostModel>> GetPostByUserId(string id);
+        Task<PostModel> GetPostByIdAsync(string postId);
+        Task<List<PostModel>> GetPostByUserId(string postId);
         Task UpdatePostAsync(PostModel post);
-        Task DeletePostAsync(Guid id);
-
+        Task DeletePostAsync(string postId);
         Task<List<PostModel>> GetPostsByUserIdAsync(string userId);
-        Task AddImagesToPostAsync(Guid postId, List<string> imageUrls);
     }
 }

@@ -11,6 +11,6 @@ namespace project_garage.Models.ViewModels
         [StringLength(250)]
         public string Content { get; set; }
 
-        public Guid PostId { get; set; }
+        public string PostId { get; set; }
     }
 }

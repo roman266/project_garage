@@ -5,7 +5,7 @@ namespace project_garage.Interfaces.IRepository {
     {
         Task<CommentModel> CreateCommentAsync(CommentModel comment);
         Task<CommentModel> GetCommentByIdAsync(int commentId);
-        Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(Guid postId);
+        Task<IEnumerable<CommentModel>> GetCommentsByPostIdAsync(string postId);
         Task DeleteCommentAsync(CommentModel comment);
         Task<CommentModel> UpdateCommentAsync(CommentModel comment);
 

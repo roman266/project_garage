@@ -21,6 +21,11 @@ var configuration = builder.Configuration;
 
 Env.Load();
 
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.HttpsPort = 7126;
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -80,14 +85,18 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
 });
 
-var adress = Env.GetString("FRONTADRESS");
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowCredentials()
+                  .AllowAnyMethod() 
+                  .AllowAnyHeader();
+        });
 });
 
 builder.Services.AddAuthentication(options =>
@@ -135,7 +144,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -17,18 +17,18 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/api/account/login", {
+        const response = await fetch("https://localhost:7126/api/account/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(values),
+          credentials: "include",
         });
 
         if (response.ok) {
           const data = await response.json();
-          // Сохранение JWT в localStorage
-          localStorage.setItem("token", data.token);
+
           console.log("Login successful");
 
           // Перенаправление на защищенную страницу после логина

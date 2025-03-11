@@ -68,7 +68,7 @@ namespace project_garage.Controllers
 
         [HttpGet]
         [Route("Comments/Post/{postId}")]
-        public async Task<IActionResult> GetCommentsByPostId(Guid postId)
+        public async Task<IActionResult> GetCommentsByPostId(string postId)
         {
             try
             {

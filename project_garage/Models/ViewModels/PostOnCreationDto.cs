@@ -2,15 +2,13 @@
 
 namespace project_garage.Models.ViewModels
 {
-    public class CreatePostViewModel
+    public class PostOnCreationDto
     {
-        [Required]
-        [StringLength(50)]
-        public string Title { get; set; }
         [Required]
         [StringLength(250)]
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public List<string> ImageUrls { get; set; } = new List<string>();
+        [Required]
+        public IFormFile Image { get; set; }
     }
 }

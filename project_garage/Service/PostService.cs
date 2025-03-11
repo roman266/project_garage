@@ -2,15 +2,18 @@
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
 using project_garage.Repository;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Service
 {
     public class PostService : IPostService
     {
         private readonly IPostRepository _postRepository;
-        public PostService(IPostRepository postRepository) 
+        private readonly ICloudinaryService _cloudinaryService;
+        public PostService(IPostRepository postRepository, ICloudinaryService cloudinaryService) 
         { 
             _postRepository = postRepository;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<int> GetCountOfPosts(string id) 
@@ -27,8 +30,20 @@ namespace project_garage.Service
             }
         }
 
-        public async Task CreatePostAsync(PostModel post)
+        public async Task CreatePostAndUploadImageToCloudAsync(string userId, PostOnCreationDto postDto)
         {
+            var imageUrl = await _cloudinaryService.UploadImageAsync(postDto.Image);
+
+            var post = new PostModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Description = postDto.Description,
+                ImageUrl = imageUrl,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+            };
+
             await _postRepository.CreatePostAsync(post);
         }
 
@@ -36,9 +51,9 @@ namespace project_garage.Service
         {
             return await _postRepository.GetPostsByUserIdAsync(userId);
         }
-        public async Task<PostModel> GetPostByIdAsync(Guid id)
+        public async Task<PostModel> GetPostByIdAsync(string postId)
         {
-            return await _postRepository.GetPostByIdAsync(id);
+            return await _postRepository.GetPostByIdAsync(postId);
         }
 
         public async Task UpdatePostAsync(PostModel post)
@@ -46,14 +61,9 @@ namespace project_garage.Service
             await _postRepository.UpdatePostAsync(post);
         }
 
-        public async Task DeletePostAsync(Guid id)
+        public async Task DeletePostAsync(string postId)
         {
-            await _postRepository.DeletePostAsync(id);
+            await _postRepository.DeletePostAsync(postId);
         }
-        public async Task AddImagesToPostAsync(Guid postId, List<string> imageUrls)
-        {
-            await _postRepository.AddImagesToPostAsync(postId, imageUrls);
-        }
-
     }
 }
