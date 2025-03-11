@@ -1,7 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, Avatar, Container } from "@mui/material";
+import axios from "axios";
 
 export default function MyProfilePage() {
+  const [profile, setProfile] = useState({
+    userName: "",
+    email: "",
+    profilePicture: "",
+  });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get("/api/profile/me");
+        setProfile(response.data.profile);
+      } catch (error) {
+        console.error("Error fetching profile data", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -29,6 +49,7 @@ export default function MyProfilePage() {
           My profile
         </Typography>
         <Avatar
+          src={profile.profilePicture}
           sx={{
             width: 80,
             height: 80,
@@ -38,10 +59,10 @@ export default function MyProfilePage() {
         />
         <Box sx={{ textAlign: "left" }}>
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Username</Typography>
-          <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>Some username</Typography>
+          <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.userName}</Typography>
           
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Email</Typography>
-          <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>xxxxxxxxxx@mail.com</Typography>
+          <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.email}</Typography>
           
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Password</Typography>
           <Typography sx={{ marginBottom: 2 }}>**********</Typography>
