@@ -95,7 +95,7 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _userService.UpdateUserInfoAsync(userId, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description, editProfileDto.Email, editProfileDto.Password);
+                await _userService.UpdateUserInfoAsync(userId, editProfileDto.UserName, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description, editProfileDto.Email, editProfileDto.Password);
                 return Ok(new { message = "User info successfully updated" });
             }
             catch (Exception ex)

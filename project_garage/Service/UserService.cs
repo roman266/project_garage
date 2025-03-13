@@ -12,7 +12,7 @@ namespace project_garage.Service
         private readonly IUserRepository _userRepository;
         private readonly IEmailSender _emailSender;
 
-        public UserService(IUserRepository userRepository) 
+        public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
             _emailSender = new EmailSender();
@@ -35,28 +35,23 @@ namespace project_garage.Service
 
                 if (result.Succeeded)
                 {
-                    Console.WriteLine("succed");
                     var confirmationLink = $"{baseUrl}confirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
-
                     await _emailSender.SendEmailAsync(email, "Підтвердження email",
                         $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
-                    Console.WriteLine("sended");
                     return result;
                 }
 
                 throw new Exception("This username is used");
             }
-            throw new Exception("User with this email already exist");
+            throw new Exception("User with this email already exists");
         }
 
         public async Task<bool> CheckForExistanceByEmail(string email)
         {
             var user = await _userRepository.GetByEmailAsync(email);
+            return user != null;
+        }
 
-            if (user == null)
-                return false;
-            return true;
-        } 
         public async Task<UserModel> GetByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -73,19 +68,18 @@ namespace project_garage.Service
         public async Task<UserModel> GetByIdAsync(string id)
         {
             var user = await _userRepository.GetByIdAsync(id);
-
-            if (user == null)
-                throw new Exception("User not founded");
-
-            return user;
+            return user ?? throw new Exception("User not found");
         }
 
-        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description, string email, string password)
+        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string userName, string firstName, string lastName, string description, string email, string password)
         {
             if (string.IsNullOrEmpty(userId))
-                throw new ArgumentException($"Wrong userId");
+                throw new ArgumentException("Wrong userId");
 
-            var user = await GetByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (!string.IsNullOrEmpty(userName))
+                user.UserName = userName;
 
             if (!string.IsNullOrEmpty(firstName))
                 user.FirstName = firstName;
@@ -101,40 +95,28 @@ namespace project_garage.Service
 
             if (!string.IsNullOrEmpty(password))
             {
-                var passwordHasher = new PasswordHasher<UserModel>();
-                user.PasswordHash = passwordHasher.HashPassword(user, password);
+                var result = await _userRepository.UpdateUserPasswordAsync(user.Id, password);
+                if (!result.Succeeded)
+                    return result;
             }
 
-            var result = await _userRepository.UpdateUserInfoAsync(user);
-            return result;
+            return await _userRepository.UpdateUserInfoAsync(user);
         }
 
         public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
         {
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(picture))
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(picture))
                 throw new ArgumentException("Wrong input data");
 
-            var user = await GetByIdAsync(userId);
-
+            var user = await _userRepository.GetByIdAsync(userId);
             user.ProfilePicture = picture;
 
-            var result = await _userRepository.UpdateUserInfoAsync(user);
-
-            return result;
+            return await _userRepository.UpdateUserInfoAsync(user);
         }
 
         public async Task ConfirmUserEmail(string userId, string code)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
-            {
-                throw new Exception("User is null here");
-            }
-
-            var user = await GetByIdAsync(userId);
-            if(user == null)
-            {
-                throw new Exception("User not founded");
-            }
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user.EmailConfirmationCode != code)
                 throw new Exception("Wrong code");
 
@@ -145,21 +127,17 @@ namespace project_garage.Service
 
         public async Task<bool> CheckPasswordAsync(UserModel user, string password)
         {
-            var result = await _userRepository.CheckPasswordAsync(user, password);
-            return result;
+            return await _userRepository.CheckPasswordAsync(user, password);
         }
 
         public async Task<IdentityResult> DeleteUserAsync(string id)
         {
-            var result = await _userRepository.DeleteUserAsync(id);
-            return result;
+            return await _userRepository.DeleteUserAsync(id);
         }
 
         public async Task<List<UserModel>> SearchUsersAsync(string query)
         {
-            var users = await _userRepository.SearchUsersAsync(query);
-            
-            return users ?? new List<UserModel>();
+            return await _userRepository.SearchUsersAsync(query);
         }
     }
 }
