@@ -14,8 +14,7 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
-
-const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+import { API_URL } from "../constants";
 
 const drawerWidth = 240;
 

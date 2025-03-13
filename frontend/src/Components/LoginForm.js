@@ -1,15 +1,13 @@
 import React from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
+import { API_URL } from "../constants";
 import * as yup from "yup";
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
   password: yup.string().min(8, "Password should be at least 8 characters").required("Password is required"),
 });
-
-const API_URL = process.env.REACT_APP_HTTPS_API_URL;
-const FRONT_URL = process.env.REACT_APP_FRONT_URL;
 
 const LoginForm = () => {
   const formik = useFormik({
@@ -107,7 +105,7 @@ const LoginForm = () => {
               {formik.isSubmitting ? "Signing In..." : "Login"}
             </Button>
             <Button
-              href={`${FRONT_URL}/registration`}
+              href="/registration"
               variant="contained"
               sx={{ backgroundColor: "#1F4A7C", color: "white", flex: 1, fontFamily: "Roboto, sans-serif" }}
             >

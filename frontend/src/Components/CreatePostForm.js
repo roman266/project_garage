@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import ClearIcon from '@mui/icons-material/Clear';
+import { API_URL } from "../constants";
 
 export default function CreatePostPage() {
   const [content, setContent] = useState("");
@@ -19,8 +20,6 @@ export default function CreatePostPage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const API_URL = process.env.REACT_APP_HTTPS_API_URL;
 
   useEffect(() => {
     if (image) {

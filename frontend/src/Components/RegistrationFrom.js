@@ -2,6 +2,7 @@ import React from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { API_URL } from "../constants";
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
@@ -13,7 +14,6 @@ const validationSchema = yup.object({
     .required("Confirm Password is required"),
 });
 
-const API_URL = process.env.REACT_APP_HTTPS_API_URL;
 
 const RegisterForm = () => {
   const formik = useFormik({

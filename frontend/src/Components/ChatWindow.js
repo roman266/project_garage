@@ -4,6 +4,7 @@ import { Box, Typography, Avatar, Paper, IconButton, InputBase } from "@mui/mate
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
+import { API_URL } from "../constants";
 
 export default function ChatWindow({ selectedChatId }) {
   const [messages, setMessages] = useState([]);
@@ -11,7 +12,6 @@ export default function ChatWindow({ selectedChatId }) {
   const [newMessage, setNewMessage] = useState("");
   const connectionRef = useRef(null);
 
-  const API_URL = process.env.REACT_APP_HTTPS_API_URL;
 
   useEffect(() => {
     if (!selectedChatId) return;

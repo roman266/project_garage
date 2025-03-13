@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-
-const API_URL = process.env.HTTPS_API_URL;
+import { API_URL } from "../constants";
 
 const ProfileCard = () => {
   return (

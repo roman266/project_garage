@@ -3,14 +3,13 @@ import { HubConnectionBuilder } from "@microsoft/signalr";
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
+import { API_URL } from "../constants";
 
 export default function ChatsList({ onSelectChat }) {
   const [chats, setChats] = useState([]);
   const [connection, setConnection] = useState(null);
   const [openDialog, setOpenDialog] = useState(false); // State to handle dialog visibility
   const [username, setUsername] = useState(""); // State for the input field
-
-  const API_URL = process.env.REACT_APP_HTTPS_API_URL;
 
   useEffect(() => {
     const connect = new HubConnectionBuilder()

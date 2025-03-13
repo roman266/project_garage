@@ -3,8 +3,8 @@ import { Container, Typography, Button, TextField } from "@mui/material";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../constants";
 
-const API_URL = process.env.REACT_APP_HTTPS_API_URL;
 
 const validationSchema = Yup.object({
   email: Yup.string().email("Невірний формат email").required("Обов'язкове поле"),
