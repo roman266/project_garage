@@ -4,6 +4,8 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+
 const validationSchema = Yup.object({
   email: Yup.string().email("Невірний формат email").required("Обов'язкове поле"),
   password: Yup.string().min(6, "Мінімум 6 символів").required("Обов'язкове поле"),

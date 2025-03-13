@@ -13,6 +13,8 @@ const validationSchema = yup.object({
     .required("Confirm Password is required"),
 });
 
+const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+
 const RegisterForm = () => {
   const formik = useFormik({
     initialValues: {
@@ -24,7 +26,7 @@ const RegisterForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/api/account/register", {
+        const response = await fetch(`${API_URL}/api/account/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),

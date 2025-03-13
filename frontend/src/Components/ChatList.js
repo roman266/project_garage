@@ -10,9 +10,11 @@ export default function ChatsList({ onSelectChat }) {
   const [openDialog, setOpenDialog] = useState(false); // State to handle dialog visibility
   const [username, setUsername] = useState(""); // State for the input field
 
+  const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+
   useEffect(() => {
     const connect = new HubConnectionBuilder()
-      .withUrl("http://localhost:5000/chatHub", { withCredentials: true })
+      .withUrl(`${API_URL}/chatHub`, { withCredentials: true })
       .build();
 
     connect.start()
@@ -35,7 +37,7 @@ export default function ChatsList({ onSelectChat }) {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/conversation/my-conversations", { withCredentials: true })
+    axios.get(`${API_URL}/api/conversation/my-conversations`, { withCredentials: true })
       .then((response) => setChats(response.data.conversationList))
       .catch((error) => console.error("Error fetching chats", error));
   }, []);
@@ -55,7 +57,7 @@ export default function ChatsList({ onSelectChat }) {
   const handleCreateChat = () => {
     if (!username.trim()) return; // If username is empty, do nothing
 
-    axios.post("http://localhost:5000/api/conversation/create", { username }, { withCredentials: true })
+    axios.post(`${API_URL}/api/conversation/create`, { username }, { withCredentials: true })
       .then((response) => {
         const newChat = response.data; // Assuming the response contains the new chat data
         setChats((prevChats) => [...prevChats, newChat]);

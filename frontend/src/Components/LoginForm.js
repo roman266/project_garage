@@ -8,6 +8,9 @@ const validationSchema = yup.object({
   password: yup.string().min(8, "Password should be at least 8 characters").required("Password is required"),
 });
 
+const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+const FRONT_URL = process.env.REACT_APP_FRONT_URL;
+
 const LoginForm = () => {
   const formik = useFormik({
     initialValues: {
@@ -17,7 +20,7 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("https://localhost:7126/api/account/login", {
+        const response = await fetch(`${API_URL}/api/account/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -31,8 +34,7 @@ const LoginForm = () => {
 
           console.log("Login successful");
 
-          // Перенаправление на защищенную страницу после логина
-          window.location.href = "/"; // или используйте react-router-dom для навигации
+          window.location.href = "/";
         } else {
           setErrors({ email: "Invalid email or password" });
         }
@@ -105,7 +107,7 @@ const LoginForm = () => {
               {formik.isSubmitting ? "Signing In..." : "Login"}
             </Button>
             <Button
-              href="http://localhost:3000/registration"
+              href={`${FRONT_URL}/registration`}
               variant="contained"
               sx={{ backgroundColor: "#1F4A7C", color: "white", flex: 1, fontFamily: "Roboto, sans-serif" }}
             >
