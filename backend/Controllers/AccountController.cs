@@ -59,7 +59,6 @@ namespace project_garage.Controllers
             {
                 var authDto = await _authService.SignInAsync(model.Email, model.Password);
                 Response.Cookies.Append("AuthToken", authDto.JwtToken, authDto.CookieOptions);
-
                 return Ok( new { message = "You successfully logged in" });
             }
             catch (Exception ex)
