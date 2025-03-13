@@ -85,12 +85,8 @@ namespace project_garage.Controllers
         [Route("Comments/Delete")]
         public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentViewModel model)
         {
-            Console.WriteLine($" Comment ID: {model.CommentId}");
-
             try
             {
-                Console.WriteLine($"Received delete request for comment ID: {model.CommentId}");
-
                 var comment = await _commentService.GetCommentByIdAsync(model.CommentId);
                 if (comment == null)
                 {

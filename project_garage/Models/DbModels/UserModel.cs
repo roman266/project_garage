@@ -24,6 +24,7 @@ namespace project_garage.Models.DbModels
         public ICollection<CommentModel> Comments { get; set; }
         public ICollection<PostImageModel> Images { get; set; }
         public ICollection<UserConversationModel> UserConversations { get; set; }
+        public ICollection<UserInterestModel> UserInterests { get; set; }
 
 
     }

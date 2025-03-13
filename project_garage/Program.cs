@@ -11,8 +11,6 @@ using DotNetEnv;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using CloudinaryDotNet;
-using Microsoft.Extensions.Options;
 using project_garage.Models.CloudinarySettings;
 using System.Text.Json.Serialization;
 
@@ -49,6 +47,7 @@ builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
 builder.Services.AddScoped<IReactionService, ReactionService>();
 builder.Services.AddScoped<IUserConversationRepository, UserConversationRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IUserInterestRepository, UserInterestRepository>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
