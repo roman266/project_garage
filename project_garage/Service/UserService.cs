@@ -46,7 +46,7 @@ namespace project_garage.Service
 
                 throw new Exception("This username is used");
             }
-            throw new Exception("User with this email already exist");
+            throw new Exception("User with this email already exists");
         }
 
         public async Task<bool> CheckForExistanceByEmail(string email)
@@ -80,12 +80,15 @@ namespace project_garage.Service
             return user;
         }
 
-        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description)
+        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string userName, string firstName, string lastName, string description, string email, string password)
         {
             if (string.IsNullOrEmpty(userId))
-                throw new ArgumentException($"Wrong userId");
-            
-            var user = await GetByIdAsync(userId);
+                throw new ArgumentException("Wrong userId");
+
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (!string.IsNullOrEmpty(userName))
+                user.UserName = userName;
 
             if (!string.IsNullOrEmpty(firstName))
                 user.FirstName = firstName;
@@ -96,13 +99,22 @@ namespace project_garage.Service
             if (!string.IsNullOrEmpty(description))
                 user.Description = description;
 
-            var result = await _userRepository.UpdateUserInfoAsync(user);
-            return result;
+            if (!string.IsNullOrEmpty(email))
+                user.Email = email;
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                var result = await _userRepository.UpdateUserPasswordAsync(user.Id, password);
+                if (!result.Succeeded)
+                    return result;
+            }
+
+            return await _userRepository.UpdateUserInfoAsync(user);
         }
 
         public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
         {
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(picture))
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(picture))
                 throw new ArgumentException("Wrong input data");
 
             var user = await GetByIdAsync(userId);

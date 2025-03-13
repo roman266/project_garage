@@ -9,7 +9,7 @@
     "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.2",
     "@shadcn/ui": "^0.0.4",
-    "axios": "^1.7.9",
+    "axios": "^1.8.2",
     "cra-template": "1.2.0",
     "formik": "^2.4.6",
     "lucide-react": "^0.477.0",
