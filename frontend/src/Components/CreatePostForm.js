@@ -20,7 +20,8 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Generate image preview when image changes
+  const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+
   useEffect(() => {
     if (image) {
       const reader = new FileReader();
@@ -52,7 +53,7 @@ export default function CreatePostPage() {
       formData.append('description', content);
       formData.append('image', image);
       
-      const response = await fetch('https://localhost:7126/api/post/create', {
+      const response = await fetch(`${API_URL}/api/post/create`, {
         method: 'POST',
         body: formData,
         credentials: "include",

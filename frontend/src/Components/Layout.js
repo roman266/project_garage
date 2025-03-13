@@ -15,6 +15,8 @@ import {
   ListItemIcon
 } from "@mui/material";
 
+const API_URL = process.env.REACT_APP_HTTPS_API_URL;
+
 const drawerWidth = 240;
 
 // Используйте относительные пути для ссылок
