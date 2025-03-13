@@ -15,5 +15,6 @@ namespace project_garage.Interfaces.IService
         Task<bool> CheckPasswordAsync(UserModel user, string password);
         Task<IdentityResult> DeleteUserAsync(string id);
         Task<List<UserModel>> SearchUsersAsync(string query);
+        Task<bool> CheckForExistanceByIdAsync(string userId);
     }
 }

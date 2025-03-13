@@ -14,6 +14,7 @@ namespace project_garage.Data
         //public DbSet<PostImageModel> PostImages { get; set; }
         public DbSet<ReactionModel> ReactionActions { get; set; }
         public DbSet<UserConversationModel> UserConversations { get; set; }
+        public DbSet<UserInterestModel> UserInterests { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -22,7 +23,7 @@ namespace project_garage.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); // Викликаємо базову конфігурацію Identity
+            base.OnModelCreating(modelBuilder);
 
             // Налаштування таблиці Comment
             modelBuilder.Entity<CommentModel>()
@@ -107,6 +108,11 @@ namespace project_garage.Data
                 .HasForeignKey(uc => uc.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<UserInterestModel>()
+                .HasOne(ui => ui.User)
+                .WithMany(u => u.UserInterests)
+                .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

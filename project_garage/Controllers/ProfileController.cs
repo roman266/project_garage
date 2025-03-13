@@ -104,7 +104,7 @@ namespace project_garage.Controllers
 
         [HttpGet]
         [Route("search-users")]
-        public async Task<IActionResult> SearchUsers([FromBody]SearchBoxDto model)
+        public async Task<IActionResult> SearchUsers([FromQuery]SearchBoxDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
             {
