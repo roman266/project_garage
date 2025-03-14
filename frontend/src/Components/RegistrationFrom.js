@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -16,6 +16,14 @@ const validationSchema = yup.object({
 
 
 const RegisterForm = () => {
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      window.location.href = "/";
+    }
+  }, []);
+
   const formik = useFormik({
     initialValues: {
       email: "",
