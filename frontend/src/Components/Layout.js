@@ -16,8 +16,6 @@ import {
 } from "@mui/material";
 import { API_URL } from "../constants";
 
-
-
 const drawerWidth = 240;
 
 // Используйте относительные пути для ссылок
