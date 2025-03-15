@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
+import { API_URL } from "../constants";
 import * as yup from "yup";
 
 const validationSchema = yup.object({
@@ -9,6 +10,14 @@ const validationSchema = yup.object({
 });
 
 const LoginForm = () => {
+  // Check if user is already logged in
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      window.location.href = "/";
+    }
+  }, []);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -17,22 +26,24 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/login", {
+        const response = await fetch(`${API_URL}/api/account/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(values),
+          credentials: "include",
         });
 
         if (response.ok) {
           const data = await response.json();
-          // Сохранение JWT в localStorage
-          localStorage.setItem("token", data.token);
           console.log("Login successful");
+          
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId);
+          }
 
-          // Перенаправление на защищенную страницу после логина
-          window.location.href = "/home"; // или используйте react-router-dom для навигации
+          window.location.href = "/";
         } else {
           setErrors({ email: "Invalid email or password" });
         }
@@ -105,7 +116,7 @@ const LoginForm = () => {
               {formik.isSubmitting ? "Signing In..." : "Login"}
             </Button>
             <Button
-              href="http://localhost:3000/registration"
+              href="/registration"
               variant="contained"
               sx={{ backgroundColor: "#1F4A7C", color: "white", flex: 1, fontFamily: "Roboto, sans-serif" }}
             >

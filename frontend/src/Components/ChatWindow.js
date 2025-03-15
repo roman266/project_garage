@@ -4,6 +4,7 @@ import { Box, Typography, Avatar, Paper, IconButton, InputBase } from "@mui/mate
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
+import { API_URL } from "../constants";
 
 export default function ChatWindow({ selectedChatId }) {
   const [messages, setMessages] = useState([]);
@@ -15,7 +16,7 @@ export default function ChatWindow({ selectedChatId }) {
     if (!selectedChatId) return;
 
     const connect = new HubConnectionBuilder()
-      .withUrl("http://localhost:5021/chatHub", { withCredentials: true })
+      .withUrl(`${API_URL}/chatHub`, { withCredentials: true })
       .build();
 
     connect.start()
@@ -28,7 +29,7 @@ export default function ChatWindow({ selectedChatId }) {
 
         connectionRef.current = connect;
 
-        axios.get(`http://localhost:5000/api/conversation/get-messages/${selectedChatId}`, { withCredentials: true })
+        axios.get(`${API_URL}/api/conversation/get-messages/${selectedChatId}`, { withCredentials: true })
           .then((response) => setMessages(response.data))
           .catch((error) => console.error("Error fetching messages", error));
       })

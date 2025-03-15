@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { API_URL } from "../constants";
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
@@ -13,7 +14,16 @@ const validationSchema = yup.object({
     .required("Confirm Password is required"),
 });
 
+
 const RegisterForm = () => {
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      window.location.href = "/";
+    }
+  }, []);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -24,7 +34,7 @@ const RegisterForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/register", {
+        const response = await fetch(`${API_URL}/api/account/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),

@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
+import { API_URL } from "../constants";
 
 const ProfileCard = () => {
   return (
