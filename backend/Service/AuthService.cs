@@ -27,10 +27,10 @@ namespace project_garage.Service
             var isPasswordValid = await _userService.CheckPasswordAsync(user, password);
 
             if (!isPasswordValid)
-                throw new Exception("Invalid email or password");
+                throw new InvalidOperationException("Invalid email or password");
 
             if (!user.EmailConfirmed)
-                throw new Exception("You need to confirm your email");
+                throw new InvalidOperationException("You need to confirm your email");
 
             var token = _jwtService.GenerateToken(user.Id, user.Email);
 
@@ -46,6 +46,7 @@ namespace project_garage.Service
             {
                 JwtToken = token,
                 CookieOptions = cookieOptions,
+                UserId = user.Id
             };
 
             return authDto; 

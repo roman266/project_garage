@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import { API_URL } from "../constants";
@@ -10,6 +10,14 @@ const validationSchema = yup.object({
 });
 
 const LoginForm = () => {
+  // Check if user is already logged in
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      window.location.href = "/";
+    }
+  }, []);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -29,8 +37,11 @@ const LoginForm = () => {
 
         if (response.ok) {
           const data = await response.json();
-
           console.log("Login successful");
+          
+          if (data.userId) {
+            localStorage.setItem('userId', data.userId);
+          }
 
           window.location.href = "/";
         } else {
