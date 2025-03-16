@@ -13,21 +13,65 @@ namespace project_garage.Repository
             _context = context;
         }
 
-        public async Task<FriendModel> GetById(string id)
+        public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Friends
+                .Where(f => f.UserId == userId && f.FriendId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<FriendModel> GetByIdAsync(string id)
         {
             var request = await _context.Friends.FirstOrDefaultAsync(friend => friend.Id == id);
-            if (request == null)
-            {
-                throw new Exception("Somthing goes wrong");
-            }
-
             return request;
         }
 
-        public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
+        public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
-            var list = await _context.Friends.Where(x => x.UserId == userId).ToListAsync();
-            return list;
+            var requests = await _context.Friends
+                .Where(f => ( f.UserId == userId || f.FriendId == userId)  && f.IsAccepted == true &&
+                    (lastRequestId == null ||
+                      f.DateTime < _context.Friends
+                      .Where(fr => fr.Id == lastRequestId)
+                      .Select(fr => fr.DateTime)
+                      .FirstOrDefault()))
+                .Take(20)
+                .OrderByDescending(f => f.DateTime)
+                .ToListAsync();
+
+            return requests;
+        }
+
+        public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        {
+            var requests = await _context.Friends
+                .Where(f => f.FriendId == userId && f.IsAccepted == false &&
+                    (lastRequestId == null ||
+                      f.DateTime < _context.Friends
+                      .Where(fr => fr.Id == lastRequestId)
+                      .Select(fr => fr.DateTime)
+                      .FirstOrDefault()))
+                .Take(20)
+                .OrderByDescending(f => f.DateTime)
+                .ToListAsync();
+
+            return requests;
+        } 
+        
+        public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        {
+            var requests = await _context.Friends
+                .Where(f => f.UserId == userId && f.IsAccepted == false &&
+                    (lastRequestId == null ||
+                      f.DateTime < _context.Friends
+                      .Where(fr => fr.Id == lastRequestId)
+                      .Select(fr => fr.DateTime)
+                      .FirstOrDefault()))
+                .Take(20)
+                .OrderByDescending(f => f.DateTime)
+                .ToListAsync();
+
+            return requests;
         }
 
         public async Task CreateNewRequestAsync(FriendModel friendModel)

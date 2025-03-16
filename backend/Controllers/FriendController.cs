@@ -7,158 +7,128 @@ using project_garage.Service;
 
 namespace project_garage.Controllers
 {
+    [Route("api/friends")]
     [Authorize]
-    public class FriendController : Controller
+    [ApiController]
+    public class FriendController : ControllerBase
     {
         private readonly IFriendService _friendService;
-        private readonly IUserService _userService;
 
-        public FriendController(IFriendService friendService, IUserService userService)
+        public FriendController(IFriendService friendService)
         {
             _friendService = friendService;
-            _userService = userService;
         }
 
-        private IActionResult JsonResponse(object data, int statusCode = 200)
-        {
-            Response.StatusCode = statusCode;
-            return Json(data);
-        }
-
-        [HttpPost]
-        [Route("Friend/Send/{friendId}")]
+        [HttpPost("send/{friendId}")]
         public async Task<IActionResult> SendRequest(string friendId)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                Console.WriteLine(userId);
                 await _friendService.SendFriendRequestAsync(friendId, userId);
-                return JsonResponse(new { success = true, message = "Request sended" });
+                return Ok(new { message = "Request sended" });
             }
-            catch (InvalidDataException ex)
+            catch (ArgumentException ex)
             {
-                return JsonResponse(new {success = false, message = ex.Message}, 400);
+                return BadRequest(new {message = ex.Message});
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        [HttpPost]
-        [Route("Friend/Accept/{friendId}")]
-        public async Task<IActionResult> AcceptFriend(string friendId)
+        [HttpPost("accept/{requestId}")]
+        public async Task<IActionResult> AcceptFriend(string requestId)
+        {
+            try
+            {
+                await _friendService.AcceptRequestAsync(requestId);
+                return Ok(new { message = "Request accepted"});
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpDelete("reject/{requestId}")]
+        public async Task<IActionResult> RejectFriend(string requestId)
+        {
+            try
+            {
+                await _friendService.RejectOrDeleteAsync(requestId);
+                return Ok(new { message = "Request rejected" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("my-requests/outcoming")]
+        public async Task<IActionResult> GetUnacceptedRequests(string? lastRequestId, int limit = 20)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _friendService.AcceptRequestAsync(userId, friendId);
-                return JsonResponse(new { success = true, message = "Request accepted"});
+                var requests = await _friendService.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
+                return Ok(requests);
             }
-            catch (InvalidDataException ex)
+            catch (ArgumentException ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 400);
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        [HttpPost]
-        [Route("Friend/Reject/{friendId}")]
-        public async Task<IActionResult> RejectFriend(string friendId)
+        [HttpGet("my-requests/incoming")]
+        public async Task<IActionResult> GetIncomingRequests(string? lastRequestId, int limit = 20)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _friendService.RejectOrDeleteAsync(userId, friendId);
-                return JsonResponse(new { success = true, message = "Request rejected" });
+                var requests = await _friendService.GetIncomingRequestsAsync(userId, lastRequestId, limit);
+                return Ok(requests);
             }
-            catch (InvalidDataException ex)
+            catch (ArgumentException ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 400);
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
-        [HttpGet]
-        [Route("Friend/GetRequests")]
-        public async Task<IActionResult> GetUnacceptedRequests()
+        [HttpGet("my-requests/friends")]
+        public async Task<IActionResult> GetAcceptedRequests(string? lastfriendId, int limit = 20)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-
-                var requests = await _friendService.GetByUserIdAsync(userId);
-
-                var viewModel = new List<FriendRequestViewModel>();
-
-                foreach (var request in requests)
-                {
-                    if (!request.IsAccepted)
-                    {
-                        var friend = await _userService.GetByIdAsync(request.FriendId);
-                        viewModel.Add(new FriendRequestViewModel
-                        {
-                            RequestId = request.Id,
-                            SenderId = friend.Id,
-                            SenderName = friend.UserName,
-                            SenderDescription = friend.Description
-                        });
-                    }
-                }
-                return JsonResponse(new { success = true, message = "Request rejected" , friendList = viewModel});
+                var requests = await _friendService.GetFriendsAsync(userId, lastfriendId, limit);
+                return Ok(requests);
             }
-            catch (InvalidDataException ex)
+            catch (ArgumentException ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 400);
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-
-        [HttpGet]
-        [Route("Friend/GetFriends")]
-        public async Task<IActionResult> GetAcceptedRequests()
-        {
-            try
-            {
-                var userId = UserHelper.GetCurrentUserId(HttpContext);
-                var requests = await _friendService.GetByUserIdAsync(userId);
-                var viewModel = new List<FriendRequestViewModel>();
-
-                foreach (var request in requests)
-                {
-                    if (request.IsAccepted)
-                    {
-                        var friend = await _userService.GetByIdAsync(request.FriendId);
-                        viewModel.Add(new FriendRequestViewModel
-                        {
-                            RequestId = request.Id,
-                            SenderId = friend.Id, // ID друга (відправника заявки)
-                            SenderName = friend.UserName, // Ім'я друга
-                            SenderDescription = friend.Description // Опис друга
-                        });
-                    }
-                }
-                return JsonResponse(new { success = true, message = "Request rejected", friendList = viewModel });
-            }
-            catch (InvalidDataException ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 400);
-            }
-            catch (Exception ex)
-            {
-                return JsonResponse(new { success = false, message = ex.Message }, 500);
-            }
-        }
-
     }
 }
