@@ -11,7 +11,7 @@ export default function MyProfilePage() {
     description: "",
     profilePicture: "",
   });
-
+	
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     userName: "",
@@ -21,16 +21,16 @@ export default function MyProfilePage() {
     description: "",
     password: "",
   });
-
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const response = await axios.get("http://localhost:5021/api/profile/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(`${API_BASE_URL}/api/profile/me`, {
+			headers: { Authorization: `Bearer ${token}` },
+		});
 
         setProfile(response.data.profile);
       } catch (error) {
@@ -67,9 +67,9 @@ export default function MyProfilePage() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      await axios.post("http://localhost:5021/api/profile/me/edit", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
+		headers: { Authorization: `Bearer ${token}` },
+	  });
 
       setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
       handleClose();
@@ -112,7 +112,6 @@ export default function MyProfilePage() {
           <TextField margin="dense" name="lastName" label="Last Name" fullWidth value={formData.lastName} onChange={handleChange} />
           <TextField margin="dense" name="description" label="Description" fullWidth value={formData.description} onChange={handleChange} />
           <TextField margin="dense" name="email" label="Email" fullWidth value={formData.email} onChange={handleChange} />
-          <TextField margin="dense" name="password" label="Password" type="password" fullWidth value={formData.password} onChange={handleChange} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">Cancel</Button>
