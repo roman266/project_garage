@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import {
   AppBar,
@@ -14,6 +14,7 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
+import { API_URL } from "../constants";
 
 const drawerWidth = 240;
 
@@ -26,6 +27,28 @@ const menuItems = [
 ];
 
 const Layout = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/account/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        // Clear user data from localStorage
+        localStorage.removeItem('userId');
+        // Redirect to login page
+        navigate('/login');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
       <Drawer
@@ -85,6 +108,15 @@ const Layout = () => {
               Post
             </Button>
           </Link>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth 
+            sx={{ borderRadius: "40px", backgroundColor: "#365B87", marginTop: "10px" }}
+            onClick={handleLogout}
+          >
+            Log out
+          </Button>
         </Box>
       </Drawer>
 
