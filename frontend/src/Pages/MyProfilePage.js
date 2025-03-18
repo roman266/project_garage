@@ -25,12 +25,10 @@ export default function MyProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
-
         const response = await axios.get(`${API_BASE_URL}/api/profile/me`, {
-			headers: { Authorization: `Bearer ${token}` },
+			withCredentials: true,
 		});
+
 
         setProfile(response.data.profile);
       } catch (error) {
@@ -64,12 +62,10 @@ export default function MyProfilePage() {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
+		await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
+			withCredentials: true,
+		});
 
-      await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
-		headers: { Authorization: `Bearer ${token}` },
-	  });
 
       setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
       handleClose();
