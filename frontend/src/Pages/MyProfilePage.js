@@ -21,7 +21,7 @@ export default function MyProfilePage() {
     description: "",
     password: "",
   });
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
   useEffect(() => {
     const fetchProfile = async () => {
       try {
