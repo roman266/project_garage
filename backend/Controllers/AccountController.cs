@@ -4,6 +4,12 @@ using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using project_garage.Models.DbModels;
+using Microsoft.IdentityModel.Tokens;
+using project_garage.Data;
+using System.Net;
+using System.Net.Http;
 
 namespace project_garage.Controllers
 {
@@ -13,13 +19,32 @@ namespace project_garage.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
-        private readonly IJwtService _jwtService;
+        private readonly ITokenService _tokenService;
 
-        public AccountController(IUserService userService, IAuthService authService, IJwtService jwtService)
+        public AccountController(IUserService userService, IAuthService authService, ITokenService tokenService)
         {
             _userService = userService;
             _authService = authService;
-            _jwtService = jwtService;
+            _tokenService = tokenService;
+        }
+
+        public void ClearAuthCookie()
+        {
+            Response.Cookies.Append("AccessToken", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(-1)
+            });
+
+            Response.Cookies.Append("RefreshToken", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(-1)
+            });
         }
 
         [HttpPost("register")]
@@ -58,8 +83,10 @@ namespace project_garage.Controllers
             try
             {
                 var authDto = await _authService.SignInAsync(model.Email, model.Password);
-                Response.Cookies.Append("AuthToken", authDto.JwtToken, authDto.CookieOptions);
-                return Ok( new { message = "You successfully logged in", userId = authDto.UserId });
+                ClearAuthCookie();
+                Response.Cookies.Append("AccessToken", authDto.AccessToken, authDto.AccessCookieOptions);
+                Response.Cookies.Append("RefreshToken", authDto.RefreshToken, authDto.RefreshCookieOptions);
+                return Ok( new { message = "You successfully logged in"});
             }
             catch (Exception ex)
             {
@@ -67,13 +94,35 @@ namespace project_garage.Controllers
             }
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+
+            try
+            {
+                var authDto = await _tokenService.RenewAccessTokenAsync();
+                Response.Cookies.Append("AccessToken", authDto.AccessToken, authDto.AccessCookieOptions);
+                Response.Cookies.Append("RefreshToken", authDto.RefreshToken, authDto.RefreshCookieOptions);
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Invalid refresh token");
+            }
+        }
+
         [Authorize]
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
             try
             {
-                Response.Cookies.Delete("AuthToken");
+                var refreshToken = HttpContext.Request.Cookies["RefreshToken"];
+
+                if (!string.IsNullOrEmpty(refreshToken))
+                    await _tokenService.RevokeRefreshTokenAsync(refreshToken);
+                
+                ClearAuthCookie();
                 return Ok(new { message = "Logged out" });
             }
             catch (Exception ex)
@@ -81,5 +130,6 @@ namespace project_garage.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
     }
 }

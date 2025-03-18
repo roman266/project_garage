@@ -15,6 +15,7 @@ namespace project_garage.Data
         public DbSet<ReactionModel> ReactionActions { get; set; }
         public DbSet<UserConversationModel> UserConversations { get; set; }
         public DbSet<UserInterestModel> UserInterests { get; set; }
+        public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -112,6 +113,12 @@ namespace project_garage.Data
                 .HasOne(ui => ui.User)
                 .WithMany(u => u.UserInterests)
                 .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RefreshTokenModel>()
+                .HasOne(rt => rt.User)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

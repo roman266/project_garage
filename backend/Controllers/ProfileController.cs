@@ -80,6 +80,10 @@ namespace project_garage.Controllers
                 };
                 return Ok(new { profile = viewModel });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An unexpected error ocurred", delatils = ex.Message });

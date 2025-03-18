@@ -6,7 +6,5 @@ namespace project_garage.Interfaces.IService
     public interface IAuthService
     {
         Task<AuthDto> SignInAsync(string email, string password);
-        Task SignOutAsync();
-        
     }
 }
