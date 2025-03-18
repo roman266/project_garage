@@ -28,7 +28,7 @@ namespace project_garage.Controllers
         }
 
         [HttpGet("feed")]
-        public async Task<IActionResult> GetUserFeed()
+        public async Task<IActionResult> GetUserFeed(string? lastRequestId, int limit = 10)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace project_garage.Controllers
                     return NotFound(new { success = false, message = "User not found" });
                 }
 
-                var friends = await _friendService.GetByUserIdAsync(userId);
+                var friends = await _friendService.GetFriendsAsync(userId, lastRequestId, limit);
                 var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
 
                 var posts = new List<PostModel>();
