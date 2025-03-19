@@ -1,5 +1,7 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { setAuthFailureCallback } from "./utils/apiClient";
+import { useEffect } from "react";
 import LoginPage from "./Pages/LoginPage";
 import HomePage from "./Pages/HomePage";
 import RegistrationPage from "./Pages/RegistrationPage";
@@ -9,18 +11,41 @@ import FriendsPage from "./Pages/FriendsPage";
 import MyPostsPage from "./Pages/MyPostsPage";
 import MyProfilePage from "./Pages/MyProfilePage";
 import CreatePostPage from "./Pages/CreatePostPage";
-import ProtectedRoute from "./Components/ProtectedRoute";  // New Component for protected routes
+import ProtectedRoute from "./Components/ProtectedRoute";
+import PublicRoute from "./Components/PublicRoute";  // We'll create this component
+
+// Компонент для встановлення колбеку автентифікації
+const AuthCallbackSetter = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    setAuthFailureCallback(() => {
+      navigate('/login', { replace: true });
+    });
+  }, [navigate]);
+  
+  return null;
+};
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <AuthCallbackSetter />
         <Routes>
-          {/* Public routes */}
-          <Route path="login" element={<LoginPage />} />
-          <Route path="registration" element={<RegistrationPage />} />
+          {/* Public routes - only for non-authenticated users */}
+          <Route path="login" element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } />
+          <Route path="registration" element={
+            <PublicRoute>
+              <RegistrationPage />
+            </PublicRoute>
+          } />
           
-          {/* Protected routes - wrap Layout in ProtectedRoute */}
+          {/* Protected routes - only for authenticated users */}
           <Route path="/" element={
             <ProtectedRoute>
               <Layout />

@@ -1,19 +1,18 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
   
-  console.log("ProtectedRoute rendering with state:", { isAuthenticated, isLoading });
-
   if (isLoading) {
     return <div>Loading authentication...</div>;
   }
 
   if (!isAuthenticated) {
-    console.log("Not authenticated in ProtectedRoute, redirecting to login");
-    return <Navigate to="/login" replace />;
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
