@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import {
@@ -14,7 +14,7 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
-import { API_URL } from "../constants";
+import { useAuth } from "../context/AuthContext";
 
 const drawerWidth = 240;
 
@@ -27,27 +27,41 @@ const menuItems = [
 ];
 
 const Layout = () => {
+  const { user, logout, isLoading, isAuthenticated, fetchUserProfile } = useAuth();
   const navigate = useNavigate();
-
+  
+  // Simplify the useEffect to just log the state
+  useEffect(() => {
+    console.log("Layout mounted, auth state:", { isAuthenticated, isLoading, user });
+    
+    // If not authenticated and not loading, fetch profile once
+    if (!isAuthenticated && !isLoading) {
+      console.log("Attempting to fetch profile from Layout");
+      fetchUserProfile();
+    }
+  }, [isAuthenticated, isLoading, fetchUserProfile]);
+  
+  // Handle logout with local navigation
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/account/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        // Clear user data from localStorage
-        localStorage.removeItem('userId');
-        // Redirect to login page
-        navigate('/login');
-      } else {
-        console.error('Logout failed');
-      }
+      await logout();
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
+
+  // Add more detailed logging
+  console.log("Layout rendering with state:", { isAuthenticated, isLoading, user });
+
+  if (isLoading) {
+    return <div>Loading authentication state...</div>;
+  }
+
+  if (!isAuthenticated) {
+    console.log("Not authenticated in Layout render");
+    return <div>Not authenticated, redirecting...</div>;
+  }
 
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
@@ -79,7 +93,7 @@ const Layout = () => {
             <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
           </Typography>
         </Box>
-        <ProfileCard />
+        <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
             <ListItem key={text} sx={{ cursor: "pointer", paddingY: 1 }}>

@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./Pages/LoginPage";
 import HomePage from "./Pages/HomePage";
 import RegistrationPage from "./Pages/RegistrationPage";
@@ -12,21 +13,29 @@ import ProtectedRoute from "./Components/ProtectedRoute";  // New Component for 
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/registration" element={<RegistrationPage />} />
-
-        <Route element={<Layout />}>
-          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-          <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
-          <Route path="/my-posts" element={<ProtectedRoute><MyPostsPage /></ProtectedRoute>} />
-          <Route path="/my-profile" element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>} />
-          <Route path="/create-post" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
-        </Route>
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="login" element={<LoginPage />} />
+          <Route path="registration" element={<RegistrationPage />} />
+          
+          {/* Protected routes - wrap Layout in ProtectedRoute */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<HomePage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/friends" element={<FriendsPage />} />
+            <Route path="/my-posts" element={<MyPostsPage />} />
+            <Route path="/my-profile" element={<MyProfilePage />} />
+            <Route path="/create-post" element={<CreatePostPage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
