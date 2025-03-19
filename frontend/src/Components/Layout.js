@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import {
@@ -27,19 +27,8 @@ const menuItems = [
 ];
 
 const Layout = () => {
-  const { user, logout, isLoading, isAuthenticated, fetchUserProfile } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
-  
-  // Simplify the useEffect to just log the state
-  useEffect(() => {
-    console.log("Layout mounted, auth state:", { isAuthenticated, isLoading, user });
-    
-    // If not authenticated and not loading, fetch profile once
-    if (!isAuthenticated && !isLoading) {
-      console.log("Attempting to fetch profile from Layout");
-      fetchUserProfile();
-    }
-  }, [isAuthenticated, isLoading, fetchUserProfile]);
   
   // Handle logout with local navigation
   const handleLogout = async () => {
@@ -51,16 +40,8 @@ const Layout = () => {
     }
   };
 
-  // Add more detailed logging
-  console.log("Layout rendering with state:", { isAuthenticated, isLoading, user });
-
   if (isLoading) {
-    return <div>Loading authentication state...</div>;
-  }
-
-  if (!isAuthenticated) {
-    console.log("Not authenticated in Layout render");
-    return <div>Not authenticated, redirecting...</div>;
+    return <div>Loading...</div>;
   }
 
   return (

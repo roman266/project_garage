@@ -1,70 +1,100 @@
 import axios from "axios";
 import { API_URL } from "../constants";
 
-// Flag to prevent multiple refresh attempts
-let isRefreshing = false;
-let refreshFailed = false;
-
-// Create axios instance with interceptors for token refresh
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true
+const API = axios.create({
+  baseURL: `${API_URL}/api`,
+  withCredentials: true,
 });
 
-// Add response interceptor for handling token refresh
-api.interceptors.response.use(
-  response => response,
-  async error => {
-    const originalRequest = error.config;
-    
-    // For debugging
-    console.log("API Error:", error.response?.status, originalRequest.url);
-    
-    // If this is a refresh token request that failed
-    if (originalRequest.url === '/api/account/refresh-token') {
-      console.log("Refresh token request failed");
-      window.location.href = '/login';
-      return Promise.reject(error);
-    }
-    
-    // If the error is 401 and we haven't tried to refresh the token yet
-    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshing) {
-      console.log("Attempting to refresh token");
-      originalRequest._retry = true;
-      isRefreshing = true;
-      
+let isRefreshing = false;
+let refreshSubscribers = [];
+let authFailureCallback = null;
+
+// Функція для встановлення колбеку при невдалій автентифікації
+export const setAuthFailureCallback = (callback) => {
+  authFailureCallback = callback;
+};
+
+const subscribeToRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
+const onRefreshed = () => {
+  refreshSubscribers.forEach((callback) => callback());
+  refreshSubscribers = [];
+};
+
+// Функція для перевірки автентифікації користувача
+export const checkAuthentication = async () => {
+  try {
+    const response = await API.get('/profile/me');
+    return { isAuthenticated: true, profile: response.data.profile };
+  } catch (error) {
+    if (error.response?.status === 401) {
       try {
-        // Attempt to refresh the token
-        const refreshResponse = await axios.post(`${API_URL}/api/account/refresh-token`, {}, { 
+        // Спроба оновити токен
+        await axios.post(`${API_URL}/api/account/refresh-token`, {}, { 
           withCredentials: true 
         });
         
-        console.log("Token refresh successful", refreshResponse.status);
-        
-        // Reset the flag after successful refresh
-        isRefreshing = false;
-        
-        // Retry the original request with the new token
-        return api(originalRequest);
+        // Якщо оновлення токена успішне, повторно перевіряємо профіль
+        const retryResponse = await API.get('/profile/me');
+        return { isAuthenticated: true, profile: retryResponse.data.profile };
       } catch (refreshError) {
-        // If refresh fails, mark as failed and redirect to login
-        console.error("Token refresh failed:", refreshError);
+        // Якщо оновлення токена не вдалося, користувач не автентифікований
+        if (authFailureCallback) {
+          authFailureCallback();
+        }
+        return { isAuthenticated: false, profile: null };
+      }
+    }
+    return { isAuthenticated: false, profile: null };
+  }
+};
+
+API.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeToRefresh(() => {
+            resolve(axios(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(`${API_URL}/api/account/refresh-token`, {}, { 
+          withCredentials: true 
+        });
+        
+        onRefreshed();
         isRefreshing = false;
-        refreshFailed = true;
+
+        return axios(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
         
-        // Clear the failed flag after a delay
-        setTimeout(() => {
-          refreshFailed = false;
-        }, 5000);
+        // Використовуємо колбек замість прямого перенаправлення
+        if (authFailureCallback) {
+          authFailureCallback();
+        } else {
+          // Запасний варіант, якщо колбек не встановлено
+          window.location.href = "/login";
+        }
         
-        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-    
-    // For other errors, just reject the promise
+
     return Promise.reject(error);
   }
 );
 
-export default api;
+export default API;
