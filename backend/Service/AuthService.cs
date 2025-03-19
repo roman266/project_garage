@@ -9,12 +9,12 @@ namespace project_garage.Service
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private readonly IJwtService _jwtService;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(IUserService userService, IJwtService jwtService)
+        public AuthService(IUserService userService, ITokenService tokenService)
         {
             _userService = userService;
-            _jwtService = jwtService;
+            _tokenService = tokenService;
         }
 
         public async Task<AuthDto> SignInAsync(string email, string password)
@@ -32,31 +32,9 @@ namespace project_garage.Service
             if (!user.EmailConfirmed)
                 throw new InvalidOperationException("You need to confirm your email");
 
-            var token = _jwtService.GenerateToken(user.Id, user.Email);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(1)
-            };
-
-            var authDto = new AuthDto
-            {
-                JwtToken = token,
-                CookieOptions = cookieOptions,
-                UserId = user.Id
-            };
+            var authDto = await _tokenService.StartSessionAsync(user.Id, user.Email);
 
             return authDto; 
-        }
-
-        public async Task SignOutAsync()
-        {
-            var user = await _userService.GetByIdAsync("1");
-            if (user == null)
-                Console.WriteLine("Logout");
         }
     }
 }
