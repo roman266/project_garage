@@ -18,7 +18,6 @@ import { API_URL } from "../constants";
 
 const drawerWidth = 240;
 
-// Используйте относительные пути для ссылок
 const menuItems = [
   { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
   { text: "Friends", imgSrc: "/friends.svg", pageHref: "/friends" },
