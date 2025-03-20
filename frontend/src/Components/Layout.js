@@ -34,11 +34,12 @@ const Layout = () => {
         method: 'POST',
         credentials: 'include',
       });
-      
+  
       if (response.ok) {
-        // Clear user data from localStorage
-        localStorage.removeItem('userId');
-        // Redirect to login page
+        localStorage.removeItem('userId'); 
+        localStorage.removeItem('authToken'); 
+        document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; 
+  
         navigate('/login');
       } else {
         console.error('Logout failed');

@@ -22,14 +22,12 @@ export default function ChatWindow({ selectedChatId }) {
     connect.start()
       .then(() => {
         console.log("SignalR connected");
-
         connect.on("ReceiveMessage", (message) => {
           setMessages((prevMessages) => [...prevMessages, message]);
         });
-
         connectionRef.current = connect;
 
-        axios.get(`${API_URL}/api/conversation/get-messages/${selectedChatId}`, { withCredentials: true })
+        axios.get(`${API_URL}/api/conversations/${selectedChatId}/messages`, { withCredentials: true })
           .then((response) => setMessages(response.data))
           .catch((error) => console.error("Error fetching messages", error));
       })
@@ -48,6 +46,7 @@ export default function ChatWindow({ selectedChatId }) {
     if (newMessage.trim() && connection) {
       try {
         await connection.invoke("SendMessage", selectedChatId, newMessage);
+        setMessages((prevMessages) => [...prevMessages, { text: newMessage, isMe: true }]);
         setNewMessage("");
       } catch (error) {
         console.error("Error sending message", error);
@@ -55,7 +54,11 @@ export default function ChatWindow({ selectedChatId }) {
     }
   };
 
-  if (!selectedChatId) return <Box display="flex" flex={1} alignItems="center" justifyContent="center" color="gray" backgroundColor="white">Select a chat</Box>;
+  if (!selectedChatId) return (
+    <Box display="flex" flex={1} alignItems="center" justifyContent="center" color="gray" backgroundColor="white">
+      Select a chat
+    </Box>
+  );
 
   return (
     <Box display="flex" flexDirection="column" flex={1} component={Paper} elevation={2}>
@@ -81,35 +84,18 @@ export default function ChatWindow({ selectedChatId }) {
           </Box>
         ))}
       </Box>
-      <Box padding={2} bgcolor="#e0e0e0" display="flex" alignItems="center" borderRadius={1.7}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "#d6d6d6",
-            borderRadius: 50,
-            flex: 1,
-            padding: "5px 10px",
-          }}
-        >
+      <Box padding={2} bgcolor="#e0e0e0" display="flex" alignItems="center">
+        <Box sx={{ display: "flex", alignItems: "center", backgroundColor: "#d6d6d6", borderRadius: 50, flex: 1, padding: "5px 10px" }}>
           <InputBase
             sx={{ flex: 1, marginLeft: 1 }}
             placeholder="Type message here"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && newMessage.trim()) {
-                handleSendMessage();
-              }
-            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
           />
         </Box>
-        <IconButton sx={{ marginLeft: 1 }}>
-          <InsertEmoticonIcon sx={{ color: "#1e497c" }} />
-        </IconButton>
-        <IconButton sx={{ marginLeft: 1 }}>
-          <AddIcon sx={{ color: "#1e497c" }} />
-        </IconButton>
+        <IconButton><InsertEmoticonIcon sx={{ color: "#1e497c" }} /></IconButton>
+        <IconButton><AddIcon sx={{ color: "#1e497c" }} /></IconButton>
       </Box>
     </Box>
   );
