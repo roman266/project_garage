@@ -14,7 +14,7 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
-import { API_URL } from "../constants";
+import { useAuth } from "../context/AuthContext";
 
 const drawerWidth = 240;
 
@@ -26,28 +26,22 @@ const menuItems = [
 ];
 
 const Layout = () => {
+  const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
-
+  
+  // Handle logout with local navigation
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/account/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-  
-      if (response.ok) {
-        localStorage.removeItem('userId'); 
-        localStorage.removeItem('authToken'); 
-        document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; 
-  
-        navigate('/login');
-      } else {
-        console.error('Logout failed');
-      }
+      await logout();
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
@@ -79,7 +73,7 @@ const Layout = () => {
             <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
           </Typography>
         </Box>
-        <ProfileCard />
+        <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
             <ListItem key={text} sx={{ cursor: "pointer", paddingY: 1 }}>

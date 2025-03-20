@@ -2,8 +2,9 @@
 {
     public class AuthDto
     {
-        public string JwtToken {  get; set; }
-        public CookieOptions CookieOptions { get; set; }
-        public string UserId { get; set; }
+        public string AccessToken {  get; set; }
+        public string RefreshToken { get; set; }
+        public CookieOptions AccessCookieOptions { get; set; }
+        public CookieOptions RefreshCookieOptions { get; set; }
     }
 }

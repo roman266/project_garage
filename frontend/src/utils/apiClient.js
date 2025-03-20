@@ -1,0 +1,100 @@
+import axios from "axios";
+import { API_URL } from "../constants";
+
+const API = axios.create({
+  baseURL: `${API_URL}/api`,
+  withCredentials: true,
+});
+
+let isRefreshing = false;
+let refreshSubscribers = [];
+let authFailureCallback = null;
+
+// Функція для встановлення колбеку при невдалій автентифікації
+export const setAuthFailureCallback = (callback) => {
+  authFailureCallback = callback;
+};
+
+const subscribeToRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
+const onRefreshed = () => {
+  refreshSubscribers.forEach((callback) => callback());
+  refreshSubscribers = [];
+};
+
+// Функція для перевірки автентифікації користувача
+export const checkAuthentication = async () => {
+  try {
+    const response = await API.get('/profile/me');
+    return { isAuthenticated: true, profile: response.data.profile };
+  } catch (error) {
+    if (error.response?.status === 401) {
+      try {
+        // Спроба оновити токен
+        await axios.post(`${API_URL}/api/account/refresh-token`, {}, { 
+          withCredentials: true 
+        });
+        
+        // Якщо оновлення токена успішне, повторно перевіряємо профіль
+        const retryResponse = await API.get('/profile/me');
+        return { isAuthenticated: true, profile: retryResponse.data.profile };
+      } catch (refreshError) {
+        // Якщо оновлення токена не вдалося, користувач не автентифікований
+        if (authFailureCallback) {
+          authFailureCallback();
+        }
+        return { isAuthenticated: false, profile: null };
+      }
+    }
+    return { isAuthenticated: false, profile: null };
+  }
+};
+
+API.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeToRefresh(() => {
+            resolve(axios(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(`${API_URL}/api/account/refresh-token`, {}, { 
+          withCredentials: true 
+        });
+        
+        onRefreshed();
+        isRefreshing = false;
+
+        return axios(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
+        
+        // Використовуємо колбек замість прямого перенаправлення
+        if (authFailureCallback) {
+          authFailureCallback();
+        } else {
+          // Запасний варіант, якщо колбек не встановлено
+          window.location.href = "/login";
+        }
+        
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default API;

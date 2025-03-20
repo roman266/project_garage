@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using project_garage.Models.CloudinarySettings;
 using System.Text.Json.Serialization;
+using project_garage.Models.JWTSettings;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -46,8 +47,14 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
 builder.Services.AddScoped<IReactionService, ReactionService>();
 builder.Services.AddScoped<IUserConversationRepository, UserConversationRepository>();
-builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserInterestRepository, UserInterestRepository>();
+
+builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddSingleton<JWTSettings>();
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
 builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 {
@@ -56,7 +63,7 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric= false;
+    options.Password.RequireNonAlphanumeric = false;
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -75,7 +82,6 @@ builder.Services.ConfigureApplicationCookie(options =>
         return Task.CompletedTask;
     };
 });
-
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
@@ -109,9 +115,9 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            if (context.Request.Cookies.ContainsKey("AuthToken"))
+            if (context.Request.Cookies.ContainsKey("AccessToken"))
             {
-                context.Token = context.Request.Cookies["AuthToken"];
+                context.Token = context.Request.Cookies["AccessToken"];
             }
             return Task.CompletedTask;
         }
@@ -122,15 +128,15 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
         ValidateIssuerSigningKey = true,
         ValidIssuer = configuration["Jwt:Issuer"],
         ValidAudience = configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding
+        .UTF8.GetBytes(configuration["Jwt:Key"]))
     };
 });
 
-builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
-builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddAuthorization();

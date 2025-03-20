@@ -11,6 +11,7 @@ namespace project_garage.Service
         {
             _friendRepository = friendRepository;
         }
+
         //user - curr user, friend - target user
         public async Task<bool> IsFriendAsync(string userId, string friendId)
         {
@@ -37,73 +38,75 @@ namespace project_garage.Service
         {
             if (string.IsNullOrEmpty(id))
                 throw new Exception("Searching failed");
-            var request = await _friendRepository.GetById(id);
+            var request = await _friendRepository.GetByIdAsync(id);
             return request;
         }
 
-        public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
+        public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (string.IsNullOrEmpty(userId))
-                throw new Exception("User Id is null here");
-            var friends = await _friendRepository.GetByUserIdAsync(userId);
-            return friends;
+            if (!string.IsNullOrEmpty(userId))
+                throw new ArgumentException("Invalid userId");
+
+            var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
+
+            return requests;
         }
 
-        public async Task<bool> SendFriendRequestAsync(string userId, string friendId)
+        public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        {
+            if (!string.IsNullOrEmpty(userId))
+                throw new ArgumentException("Invalid userId");
+            var requests = await _friendRepository.GetIncomingRequestsAsync(userId, lastRequestId, limit);
+            return requests;
+        }
+
+        public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        {
+            if (!string.IsNullOrEmpty(userId))
+                throw new ArgumentException("Invalid userId");
+            var requests = await _friendRepository.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
+            return requests;
+        }
+
+        public async Task SendFriendRequestAsync(string userId, string friendId)
         {
             if (!await CanAddFriendAsync(userId, friendId))
-            {
-                return false;
-            }
+                throw new InvalidOperationException("Users already are in friendship");
 
             var friendRequest = new FriendModel
             {
                 Id = Guid.NewGuid().ToString(),
                 UserId = userId,
                 FriendId = friendId,
-                IsAccepted = false
+                IsAccepted = false,
             };
 
             await _friendRepository.CreateNewRequestAsync(friendRequest);
-            return true;
         }
 
-        public async Task AcceptRequestAsync(string userId, string friendId)
+        public async Task AcceptRequestAsync(string requestId)
         {
-            var list = await GetByUserIdAsync(userId);
-            foreach (var friend in list)
-            {
-                if (friend.FriendId == friendId)
-                {
-                    friend.IsAccepted = true;
-                    await _friendRepository.UpdateRequestAsync(friend);
-                }
-            }
+            var request = await _friendRepository.GetByIdAsync(requestId);
+            if (request == null)
+                throw new ArgumentException("Request with this id doesn't exist");
+
+            if (request.IsAccepted)
+                throw new InvalidOperationException("Request already accepted");
+
+            request.IsAccepted = true;
+            await _friendRepository.UpdateRequestAsync(request);
         }
 
-        public async Task RejectOrDeleteAsync(string userId, string friendId)
+        public async Task RejectOrDeleteAsync(string requestId)
         {
-            var list = await GetByUserIdAsync(userId);
-            foreach (var friend in list)
-            {
-                if (friend.FriendId == friendId)
-                {
-                    await _friendRepository.DeleteFriendAsync(friend);
-                }
-            }
+            var request = await _friendRepository.GetByIdAsync(requestId);
+            await _friendRepository.DeleteFriendAsync(request);
         }
 
-        public async Task<int> GetFriendsCount(string id) 
+        public async Task<int> GetFriendsCount(string userId) 
         {
-            try
-            {
-                var list = await _friendRepository.GetByUserIdAsync(id);
+                var list = await _friendRepository.GetByUserIdAsync(userId);
                 return list.Count;
-            }
-            catch (Exception ex)
-            {
-                return 0;
-            }
         }
     }
 }

@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
-import { API_URL } from "../constants";
 import * as yup from "yup";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
@@ -10,13 +11,15 @@ const validationSchema = yup.object({
 });
 
 const LoginForm = () => {
-  // Check if user is already logged in
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      window.location.href = "/";
+    if (isAuthenticated && !isLoading) {
+      navigate('/', { replace: true });
     }
-  }, []);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const formik = useFormik({
     initialValues: {
@@ -26,26 +29,13 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch(`${API_URL}/api/account/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
+        const result = await login(values);
+        
+        if (result.success) {
           console.log("Login successful");
-          
-          if (data.userId) {
-            localStorage.setItem('userId', data.userId);
-          }
-
-          window.location.href = "/";
+          navigate('/', { replace: true });
         } else {
-          setErrors({ email: "Invalid email or password" });
+          setErrors({ email: result.error || "Invalid email or password" });
         }
       } catch (error) {
         console.error("Login error:", error);

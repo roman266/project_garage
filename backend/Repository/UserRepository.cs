@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
-using System.Security.Claims;
 
 namespace project_garage.Repository
 {
     public class UserRepository : IUserRepository
     {
-        public readonly UserManager<UserModel> _userManager;
+        private readonly UserManager<UserModel> _userManager;
         public UserRepository(UserManager<UserModel> userManager) 
         {
             _userManager = userManager;
@@ -60,24 +58,11 @@ namespace project_garage.Repository
             return result;
         }
 
-        public async Task<IdentityResult> UpdateUserPasswordAsync(string id, string password)
+        public async Task<IdentityResult> UpdateUserPasswordAsync(string userId, string password)
         {
-            var user = await GetByIdAsync(id);
-            if (user == null)
-            {
-                throw new InvalidOperationException("User is null");
-            }
-
-            if (!string.IsNullOrEmpty(password))
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, password);
-                if (!result.Succeeded)
-                {
-                    return result;
-                }
-            }
-            throw new InvalidOperationException("Somthing go wrong");
+            var user = await GetByIdAsync(userId);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            return await _userManager.ResetPasswordAsync(user, token, password);
         }
 
         public async Task<Boolean> CheckPasswordAsync(UserModel user, string password)

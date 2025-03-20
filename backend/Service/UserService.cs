@@ -74,7 +74,7 @@ namespace project_garage.Service
             return user;
         }
 
-        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string firstName, string lastName, string description)
+        public async Task<IdentityResult> UpdateUserInfoAsync(string userId, string userName, string firstName, string lastName, string description, string email, string password)
         {
             if (string.IsNullOrWhiteSpace(userId))
                 throw new ArgumentException("Invalid userId");
@@ -85,12 +85,25 @@ namespace project_garage.Service
             user.LastName = string.IsNullOrWhiteSpace(lastName) ? user.LastName : lastName;
             user.Description = string.IsNullOrWhiteSpace(description) ? user.Description : description;
 
+            if (!string.IsNullOrEmpty(description))
+                user.Description = description;
+
+            if (!string.IsNullOrEmpty(email))
+                user.Email = email;
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                var result = await _userRepository.UpdateUserPasswordAsync(user.Id, password);
+                if (!result.Succeeded)
+                    return result;
+            }
+
             return await _userRepository.UpdateUserInfoAsync(user);
         }
 
         public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
         {
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(picture))
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(picture))
                 throw new ArgumentException("Wrong input data");
 
             var user = await GetByIdAsync(userId);
