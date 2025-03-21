@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
@@ -11,38 +12,46 @@ namespace project_garage.Service
     {
         private readonly IUserRepository _userRepository;
         private readonly IEmailSender _emailSender;
+        private readonly string _baseUrl;
 
-        public UserService(IUserRepository userRepository) 
+        public UserService(IUserRepository userRepository, IConfiguration config) 
         {
             _userRepository = userRepository;
             _emailSender = new EmailSender();
+            _baseUrl = config["MailSender:FrontendURL"];
         }
 
-        public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password, string baseUrl)
+        public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password)
         {
+            
             var isUserExist = await CheckForExistanceByEmail(email);
+            
 
             if (isUserExist)
                 throw new InvalidOperationException("User with this email already exists");
 
-            var user = new UserModel
+            var userModel = new UserModel
                 {
                     UserName = userName,
                     Email = email,
                     EmailConfirmationCode = Guid.NewGuid().ToString()
                 };
 
-            var result = await _userRepository.CreateUserAsync(user, password);
-
+            var result = await _userRepository.CreateUserAsync(userModel, password);
             if (!result.Succeeded)
                 throw new ArgumentException("This username is already in use");
 
-            var confirmationLink = $"{baseUrl}confirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
-
-            await _emailSender.SendEmailAsync(email, "Підтвердження email",
-                $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
+            await SendEmailAsync(email);
 
             return result;
+        }
+
+        public async Task SendEmailAsync(string email)
+        {
+            var user = await _userRepository.GetByEmailAsync(email);
+            var confirmationLink = $"{_baseUrl}/confirmEmail?userId={user.Id}&code={user.EmailConfirmationCode}";
+            await _emailSender.SendEmailAsync(email, "Підтвердження email",
+                $"Перейдіть за посиланням для підтвердження акаунта: <a href='{confirmationLink}'>посилання</a>");
         }
 
         public async Task<bool> CheckForExistanceByEmail(string email)

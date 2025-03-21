@@ -72,6 +72,8 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.Expiration = TimeSpan.Zero;
     options.SlidingExpiration = false;
     options.LoginPath = PathString.Empty;

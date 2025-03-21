@@ -9,10 +9,17 @@ const API = axios.create({
 let isRefreshing = false;
 let refreshSubscribers = [];
 let authFailureCallback = null;
+let publicPaths = ['/login', '/registration', '/confirmEmail']; // Add public paths that don't need redirection
 
 // Функція для встановлення колбеку при невдалій автентифікації
 export const setAuthFailureCallback = (callback) => {
   authFailureCallback = callback;
+};
+
+// Function to check if current path is public
+const isPublicPath = () => {
+  const path = window.location.pathname;
+  return publicPaths.some(publicPath => path === publicPath);
 };
 
 const subscribeToRefresh = (callback) => {
@@ -42,7 +49,8 @@ export const checkAuthentication = async () => {
         return { isAuthenticated: true, profile: retryResponse.data.profile };
       } catch (refreshError) {
         // Якщо оновлення токена не вдалося, користувач не автентифікований
-        if (authFailureCallback) {
+        // Don't trigger callback if we're on a public path
+        if (authFailureCallback && !isPublicPath()) {
           authFailureCallback();
         }
         return { isAuthenticated: false, profile: null };
@@ -81,11 +89,11 @@ API.interceptors.response.use(
       } catch (refreshError) {
         isRefreshing = false;
         
-        // Використовуємо колбек замість прямого перенаправлення
-        if (authFailureCallback) {
+        // Don't redirect if we're on a public path
+        if (authFailureCallback && !isPublicPath()) {
           authFailureCallback();
-        } else {
-          // Запасний варіант, якщо колбек не встановлено
+        } else if (!isPublicPath()) {
+          // Запасний варіант, якщо колбек не встановлено і ми не на публічній сторінці
           window.location.href = "/login";
         }
         

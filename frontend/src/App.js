@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { setAuthFailureCallback } from "./utils/apiClient";
 import { useEffect } from "react";
 import LoginPage from "./Pages/LoginPage";
+import ConfirmEmailPage from "./Pages/ConfirmEmailPage"
 import HomePage from "./Pages/HomePage";
 import RegistrationPage from "./Pages/RegistrationPage";
 import Layout from "./Components/Layout";
@@ -33,7 +34,6 @@ function App() {
       <AuthProvider>
         <AuthCallbackSetter />
         <Routes>
-          {/* Public routes - only for non-authenticated users */}
           <Route path="login" element={
             <PublicRoute>
               <LoginPage />
@@ -44,8 +44,12 @@ function App() {
               <RegistrationPage />
             </PublicRoute>
           } />
+          <Route path="confirmEmail" element={
+            <PublicRoute>
+              <ConfirmEmailPage />
+            </PublicRoute>
+          } />
           
-          {/* Protected routes - only for authenticated users */}
           <Route path="/" element={
             <ProtectedRoute>
               <Layout />
