@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { API_URL } from "../constants";
+import { useNavigate } from "react-router-dom"; // Змінено з import { navigate }
+import API from "../utils/apiClient"; // Змінено шлях імпорту
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
@@ -16,13 +17,7 @@ const validationSchema = yup.object({
 
 
 const RegisterForm = () => {
-
-  useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      window.location.href = "/";
-    }
-  }, []);
+  const navigate = useNavigate(); // Додано хук useNavigate
 
   const formik = useFormik({
     initialValues: {
@@ -34,21 +29,25 @@ const RegisterForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch(`${API_URL}/api/account/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+        // Використовуємо API клієнт замість fetch
+        const response = await API.post('/account/register', {
+          email: values.email,
+          username: values.username,
+          password: values.password,
+          confirmPassword: values.confirmPassword
         });
     
-        const data = await response.json(); 
-    
-        if (!response.ok) {
-          throw new Error(data.message || "Something went wrong");
-        }
-    
-        console.log("Registration successful:", data);
+        console.log("Registration successful:", response.data);
+        
+        // Після успішної реєстрації перенаправляємо на сторінку логіну
+        navigate('/login', { replace: true });
+        
       } catch (error) {
         console.error("Registration error:", error);
+        // Показуємо помилку користувачу
+        setErrors({ 
+          email: error.response?.data?.message || "Registration failed. Please try again." 
+        });
       } finally {
         setSubmitting(false);
       }
