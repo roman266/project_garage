@@ -18,7 +18,7 @@ namespace project_garage.Controllers
         private readonly IReactionService _reactionService;
         private readonly ICloudinaryService _cloudinaryService;
 
-        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService, 
+        public ProfileController(IUserService userRepository, IFriendService friendService, IPostService postService,
             IReactionService reactionService, ICloudinaryService cloudinaryService)
         {
             _userService = userRepository;
@@ -42,6 +42,7 @@ namespace project_garage.Controllers
                 {
                     UserId = user.Id,
                     UserName = user.UserName,
+                    Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePicture = user.ProfilePicture,
@@ -70,6 +71,7 @@ namespace project_garage.Controllers
                 {
                     UserId = user.Id,
                     UserName = user.UserName,
+                    Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePicture = user.ProfilePicture,
@@ -86,23 +88,24 @@ namespace project_garage.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An unexpected error ocurred", delatils = ex.Message });
+                return StatusCode(500, new { message = "An unexpected error ocurred", details = ex.Message });
             }
         }
 
         [Authorize]
         [HttpPost("me/edit")]
-        public async Task<IActionResult> EditProfile([FromBody]EditProfileDto editProfileDto)
+        public async Task<IActionResult> EditProfile([FromBody] EditProfileDto editProfileDto)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _userService.UpdateUserInfoAsync(userId, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description);
+                await _userService.UpdateUserInfoAsync(userId, editProfileDto.UserName, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description, editProfileDto.Email, editProfileDto.Password);
+
                 return Ok(new { message = "User info successfully updated" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An unexpected error ocurred", details =ex.Message });
+                return StatusCode(500, new { message = "An unexpected error ocurred", details = ex.Message });
             }
         }
 
@@ -119,9 +122,9 @@ namespace project_garage.Controllers
             {
                 var users = await _userService.SearchUsersAsync(model.Query);
                 return Ok(new { message = users });
-                
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
