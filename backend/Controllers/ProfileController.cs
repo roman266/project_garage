@@ -3,7 +3,7 @@ using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Data;
-using project_garage.Service;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Controllers
 {
@@ -144,6 +144,25 @@ namespace project_garage.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Upload failed", error = ex.Message });
+            }
+        }
+
+        [HttpPatch("change-email")]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto model)
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                await _userService.ChangeUserEmailAsync(model.Password, model.Email, userId);
+                return Ok("Email changed successfully");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message); 
             }
         }
     }

@@ -13,6 +13,7 @@ export default function MyProfilePage() {
   });
 	
   const [open, setOpen] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -51,8 +52,17 @@ export default function MyProfilePage() {
     setOpen(true);
   };
 
+  const changeEmailOnClick = () => {
+    setFormData({
+      email: "",
+      password: "",
+    });
+    setEmailDialogOpen(true);
+  };
+
   const handleClose = () => {
     setOpen(false);
+    setEmailDialogOpen(false);
   };
 
   const handleChange = (e) => {
@@ -60,9 +70,23 @@ export default function MyProfilePage() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSave = async () => {
+  const handleEditSave = async () => {
     try {
 		await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
+			withCredentials: true,
+		});
+
+
+      setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
+      handleClose();
+    } catch (error) {
+      console.error("Error saving profile data", error);
+    }
+  };
+
+  const handleEmailSave = async () => {
+    try {
+		await axios.patch(`${API_BASE_URL}/api/profile/change-email`, formData, {
 			withCredentials: true,
 		});
 
@@ -97,6 +121,8 @@ export default function MyProfilePage() {
         </Box>
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2 }} onClick={handleClickOpen}>Edit</Button>
+          <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, marginLeft: 2 }} onClick={changeEmailOnClick}>Change Email</Button>
+          <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, marginLeft: 2 }}>Change Password</Button>
         </Box>
       </Container>
 
@@ -107,11 +133,22 @@ export default function MyProfilePage() {
           <TextField margin="dense" name="firstName" label="First Name" fullWidth value={formData.firstName} onChange={handleChange} />
           <TextField margin="dense" name="lastName" label="Last Name" fullWidth value={formData.lastName} onChange={handleChange} />
           <TextField margin="dense" name="description" label="Description" fullWidth value={formData.description} onChange={handleChange} />
-          <TextField margin="dense" name="email" label="Email" fullWidth value={formData.email} onChange={handleChange} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">Cancel</Button>
-          <Button onClick={handleSave} color="primary">Save</Button>
+          <Button onClick={handleEditSave} color="primary">Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={emailDialogOpen} onClose={handleClose}>
+        <DialogTitle>Change Email</DialogTitle>
+        <DialogContent>
+          <TextField margin="dense" name="password" label="Enter your password" type="password" fullWidth value={formData.password} onChange={handleChange} />
+          <TextField margin="dense" name="email" label="Enter new email" fullWidth value={formData.email} onChange={handleChange} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">Cancel</Button>
+          <Button onClick={handleEmailSave} color="primary">Save</Button>
         </DialogActions>
       </Dialog>
     </Box>

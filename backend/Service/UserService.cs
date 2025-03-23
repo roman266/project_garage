@@ -94,20 +94,31 @@ namespace project_garage.Service
             user.LastName = string.IsNullOrWhiteSpace(lastName) ? user.LastName : lastName;
             user.Description = string.IsNullOrWhiteSpace(description) ? user.Description : description;
 
-            if (!string.IsNullOrEmpty(description))
-                user.Description = description;
-
-            if (!string.IsNullOrEmpty(email))
-                user.Email = email;
-
-            if (!string.IsNullOrEmpty(password))
-            {
-                var result = await _userRepository.UpdateUserPasswordAsync(user.Id, password);
-                if (!result.Succeeded)
-                    return result;
-            }
-
             return await _userRepository.UpdateUserInfoAsync(user);
+        }
+
+        public async Task<IdentityResult> ChangeUserEmailAsync(string password, string email, string userId)
+        {
+            await ValidateEmailAsync(email);
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (!await _userRepository.CheckPasswordAsync(user, password))
+                throw new InvalidOperationException("Wrong password");
+
+            if(!await (_emailSender as EmailSender)?.TrySendVerificationEmailAsync(email)!)
+                throw new InvalidOperationException($"Email {email} does not exist");
+
+            var result = await _userRepository.UpdateUserEmailAsync(user, email);
+            return result;
+        }
+
+        public async Task ValidateEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("Invalid email");
+
+            if (await CheckForExistanceByEmail(email))
+                throw new InvalidOperationException("User with this email already exist");
         }
 
         public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
