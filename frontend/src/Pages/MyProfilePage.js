@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Avatar, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Box, Typography, Button, Avatar, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Alert, Snackbar } from "@mui/material";
 import axios from "axios";
 
 export default function MyProfilePage() {
@@ -60,9 +60,19 @@ export default function MyProfilePage() {
     setEmailDialogOpen(true);
   };
 
+  const [alertInfo, setAlertInfo] = useState({
+    open: false,
+    message: "",
+    severity: "success" // 'success', 'error', 'warning', 'info'
+  });
+  
   const handleClose = () => {
     setOpen(false);
     setEmailDialogOpen(false);
+  };
+
+  const handleAlertClose = () => {
+    setAlertInfo({ ...alertInfo, open: false });
   };
 
   const handleChange = (e) => {
@@ -79,8 +89,18 @@ export default function MyProfilePage() {
 
       setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
       handleClose();
+      setAlertInfo({
+        open: true,
+        message: "Profile updated successfully!",
+        severity: "success"
+      });
     } catch (error) {
       console.error("Error saving profile data", error);
+      setAlertInfo({
+        open: true,
+        message: error.response?.data?.message || "Failed to update profile",
+        severity: "error"
+      });
     }
   };
 
@@ -91,10 +111,20 @@ export default function MyProfilePage() {
 		});
 
 
-      setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
+      setProfile((prevProfile) => ({ ...prevProfile, email: formData.email }));
       handleClose();
+      setAlertInfo({
+        open: true,
+        message: "Email changed successfully! Please check your inbox to confirm the new email.",
+        severity: "success"
+      });
     } catch (error) {
       console.error("Error saving profile data", error);
+      setAlertInfo({
+        open: true,
+        message: error.response?.data?.message || "Failed to change email",
+        severity: "error"
+      });
     }
   };
 
@@ -151,6 +181,22 @@ export default function MyProfilePage() {
           <Button onClick={handleEmailSave} color="primary">Save</Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Add Snackbar with Alert */}
+      <Snackbar 
+        open={alertInfo.open} 
+        autoHideDuration={6000} 
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleAlertClose} 
+          severity={alertInfo.severity} 
+          sx={{ width: '100%' }}
+        >
+          {alertInfo.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
