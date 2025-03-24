@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 using DotNetEnv;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using project_garage.Interfaces.IService;
 
-namespace project_garage.Data
+namespace project_garage.Service
 {
-    public class EmailSender : IEmailSender
+    public class EmailSenderService : IEmailSenderService
     {
         private readonly string _smtpServer = Env.GetString("SERVER");
         private readonly int _smtpPort = Env.GetInt("PORT");
@@ -70,7 +70,6 @@ namespace project_garage.Data
                                 </body>
                             </html>
                             ",
-
                     IsBodyHtml = true
                 };
                 mailMessage.To.Add(email);
@@ -86,6 +85,26 @@ namespace project_garage.Data
             {
                 return false;
             }
+        }
+
+        public async Task VerifyPasswordChangeAsync(string email, string code)
+        {
+            var client = new SmtpClient(_smtpServer, _smtpPort)
+            {
+                Credentials = new NetworkCredential(_smtpUsername, _smtpPassword),
+                EnableSsl = true
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpUsername),
+                Subject = "Verification code for password change",
+                Body = $"<p>Your code for password change is: {code}</p>",
+                IsBodyHtml = true
+            };
+            mailMessage.To.Add(email);
+
+            await client.SendMailAsync(mailMessage);
         }
     }
 }

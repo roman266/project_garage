@@ -165,5 +165,39 @@ namespace project_garage.Controllers
                 return StatusCode(500, ex.Message); 
             }
         }
+
+        [HttpPost("send-password-verify-email")]
+        public async Task<IActionResult> SendPasswordVereficationEmail()
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                await _userService.SendPasswordResetEmailAsync(userId);
+                return Ok("Email sended successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPatch("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
+        {
+            try
+            {
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                await _userService.ChangeUserPasswordAsync(userId, model.NewPassword, model.ConfirmationCode);
+                return Ok("Password changed successfully");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
