@@ -1,23 +1,23 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
+using System;
 
 namespace project_garage.Service
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailSenderService _emailSender;
         private readonly string _baseUrl;
 
-        public UserService(IUserRepository userRepository, IConfiguration config) 
+        public UserService(IUserRepository userRepository, IConfiguration config, IEmailSenderService emailSender) 
         {
             _userRepository = userRepository;
-            _emailSender = new EmailSender();
+            _emailSender = emailSender;
             _baseUrl = config["MailSender:FrontendURL"];
         }
 
@@ -60,6 +60,7 @@ namespace project_garage.Service
             
             return user != null;
         } 
+        
         public async Task<UserModel> GetByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -105,7 +106,7 @@ namespace project_garage.Service
             if (!await _userRepository.CheckPasswordAsync(user, password))
                 throw new InvalidOperationException("Wrong password");
 
-            if(!await (_emailSender as EmailSender)?.TrySendVerificationEmailAsync(email)!)
+            if(!await _emailSender.TrySendVerificationEmailAsync(email))
                 throw new InvalidOperationException($"Email {email} does not exist");
 
             var result = await _userRepository.UpdateUserEmailAsync(user, email);
@@ -119,6 +120,32 @@ namespace project_garage.Service
 
             if (await CheckForExistanceByEmail(email))
                 throw new InvalidOperationException("User with this email already exist");
+        }
+
+        public async Task<IdentityResult> ChangeUserPasswordAsync(string userId, string password, string code)
+        {
+            var user = await GetByIdAsync(userId);
+
+            if (user.EmailConfirmationCode != code)
+                throw new InvalidOperationException("Wrong verification code");
+
+            var result = await _userRepository.UpdateUserPasswordAsync(userId, password);
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Operation fault");
+
+            user.EmailConfirmationCode = "none";
+            await _userRepository.UpdateUserInfoAsync(user);
+            return result;
+        }
+
+        public async Task SendPasswordResetEmailAsync(string userId)
+        {
+            var user = await GetByIdAsync(userId);
+            Random random = new Random();
+            var code = random.Next(100000, 999999).ToString();
+            user.EmailConfirmationCode = code;
+            await _userRepository.UpdateUserInfoAsync(user);
+            await _emailSender.VerifyPasswordChangeAsync(user.Email, code);
         }
 
         public async Task<IdentityResult> UpdateProfilePictureAsync(string userId, string picture)
