@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),
@@ -9,6 +11,16 @@ const validationSchema = yup.object({
 });
 
 const LoginForm = () => {
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -17,14 +29,14 @@ const LoginForm = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const response = await fetch("http://localhost:5021/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        });
-        console.log("Login successful:", response.data);
+        const result = await login(values);
+        
+        if (result.success) {
+          console.log("Login successful");
+          navigate('/', { replace: true });
+        } else {
+          setErrors({ email: result.error || "Invalid email or password" });
+        }
       } catch (error) {
         console.error("Login error:", error);
         setErrors({ email: "Invalid email or password" });
@@ -94,7 +106,7 @@ const LoginForm = () => {
               {formik.isSubmitting ? "Signing In..." : "Login"}
             </Button>
             <Button
-              href="http://localhost:3000/registration"
+              href="/registration"
               variant="contained"
               sx={{ backgroundColor: "#1F4A7C", color: "white", flex: 1, fontFamily: "Roboto, sans-serif" }}
             >

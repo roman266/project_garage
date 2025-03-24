@@ -5,10 +5,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@microsoft/signalr": "^8.0.7",
+    "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.2",
-    "axios": "^1.7.9",
+    "@shadcn/ui": "^0.0.4",
+    "axios": "^1.8.2",
     "cra-template": "1.2.0",
     "formik": "^2.4.6",
+    "lucide-react": "^0.477.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
@@ -41,5 +45,13 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5021"
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "html-webpack-plugin": "^5.6.3",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.12",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  }
 }

@@ -1,0 +1,28 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Your_Database_Connection_String"
+  },
+  "Jwt": {
+    "Issuer": "Your_JWT_Issuer",
+    "Audience": "Your_JWT_Audience",
+    "Key": "Your_JWT_Secret_Key",
+    "TokenValidityInMinutes": 15,
+    "RefreshTokenValidityInDays": 14
+  },
+  "Cloudinary": {
+    "CloudName": "Your_Cloudinary_CloudName",
+    "ApiKey": "Your_Cloudinary_ApiKey",
+    "ApiSecret": "Your_Cloudinary_ApiSecret"
+  },
+  "AllowedOrigins": [
+    "http://localhost:3000"
+  ]
+}
+
