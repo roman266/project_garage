@@ -26,16 +26,12 @@ const Friends = () => {
     });
       const friendsRes = await fetch(`${API_URL}/api/friends/my-requests/friends`, {
         method: "GET",
-        credentials: "include"
+        credentials: "include",
     });
 
       console.log(receivedRes);
       console.log(sentRes);
       console.log(friendsRes);
-
-      if (!receivedRes.ok || !sentRes.ok || !friendsRes.ok) {
-        throw new Error("Ошибка загрузки данных");
-      }
 
       const receivedData = await receivedRes.json();
       const sentData = await sentRes.json();
