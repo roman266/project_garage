@@ -16,11 +16,22 @@ const Friends = () => {
 
   const fetchFriendsData = async () => {
     try {
-      const receivedRes = await fetch(`${API_URL}/Friend/GetRequests`);
-      const sentRes = await fetch(`${API_URL}/api/friends/my-requests/outcoming`);
-      const friendsRes = await fetch(`${API_URL}/api/friends/my-requests/friends`);
+      const receivedRes = await fetch(`${API_URL}/api/friends/my-requests/incoming`, {
+        method: "GET",
+        credentials: "include"
+    });
+      const sentRes = await fetch(`${API_URL}/api/friends/my-requests/outcoming`, {
+        method: "GET",
+        credentials: "include"
+    });
+      const friendsRes = await fetch(`${API_URL}/api/friends/my-requests/friends`, {
+        method: "GET",
+        credentials: "include"
+    });
 
       console.log(receivedRes);
+      console.log(sentRes);
+      console.log(friendsRes);
 
       if (!receivedRes.ok || !sentRes.ok || !friendsRes.ok) {
         throw new Error("Ошибка загрузки данных");

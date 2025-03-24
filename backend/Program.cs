@@ -76,6 +76,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = false;
     options.LoginPath = PathString.Empty;
     options.AccessDeniedPath = PathString.Empty;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.Domain = "localhost";
     options.Events.OnRedirectToLogin = context =>
     {
         context.Response.StatusCode = 401;
