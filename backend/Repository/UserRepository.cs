@@ -58,6 +58,11 @@ namespace project_garage.Repository
             return result;
         }
 
+        public async Task<IdentityResult> SetUserNameAsync(UserModel user, string userName)
+        {
+            return await _userManager.SetUserNameAsync(user, userName);
+        }
+
         public async Task<IdentityResult> UpdateUserPasswordAsync(string userId, string password)
         {
             var user = await GetByIdAsync(userId);
