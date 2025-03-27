@@ -10,6 +10,9 @@ export default function UserProfilePage() {
     lastName: "",
     description: "",
     profilePicture: "",
+    postsCount: 0,
+    friendsCount: 0,
+    reactionsCount: 0,
   });
 
   const { userId } = useParams();
@@ -42,7 +45,33 @@ export default function UserProfilePage() {
         <Typography sx={{ color: "#555", marginBottom: 2 }}>
           @{profile.userName}
         </Typography>
-        <Typography sx={{ fontStyle: "italic", color: "#777" }}>
+		<Box sx={{ display: "flex", justifyContent: "space-between", maxWidth: "60%", width: "100%", mt: 2, mx: "auto" }}>
+			<Box sx={{ textAlign: "center", flex: 1 }}>
+				<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+					{profile.postsCount}
+				</Typography>
+				<Typography variant="caption" sx={{ color: "#777" }}>
+					Posts
+				</Typography>
+			</Box>
+			<Box sx={{ textAlign: "center", flex: 1 }}>
+				<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+					{profile.friendsCount}
+				</Typography>
+				<Typography variant="caption" sx={{ color: "#777" }}>
+					Friends
+				</Typography>
+			</Box>
+			<Box sx={{ textAlign: "center", flex: 1 }}>
+				<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+					{profile.reactionsCount}
+				</Typography>
+				<Typography variant="caption" sx={{ color: "#777" }}>
+					Reactions
+				</Typography>
+			</Box>
+		</Box>
+        <Typography sx={{ fontStyle: "italic", color: "#777", mt: 3 }}>
           {profile.description || "No description provided"}
         </Typography>
       </Container>
