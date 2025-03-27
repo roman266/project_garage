@@ -15,6 +15,7 @@ export default function UserProfilePage() {
         reactionsCount: 0,
     });
 
+    const [friendRequestSent, setFriendRequestSent] = useState(false);
     const { userId } = useParams();
     const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
 
@@ -31,6 +32,15 @@ export default function UserProfilePage() {
         };
         fetchProfile();
     }, [userId, API_BASE_URL]);
+
+    const handleAddFriend = async () => {
+        try {
+            await axios.post(`${API_BASE_URL}/api/friends/send/${userId}`, {}, { withCredentials: true });
+            setFriendRequestSent(true);
+        } catch (error) {
+            console.error("Error sending friend request", error);
+        }
+    };
 
     return (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "70vh", backgroundColor: "#365B87" }}>
@@ -84,13 +94,15 @@ export default function UserProfilePage() {
                         sx={{
                             flex: 1,
                             mx: 1,
-                            backgroundColor: "#365B87",
-                            "&:hover": { backgroundColor: "#2C4A6E" },
+                            backgroundColor: friendRequestSent ? "#aaa" : "#365B87",
+                            "&:hover": { backgroundColor: friendRequestSent ? "#aaa" : "#2C4A6E" },
                             padding: "6px 12px",
                             minWidth: "auto"
                         }}
+                        onClick={handleAddFriend}
+                        disabled={friendRequestSent}
                     >
-                        Add to Friends
+                        {friendRequestSent ? "Request Sent" : "Add to Friends"}
                     </Button>
                     <Button
                         variant="outlined"
@@ -120,7 +132,6 @@ export default function UserProfilePage() {
                         Message
                     </Button>
                 </Box>
-
             </Container>
         </Box>
     );
