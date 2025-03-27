@@ -15,7 +15,8 @@ export default function UserProfilePage() {
         reactionsCount: 0,
     });
 
-    const [friendRequestSent, setFriendRequestSent] = useState(false);
+    const [friendStatus, setFriendStatus] = useState("loading"); // "Add to Friends", "Request Sent", "Friend"
+
     const { userId } = useParams();
     const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
 
@@ -30,13 +31,53 @@ export default function UserProfilePage() {
                 console.error("Error fetching profile data", error);
             }
         };
+
+        const checkFriendStatus = async () => {
+            try {
+                console.log("User ID перед запитом:", userId);
+
+                const friendsResponse = await axios.get(`${API_BASE_URL}/api/friends/my-requests/friends?lastfriendId={userId}`, {
+                    withCredentials: true,
+                });
+
+                console.log("Дані друзів:", friendsResponse.data);
+
+                const friends = friendsResponse.data?.$values ?? [];
+                if (friends.some(friend => friend.friendId === userId || friend.userId === userId)) { 
+
+                    setFriendStatus("Friend");
+                    return;
+                }
+
+                // Перевіряємо запити
+                const outgoingRequestsResponse = await axios.get(`${API_BASE_URL}/api/friends/my-requests/outcoming?lastRequestId={userId}`, {
+                    withCredentials: true,
+                });
+
+                console.log("Дані запитів:", outgoingRequestsResponse.data);
+
+                const requests = outgoingRequestsResponse.data;
+                if (requests.some(request => request.friendId === userId)) {
+                    setFriendStatus("Request Sent");
+                    return;
+                }
+
+                setFriendStatus("Add to Friends");
+            } catch (error) {
+                console.error("Error checking friend status", error);
+                setFriendStatus("Add to Friends");
+            }
+        };
+
+
         fetchProfile();
+        checkFriendStatus();
     }, [userId, API_BASE_URL]);
 
     const handleAddFriend = async () => {
         try {
             await axios.post(`${API_BASE_URL}/api/friends/send/${userId}`, {}, { withCredentials: true });
-            setFriendRequestSent(true);
+            setFriendStatus("Request Sent");
         } catch (error) {
             console.error("Error sending friend request", error);
         }
@@ -90,19 +131,23 @@ export default function UserProfilePage() {
                 {/* Кнопки */}
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
                     <Button
-                        variant="contained"
+                        variant={friendStatus === "Friend" ? "contained" : "outlined"}
+                        disabled={friendStatus === "Request Sent" || friendStatus === "Friend"}
                         sx={{
                             flex: 1,
                             mx: 1,
-                            backgroundColor: friendRequestSent ? "#aaa" : "#365B87",
-                            "&:hover": { backgroundColor: friendRequestSent ? "#aaa" : "#2C4A6E" },
+                            backgroundColor: friendStatus === "Friend" ? "#4CAF50" : "#365B87",
+                            color: friendStatus === "Friend" ? "white" : "#365B87",
+                            "&:hover": {
+                                backgroundColor: friendStatus === "Friend" ? "#388E3C" : "#2C4A6E",
+                                color: "white",
+                            },
                             padding: "6px 12px",
-                            minWidth: "auto"
+                            minWidth: "auto",
                         }}
                         onClick={handleAddFriend}
-                        disabled={friendRequestSent}
                     >
-                        {friendRequestSent ? "Request Sent" : "Add to Friends"}
+                        {friendStatus}
                     </Button>
                     <Button
                         variant="outlined"
