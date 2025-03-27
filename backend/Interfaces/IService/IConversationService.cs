@@ -1,4 +1,5 @@
 ﻿using project_garage.Models.DbModels;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Interfaces.IService
 {
@@ -7,7 +8,7 @@ namespace project_garage.Interfaces.IService
         Task<ConversationModel> AddConversationAsync(bool isPrivate);
         Task<ConversationModel> GetConversationByIdAsync(string conversationId);
         Task CreatePrivateConversationBetweenUsersAsync(string user1Id, string user2Id);
-        Task<List<ConversationModel>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit);
+        Task<List<ConversationDisplayDto>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit);
         Task<bool> IsUserInConversationAsync(string userId, string conversationId);
         Task<bool> CheckConversationExistance(string conversationId);
         Task DeleteConversationAsync(string conversationId);

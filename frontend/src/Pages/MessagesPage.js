@@ -3,7 +3,8 @@ import ChatWindow from '../Components/ChatWindow'
 import ChatsList from '../Components/ChatList'
 
 export default function MessagesPage() {
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  
   return (
     <div style={{ 
       display: 'flex', 
@@ -18,8 +19,8 @@ export default function MessagesPage() {
         width: '1200px',
         height: '100%'
       }}>
-        <ChatsList onSelectChat={setSelectedChat} />
-        <ChatWindow selectedChat={selectedChat} />
+        <ChatsList onSelectChat={setSelectedChatId} />
+        <ChatWindow selectedChatId={selectedChatId} />
       </div>
     </div>
   )
