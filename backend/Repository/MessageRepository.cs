@@ -51,7 +51,7 @@ namespace project_garage.Repository
             return messages;
         }
 
-        public async Task<List<MessageModel>> GetPaginatedMessagesByConversationId(string conversationId, string? lastMessageId, int messageCountLimit)
+        public async Task<List<MessageDto>> GetPaginatedMessagesByConversationId(string userId, string conversationId, string? lastMessageId, int messageCountLimit)
         {
             var query = _context.Messages
                 .Where(m => m.ConversationId == conversationId)
@@ -67,7 +67,45 @@ namespace project_garage.Repository
                 }
             }
 
-            return await query.Take(messageCountLimit).ToListAsync();
+            var messageData = await query
+                .Take(messageCountLimit)
+                .Select( md => new
+                {
+                    md.Id,
+                    md.IsVisible,
+                    md.SendedAt,
+                    md.SenderId,
+                    md.IsReaden,
+                    md.Text,
+                }
+                )
+                .ToListAsync();
+
+            var userIds = messageData
+                .Select(md => md.SenderId)
+                .Distinct()
+                .ToList();
+
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id);
+
+            var messages = messageData.Select(md => new MessageDto
+            {
+                Id = md.Id,
+                IsVisible = md.IsVisible,
+                SendedAt = md.SendedAt,
+                IsReaden = md.IsReaden,
+                SenderId = md.SenderId,
+                IsCurrentUser = md.SenderId == userId,
+                SenderName = users.TryGetValue(md.SenderId, out var user) ? user.UserName : null,
+                SenderProfilePicture = users.TryGetValue(md.SenderId, out user) ? user.ProfilePicture : null,
+                Text = md.Text,
+            })
+            .OrderByDescending(md => md.SendedAt)
+            .ToList();
+            
+            return messages;
         }
 
         public async Task<List<MessageDto>> GetMessagesForUserByConversationIdAsync(string conversationId, string userId)
@@ -78,15 +116,15 @@ namespace project_garage.Repository
                 .Select(msg => new MessageDto
             {
                 Id = msg.Id,
-                ConversationId = msg.ConversationId,
                 SenderId = msg.SenderId,
                 SenderName = msg.SenderName,
                 Text = msg.Text,
                 SendedAt = msg.SendedAt,
                 IsReaden = msg.IsReaden,
                 IsVisible = msg.IsVisible,
-                IsCurrentUser = msg.SenderId == userId 
-                }).ToListAsync();
+                IsCurrentUser = msg.SenderId != userId 
+                })
+                .ToListAsync();
 
             return formattedMessages;
         }

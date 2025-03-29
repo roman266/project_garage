@@ -42,7 +42,7 @@ namespace project_garage.Service
             await _messageRepository.UpdateAsync(message);
         }
 
-        public async Task<List<MessageModel>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit, string userId)
+        public async Task<List<MessageDto>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit, string userId)
         {
             if (string.IsNullOrEmpty(conversationId))
                 throw new ArgumentException("Wrong conversation id");
@@ -50,7 +50,7 @@ namespace project_garage.Service
             if (!await _conversationService.IsUserInConversationAsync(userId, conversationId))
                 throw new InvalidOperationException($"User is not part of conversation {conversationId}");
 
-            var messages = await _messageRepository.GetPaginatedMessagesByConversationId(conversationId, lastMessageId, messageCountLimit);
+            var messages = await _messageRepository.GetPaginatedMessagesByConversationId(userId, conversationId, lastMessageId, messageCountLimit);
 
             if (!messages.Any())
                 throw new KeyNotFoundException("You dont have messages with this user");

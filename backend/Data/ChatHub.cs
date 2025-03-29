@@ -25,7 +25,6 @@ namespace project_garage.Data
                 }
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-                await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {userId} joined the chat.");
             }
             catch (Exception ex)
             {
@@ -38,16 +37,17 @@ namespace project_garage.Data
         {
             try
             {
+                var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var message = new MessageOnCreationDto
                 {
                     ConversationId = conversationId,
-                    SenderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    SenderId = senderId,
                     Text = text,
                 };
-                
 
                 await _messageService.AddMessageAsync(message);
-                await Clients.Group(conversationId).SendAsync("ReceiveMessage", message.SenderId, text);
+                
+                await Clients.OthersInGroup(conversationId).SendAsync("ReceiveMessage", senderId, text);
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
@@ -60,7 +60,6 @@ namespace project_garage.Data
             var userId = Context.User?.FindFirst("sub")?.Value;
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
-            await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} left the chat.");
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
