@@ -33,21 +33,19 @@ namespace project_garage.Data
             }
         }
 
-        public async Task SendMessage(string conversationId, string text)
+        public async Task SendMessage(MessageOnCreationDto messageDto)
         {
             try
             {
-                var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var message = new MessageOnCreationDto
-                {
-                    ConversationId = conversationId,
-                    SenderId = senderId,
-                    Text = text,
-                };
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                await _messageService.AddMessageAsync(message);
+                if (userId == null)
+                    throw new HubException("Unauthorized");
                 
-                await Clients.OthersInGroup(conversationId).SendAsync("ReceiveMessage", senderId, text);
+                messageDto.SenderId = userId;
+                var message = await _messageService.AddMessageAsync(messageDto);
+                await Clients.OthersInGroup(message.ConversationId).SendAsync("ReceiveMessage", 
+                    message.SenderId, message.Text, message.ImageUrl);
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
