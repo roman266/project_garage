@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress } from "@mui/material";
-import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { API_URL } from "../constants";
 import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../services/chatService";
+import EmojiPickerComponent from "./EmojiPickerComponent";
 
 export default function ChatWindow({ selectedChatId }) {
   const [messages, setMessages] = useState([]);
@@ -416,9 +416,11 @@ export default function ChatWindow({ selectedChatId }) {
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </IconButton>
-        <IconButton sx={{ marginLeft: 1 }}>
-          <InsertEmoticonIcon sx={{ color: "#1e497c" }} />
-        </IconButton>
+        
+        <EmojiPickerComponent 
+          onEmojiSelect={(emoji) => setNewMessage(prev => prev + emoji)} 
+        />
+        
         <IconButton 
           sx={{ marginLeft: 1 }}
           onClick={openFileDialog}
