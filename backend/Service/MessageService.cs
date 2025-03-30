@@ -71,17 +71,6 @@ namespace project_garage.Service
             return messages;
         }
 
-        public async Task<List<MessageDto>> GetUserMessagesByConversationIdAsync(string conversationId, string userId)
-        {
-            if (string.IsNullOrEmpty(userId)) throw new ArgumentException("Incorrect userId");
-
-            if (string.IsNullOrEmpty(conversationId)) throw new ArgumentException("Incorrect conversationId");
-
-            var messages = await _messageRepository.GetMessagesForUserByConversationIdAsync(conversationId, userId);
-
-            return messages;
-        }
-
         public async Task DeleteMessageAsync(string messageId) 
         {
             if (string.IsNullOrEmpty(messageId))

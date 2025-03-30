@@ -18,7 +18,10 @@ export const createChatConnection = (chatId, callbacks) => {
       
       // Set up message handlers
       if (callbacks.onReceiveMessage) {
-        connection.on("ReceiveMessage", callbacks.onReceiveMessage);
+        // Оновлюємо обробник для отримання повідомлень з файлом
+        connection.on("ReceiveMessage", (senderId, text, fileUrl) => {
+          callbacks.onReceiveMessage(senderId, text, fileUrl);
+        });
       }
       
       if (callbacks.onReceiveSystemMessage) {
@@ -35,9 +38,10 @@ export const createChatConnection = (chatId, callbacks) => {
   return {
     connection,
     setupConnection,
-    sendMessage: async (chatId, message) => {
+    sendMessage: async (messageDto) => {
       try {
-        await connection.invoke("SendMessage", chatId, message);
+        // Змінюємо метод, щоб він приймав повний об'єкт messageDto замість окремих параметрів
+        await connection.invoke("SendMessage", messageDto);
         return true;
       } catch (error) {
         console.error("Error sending message", error);

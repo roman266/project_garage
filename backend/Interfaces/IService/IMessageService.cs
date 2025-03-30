@@ -9,7 +9,6 @@ namespace project_garage.Interfaces.IService
         Task ReadMessageAsync(string messageId);
         Task<List<MessageDto>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit, string userId);
         Task<List<MessageModel>> GetMessagesByUserIdAsync(string userId);
-        Task<List<MessageDto>> GetUserMessagesByConversationIdAsync(string conversationId, string userId);
         Task DeleteMessageAsync(string messageId);
         Task DeleteMessageForMeAsync(string messageId);
     }

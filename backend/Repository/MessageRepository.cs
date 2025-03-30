@@ -3,31 +3,30 @@ using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
+using project_garage.Interfaces.IService;
 
 namespace project_garage.Repository
 {
     public class MessageRepository : IMessageRepository
     {
-        ApplicationDbContext _context;
-        public MessageRepository(ApplicationDbContext context)
+        private readonly ApplicationDbContext _context;
+        private readonly ICloudinaryService _cloudinaryService;
+
+        public MessageRepository(ApplicationDbContext context, ICloudinaryService cloudinaryService)
         {
             _context = context;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto)
         {
-            var userName = await _context.Users
-                .Where(u => u.Id == messageDto.SenderId)
-                .Select(u => u.UserName)
-                .FirstOrDefaultAsync();
-
             var message = new MessageModel
             {
                 Id = Guid.NewGuid().ToString(),
                 ConversationId = messageDto.ConversationId,
                 SenderId = messageDto.SenderId,
-                SenderName = userName,
                 Text = messageDto.Text,
+                ImageUrl = messageDto.ImageUrl,
                 SendedAt = DateTime.UtcNow,
                 IsReaden = false,
                 IsVisible = true,
@@ -77,6 +76,7 @@ namespace project_garage.Repository
                     md.SenderId,
                     md.IsReaden,
                     md.Text,
+                    md.ImageUrl,
                 }
                 )
                 .ToListAsync();
@@ -101,32 +101,12 @@ namespace project_garage.Repository
                 SenderName = users.TryGetValue(md.SenderId, out var user) ? user.UserName : null,
                 SenderProfilePicture = users.TryGetValue(md.SenderId, out user) ? user.ProfilePicture : null,
                 Text = md.Text,
+                ImageUrl = md.ImageUrl,
             })
             .OrderByDescending(md => md.SendedAt)
             .ToList();
             
             return messages;
-        }
-
-        public async Task<List<MessageDto>> GetMessagesForUserByConversationIdAsync(string conversationId, string userId)
-        {
-            var formattedMessages = await _context.Messages
-                .Where(msg => msg.ConversationId == conversationId)
-                .OrderBy(msg => msg.SendedAt)
-                .Select(msg => new MessageDto
-            {
-                Id = msg.Id,
-                SenderId = msg.SenderId,
-                SenderName = msg.SenderName,
-                Text = msg.Text,
-                SendedAt = msg.SendedAt,
-                IsReaden = msg.IsReaden,
-                IsVisible = msg.IsVisible,
-                IsCurrentUser = msg.SenderId != userId 
-                })
-                .ToListAsync();
-
-            return formattedMessages;
         }
 
         public async Task UpdateAsync(MessageModel messageModel)

@@ -19,6 +19,9 @@ export default function ChatWindow({ selectedChatId }) {
   const messageLimit = 20;
   const messageIdsRef = useRef(new Set());
   const chatServiceRef = useRef(null);
+  // Add state for file attachment
+  const [attachedFile, setAttachedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     axios.get(`${API_URL}/api/user/current`, { withCredentials: true })
@@ -68,7 +71,7 @@ export default function ChatWindow({ selectedChatId }) {
     });
   };
 
-  const createMessage = (text, senderId, isSystem = false) => {
+  const createMessage = (text, senderId, isSystem = false, imageUrl = null) => {
     const msgId = Date.now().toString();
     
     if (isSystem) {
@@ -84,6 +87,7 @@ export default function ChatWindow({ selectedChatId }) {
       id: msgId,
       senderId: senderId,
       text: text,
+      imageUrl: imageUrl,
       isCurrentUser: senderId === currentUserId,
       sendedAt: new Date().toISOString()
     };
@@ -158,8 +162,8 @@ export default function ChatWindow({ selectedChatId }) {
 
     // Create chat connection with callbacks
     const chatService = createChatConnection(selectedChatId, {
-      onReceiveMessage: (senderId, text) => {
-        const newMsg = createMessage(text, senderId);
+      onReceiveMessage: (senderId, text, imageUrl) => {
+        const newMsg = createMessage(text, senderId, false, imageUrl);
         addMessageToState(newMsg, selectedChatId);
         setTimeout(scrollToBottom, 100);
       },
@@ -208,16 +212,64 @@ export default function ChatWindow({ selectedChatId }) {
     };
   }, [selectedChatId, currentUserId]);
 
+  // File selection handler
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setAttachedFile(file);
+    }
+  };
+
+  // Open file dialog
+  const openFileDialog = () => {
+    fileInputRef.current.click();
+  };
+
   const handleSendMessage = async () => {
-    if (newMessage.trim() && chatServiceRef.current) {
+    if ((newMessage.trim() || attachedFile) && chatServiceRef.current) {
       const messageText = newMessage.trim();
       try {
         setNewMessage("");
         
-        const newMsg = createMessage(messageText, currentUserId);
-        addMessageToState(newMsg, selectedChatId);
+        // Додаємо тимчасове повідомлення до UI
+        const tempMsg = createMessage(
+          messageText + (attachedFile ? (messageText ? ' ' : '') + `[Uploading: ${attachedFile.name}]` : ''), 
+          currentUserId
+        );
+        addMessageToState(tempMsg, selectedChatId);
         
-        await chatServiceRef.current.sendMessage(selectedChatId, messageText);
+        let imageUrl = "None"; // Default value when no file is attached
+        
+        // Якщо є прикріплений файл, спочатку завантажуємо його
+        if (attachedFile) {
+          const formData = new FormData();
+          formData.append('image', attachedFile);
+          
+          // Завантажуємо зображення через API
+          const response = await axios.post(`${API_URL}/api/message/upload-image`, formData, {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+          imageUrl = response.data;
+        }
+        
+        // Створюємо DTO для відправки через SignalR
+        const messageDto = {
+          ConversationId: selectedChatId,
+          Text: messageText,
+          ImageUrl: imageUrl
+        };
+        
+        // Відправляємо повідомлення через SignalR
+        await chatServiceRef.current.connection.invoke("SendMessage", messageDto);
+        
+        // Очищаємо стан прикріпленого файлу після відправки
+        if (attachedFile) {
+          setAttachedFile(null);
+        }
       } catch (error) {
         console.error("Error sending message", error);
       }
@@ -277,6 +329,19 @@ export default function ChatWindow({ selectedChatId }) {
               }}
             >
               {msg.text || msg.content}
+              {msg.imageUrl && msg.imageUrl !== "None" && (
+                <Box mt={1}>
+                  <img 
+                    src={msg.imageUrl} 
+                    alt="Attached" 
+                    style={{ 
+                      maxWidth: '100%', 
+                      borderRadius: '8px',
+                      maxHeight: '200px'
+                    }} 
+                  />
+                </Box>
+              )}
             </Box>
           ))}
       </Box>
@@ -303,13 +368,39 @@ export default function ChatWindow({ selectedChatId }) {
             padding: "5px 10px",
           }}
         >
+          {attachedFile && (
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                backgroundColor: '#c4c4c4',
+                padding: '2px 8px',
+                borderRadius: 10,
+                marginRight: 1,
+                fontSize: '0.8rem'
+              }}
+            >
+              <Typography variant="caption" sx={{ marginRight: 1 }}>
+                {attachedFile.name.length > 15 
+                  ? attachedFile.name.substring(0, 12) + '...' 
+                  : attachedFile.name}
+              </Typography>
+              <IconButton 
+                size="small" 
+                onClick={() => setAttachedFile(null)}
+                sx={{ padding: '2px' }}
+              >
+                ✕
+              </IconButton>
+            </Box>
+          )}
           <InputBase
             sx={{ flex: 1, marginLeft: 1 }}
             placeholder="Type message here"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && newMessage.trim()) {
+              if (e.key === "Enter" && (newMessage.trim() || attachedFile)) {
                 handleSendMessage();
               }
             }}
@@ -318,7 +409,7 @@ export default function ChatWindow({ selectedChatId }) {
         <IconButton 
           sx={{ marginLeft: 1 }}
           onClick={handleSendMessage}
-          disabled={!newMessage.trim()}
+          disabled={!newMessage.trim() && !attachedFile}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1e497c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -328,9 +419,19 @@ export default function ChatWindow({ selectedChatId }) {
         <IconButton sx={{ marginLeft: 1 }}>
           <InsertEmoticonIcon sx={{ color: "#1e497c" }} />
         </IconButton>
-        <IconButton sx={{ marginLeft: 1 }}>
+        <IconButton 
+          sx={{ marginLeft: 1 }}
+          onClick={openFileDialog}
+        >
           <AddIcon sx={{ color: "#1e497c" }} />
         </IconButton>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileSelect}
+          accept="image/*"
+        />
       </Box>
     </Box>
   );
