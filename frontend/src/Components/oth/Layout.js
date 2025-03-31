@@ -14,7 +14,7 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const drawerWidth = 240;
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Typography, IconButton, Avatar, Box, Button } from "@mui/material";
 import { Check, Close } from "@mui/icons-material";
-import { API_URL } from "../constants";
+import { API_URL } from "../../constants";
 
 const FriendRequestsReceived = ({ received, fetchFriendsData, loadMore }) => {
   // Process the received data to handle the nested structure

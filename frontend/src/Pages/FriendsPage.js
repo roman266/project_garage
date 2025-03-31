@@ -1,6 +1,6 @@
 import React from "react";
 
-import Friends from "../Components/Friends";
+import Friends from "../Components/Friends/Friends";
 
 const FriendsPage = () => {
   const receivedRequests = [

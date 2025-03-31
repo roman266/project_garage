@@ -3,7 +3,7 @@ import FriendRequestsReceived from "./FriendRequestsReceived";
 import FriendRequestsSent from "./FriendRequestsSent";
 import FriendsList from "./FriendsList";
 import { Box, Divider } from "@mui/material";
-import { API_URL } from "../constants";
+import { API_URL } from "../../constants";
 
 const Friends = () => {
   const [receivedRequests, setReceivedRequests] = useState([]);
