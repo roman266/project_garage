@@ -1,6 +1,7 @@
 ﻿using project_garage.Interfaces.IService;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Service
 {
@@ -42,9 +43,9 @@ namespace project_garage.Service
             return request;
         }
 
-        public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
 
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
@@ -52,17 +53,17 @@ namespace project_garage.Service
             return requests;
         }
 
-        public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetIncomingRequestsAsync(userId, lastRequestId, limit);
             return requests;
         }
 
-        public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
             return requests;
