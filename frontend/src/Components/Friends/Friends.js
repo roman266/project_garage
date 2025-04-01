@@ -45,20 +45,32 @@ const Friends = () => {
     }
   };
 
+  const handleAcceptRequest = (request) => {
+    setReceivedRequests((prev) => prev.filter((req) => req.id !== request.id))
+    setFriends((prev) => [...prev, request]);
+  };
+  
+  const handleCancelRequest = (canceledRequestId) => {
+    setSentRequests((prev) => prev.filter((req) => req.id !== canceledRequestId));
+  };
+
+  const handleIncomingCancelRequest = (reqId) => {
+    setReceivedRequests((prev) => prev.filter((req) => req.id !== reqId))
+  }
+
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", width: "100%", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex", justifyContent: "center", width: "100%", height: "100vh" }}>
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "39% 39%",
-          gap: 2,
           width: "90%",
           marginLeft: "17%",
         }}
       >
-        <Box sx={{ display: "grid", height: "100%" }}>
-          <FriendRequestsReceived received={receivedRequests} loadMore={loadMore} />
-          <FriendRequestsSent sent={sentRequests} loadMore={loadMore}  />
+        <Box sx={{ display: "grid", height: "100%", gridTemplateRows: "47% 47%" }}>
+          <FriendRequestsReceived received={receivedRequests} loadMore={loadMore} handleAcceptRequest={handleAcceptRequest}  handleCancelRequest={handleIncomingCancelRequest}/>
+          <FriendRequestsSent sent={sentRequests} loadMore={loadMore}  handleCancelRequest={handleCancelRequest}/>
         </Box>
 
         <FriendsList friends={friends} loadMore={loadMore} sx={{ flex: 1 }} />

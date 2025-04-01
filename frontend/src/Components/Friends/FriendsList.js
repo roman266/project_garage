@@ -3,15 +3,37 @@ import { Box, Typography, Button } from "@mui/material";
 import FriendCard from "./FriendCard";
 
 const FriendsList = ({ friends, loadMore }) => (
-  <Box sx={{ backgroundColor: "White", padding: 2, borderRadius: 2 }}>
-    <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: 1, color: "#345" }}>
+  <Box 
+    sx={{ 
+      backgroundColor: "White", 
+      padding: 2, 
+      borderRadius: 2, 
+      maxHeight: "100%", // Ограничение по высоте
+      overflowY: "auto" // Включаем вертикальный скролл
+    }}
+  >
+    <Typography 
+      variant="h6" 
+      sx={{ 
+        fontWeight: 600, 
+        marginBottom: 1, 
+        color: "#345", 
+        position: "sticky", 
+        top: 0, 
+        backgroundColor: "White", 
+        zIndex: 1, 
+        padding: 1
+      }}
+    >
       Friends
     </Typography>
 
     {friends?.length ? (
       <>
         {friends.map((friend) => (
-          <FriendCard key={friend.id} user={friend} />
+          <Box key={friend.id} sx={{ mb: 2 }}>
+            <FriendCard user={friend} />
+          </Box>
         ))}
         {friends.length >= 20 && (
           <Button variant="outlined" fullWidth sx={{ mt: 2 }} onClick={loadMore}>
