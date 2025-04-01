@@ -2,13 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
-<<<<<<< HEAD:frontend/src/Components/Chat/ChatWindow.js
-import { API_URL } from "../../constants";
-=======
 import { API_URL } from "../constants";
 import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../services/chatService";
 import EmojiPickerComponent from "./EmojiPickerComponent";
->>>>>>> b1c80e9c34457a4010dee6a86f34a94b4096ae45:frontend/src/Components/ChatWindow.js
 
 export default function ChatWindow({ selectedChatId }) {
   const [messages, setMessages] = useState([]);
@@ -27,26 +23,6 @@ export default function ChatWindow({ selectedChatId }) {
   const [attachedFile, setAttachedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-<<<<<<< HEAD:frontend/src/Components/Chat/ChatWindow.js
-  useEffect(() => {
-    if (!selectedChatId) return;
-
-    const connect = new HubConnectionBuilder()
-      .withUrl(`${API_URL}/chatHub`, { withCredentials: true })
-      .build();
-
-    connect.start()
-      .then(() => {
-        console.log("SignalR connected");
-        connect.on("ReceiveMessage", (message) => {
-          setMessages((prevMessages) => [...prevMessages, message]);
-        });
-        connectionRef.current = connect;
-
-        axios.get(`${API_URL}/api/conversations/${selectedChatId}/messages`, { withCredentials: true })
-          .then((response) => setMessages(response.data))
-          .catch((error) => console.error("Error fetching messages", error));
-=======
   useEffect(() => {
     axios.get(`${API_URL}/api/user/current`, { withCredentials: true })
       .then(response => {
@@ -181,7 +157,6 @@ export default function ChatWindow({ selectedChatId }) {
         if (info) {
           setChatInfo(info);
         }
->>>>>>> b1c80e9c34457a4010dee6a86f34a94b4096ae45:frontend/src/Components/ChatWindow.js
       })
       .catch(err => console.error("Error fetching chat info", err));
 
@@ -254,11 +229,6 @@ export default function ChatWindow({ selectedChatId }) {
     if ((newMessage.trim() || attachedFile) && chatServiceRef.current) {
       const messageText = newMessage.trim();
       try {
-<<<<<<< HEAD:frontend/src/Components/Chat/ChatWindow.js
-        await connection.invoke("SendMessage", selectedChatId, newMessage);
-        setMessages((prevMessages) => [...prevMessages, { text: newMessage, isMe: true }]);
-=======
->>>>>>> b1c80e9c34457a4010dee6a86f34a94b4096ae45:frontend/src/Components/ChatWindow.js
         setNewMessage("");
         
         // Додаємо тимчасове повідомлення до UI
@@ -379,10 +349,6 @@ export default function ChatWindow({ selectedChatId }) {
             </Box>
           ))}
       </Box>
-<<<<<<< HEAD:frontend/src/Components/Chat/ChatWindow.js
-      <Box padding={2} bgcolor="#e0e0e0" display="flex" alignItems="center">
-        <Box sx={{ display: "flex", alignItems: "center", backgroundColor: "#d6d6d6", borderRadius: 50, flex: 1, padding: "5px 10px" }}>
-=======
       <Box 
         padding={2} 
         bgcolor="#e0e0e0" 
@@ -432,19 +398,11 @@ export default function ChatWindow({ selectedChatId }) {
               </IconButton>
             </Box>
           )}
->>>>>>> b1c80e9c34457a4010dee6a86f34a94b4096ae45:frontend/src/Components/ChatWindow.js
           <InputBase
             sx={{ flex: 1, marginLeft: 1 }}
             placeholder="Type message here"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-<<<<<<< HEAD:frontend/src/Components/Chat/ChatWindow.js
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-          />
-        </Box>
-        <IconButton><InsertEmoticonIcon sx={{ color: "#1e497c" }} /></IconButton>
-        <IconButton><AddIcon sx={{ color: "#1e497c" }} /></IconButton>
-=======
             onKeyDown={(e) => {
               if (e.key === "Enter" && (newMessage.trim() || attachedFile)) {
                 handleSendMessage();
@@ -480,7 +438,6 @@ export default function ChatWindow({ selectedChatId }) {
           onChange={handleFileSelect}
           accept="image/*"
         />
->>>>>>> b1c80e9c34457a4010dee6a86f34a94b4096ae45:frontend/src/Components/ChatWindow.js
       </Box>
     </Box>
   );
