@@ -13,7 +13,7 @@ import MyPostsPage from "./Pages/MyPostsPage";
 import MyProfilePage from "./Pages/MyProfilePage";
 import CreatePostPage from "./Pages/CreatePostPage";
 import ProtectedRoute from "./Components/oth/ProtectedRoute";
-import PublicRoute from "./Components/oth/PublicRoute";  // We'll create this component
+import PublicRoute from "./Components/oth/PublicRoute";
 
 // Компонент для встановлення колбеку автентифікації
 const AuthCallbackSetter = () => {
