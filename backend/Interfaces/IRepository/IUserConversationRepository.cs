@@ -1,4 +1,5 @@
 ﻿using project_garage.Models.DbModels;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Interfaces.IRepository
 {
@@ -8,6 +9,6 @@ namespace project_garage.Interfaces.IRepository
         Task AddUserToConversationAsync(UserConversationModel userConversation);
         Task<bool> ExistsPrivateConversationAsync(string userId, string anotherUserId);
         Task RemoveUserFromConversationAsync(string userId, string conversationId);
-        Task<List<ConversationModel>> GetPaginatedUserConversationsAsync(string userId, string? lastConversationId, int limit);
+        Task<List<ConversationDisplayDto>> GetPaginatedUserConversationsAsync(string userId, string? lastConversationId, int limit);
     }
 }

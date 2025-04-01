@@ -13,5 +13,6 @@ namespace project_garage.Interfaces.IRepository
         Task<bool> CheckPasswordAsync(UserModel user, string password);
         Task<IdentityResult> DeleteUserAsync(string id);
         Task<List<UserModel>> SearchUsersAsync(string query);
+        Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email);
     }
 }

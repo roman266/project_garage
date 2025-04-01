@@ -38,7 +38,7 @@ namespace project_garage.Controllers
         }
 
         [HttpGet("my-conversations")]
-        public async Task<IActionResult> GetCurrentUserConversations(string lastConversationId, int limit = 15)
+        public async Task<IActionResult> GetCurrentUserConversations(string? lastConversationId, int limit = 15)
         {
             try
             {

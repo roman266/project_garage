@@ -25,7 +25,6 @@ namespace project_garage.Data
                 }
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-                await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {userId} joined the chat.");
             }
             catch (Exception ex)
             {
@@ -34,20 +33,19 @@ namespace project_garage.Data
             }
         }
 
-        public async Task SendMessage(string conversationId, string text)
+        public async Task SendMessage(MessageOnCreationDto messageDto)
         {
             try
             {
-                var message = new MessageOnCreationDto
-                {
-                    ConversationId = conversationId,
-                    SenderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                    Text = text,
-                };
-                
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                await _messageService.AddMessageAsync(message);
-                await Clients.Group(conversationId).SendAsync("ReceiveMessage", message.SenderId, text);
+                if (userId == null)
+                    throw new HubException("Unauthorized");
+                
+                messageDto.SenderId = userId;
+                var message = await _messageService.AddMessageAsync(messageDto);
+                await Clients.OthersInGroup(message.ConversationId).SendAsync("ReceiveMessage", 
+                    message.SenderId, message.Text, message.ImageUrl);
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
@@ -60,7 +58,6 @@ namespace project_garage.Data
             var userId = Context.User?.FindFirst("sub")?.Value;
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
-            await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} left the chat.");
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)

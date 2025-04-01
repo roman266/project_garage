@@ -27,9 +27,7 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-
                 await _postService.CreatePostAndUploadImageToCloudAsync(userId, model);
-
                 return Ok(new { message = "Post created successfully"});
             }
             catch (ArgumentException ex)
@@ -42,52 +40,40 @@ namespace project_garage.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("Posts/Edit/{postId}")]
-        public async Task<IActionResult> EditPost(string postId)
+        [HttpGet("my-posts")]
+        public async Task<IActionResult> GetMyPosts(string? lastPostId, int limit = 15)
         {
-            var post = await _postService.GetPostByIdAsync(postId);
-            if (post == null)
-            {
-                return StatusCode(404, new { success = false, message = "Post not found" });
-            }
-
-            var model = new EditPostViewModel
-            {
-                Id = post.Id,
-                Description = post.Description,
-            };
-
-            return Ok(new { success = true, post = model });
-        }
-
-        [HttpPost]
-        [Route("Posts/Edit")]
-        public async Task<IActionResult> EditPostSave([FromBody] EditPostViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { success = false, message = "Invalid post data" });
-            }
-
             try
             {
-                var post = await _postService.GetPostByIdAsync(model.Id);
-                if (post == null)
-                {
-                    return StatusCode(404, new { success = false, message = "Post not found" });
-                }
-
-                post.Description = model.Description;
-                post.UpdatedAt = DateTime.UtcNow;
-
-                await _postService.UpdatePostAsync(post);
-
-                return Ok(new { success = true, message = "Post updated successfully" });
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                var posts = await _postService.GetPaginatedPostsByUserIdAsync(userId, lastPostId, limit);
+                return Ok(posts);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPatch("edit/{postId}")]
+        public async Task<IActionResult> EditPost([FromBody]EditPostDto editPostDto)
+        {
+            try
+            {
+                await _postService.UpdatePostAsync(editPostDto);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 

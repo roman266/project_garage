@@ -1,8 +1,8 @@
 ﻿using project_garage.Interfaces.IService;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
-using project_garage.Repository;
 using project_garage.Models.ViewModels;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Service
 {
@@ -16,18 +16,10 @@ namespace project_garage.Service
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<int> GetCountOfPosts(string id) 
+        public int GetCountOfPosts(string userId) 
         {
-            try
-            {
-                var posts = await _postRepository.GetPostByUserId(id);
-                var count = posts.Count();
+                var count = _postRepository.GetUsersPostsCount(userId);
                 return count;
-            }
-            catch (Exception ex)
-            {
-                return 0;
-            }
         }
 
         public async Task CreatePostAndUploadImageToCloudAsync(string userId, PostOnCreationDto postDto)
@@ -47,17 +39,24 @@ namespace project_garage.Service
             await _postRepository.CreatePostAsync(post);
         }
 
-        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        public async Task<List<DisplayPostDto>> GetPaginatedPostsByUserIdAsync(string userId, string? lastPostId, int limit)
         {
-            return await _postRepository.GetPostsByUserIdAsync(userId);
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException();
+            
+            var posts = await _postRepository.GetPaginatedPostsByUserIdAsync(userId, lastPostId, limit);
+            return posts;
         }
+
         public async Task<PostModel> GetPostByIdAsync(string postId)
         {
             return await _postRepository.GetPostByIdAsync(postId);
         }
 
-        public async Task UpdatePostAsync(PostModel post)
+        public async Task UpdatePostAsync(EditPostDto editPostDto)
         {
+            var post = await _postRepository.GetPostByIdAsync(editPostDto.PostId);
+            post.Description = string.IsNullOrEmpty(editPostDto.Description) ? post.Description : editPostDto.Description;
             await _postRepository.UpdatePostAsync(post);
         }
 

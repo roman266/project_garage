@@ -1,6 +1,7 @@
 ﻿using project_garage.Interfaces.IService;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Service
 {
@@ -72,7 +73,7 @@ namespace project_garage.Service
             return await _userConversationRepository.IsUserInConversationAsync(userId, conversationId);
         }
 
-        public async Task<List<ConversationModel>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit)
+        public async Task<List<ConversationDisplayDto>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit)
         {
             var conversations = await _userConversationRepository.GetPaginatedUserConversationsAsync(userId, lastConversationId, limit);
             return conversations;
