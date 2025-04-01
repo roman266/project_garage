@@ -1,7 +1,13 @@
-import React from 'react'
+import React from 'react';
+import { Box, Container } from '@mui/material';
+import MyPosts from '../Components/MyPosts';
 
 export default function MyPostsPage() {
   return (
-    <div>MyPostsPage</div>
+    <Container maxWidth="lg">
+      <Box sx={{ width: '100%', margin: '20px auto' }}>
+        <MyPosts />
+      </Box>
+    </Container>
   )
 }

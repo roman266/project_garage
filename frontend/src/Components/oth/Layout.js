@@ -14,11 +14,10 @@ import {
   Button,
   ListItemIcon
 } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const drawerWidth = 240;
 
-// Используйте относительные пути для ссылок
 const menuItems = [
   { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
   { text: "Friends", imgSrc: "/friends.svg", pageHref: "/friends" },
