@@ -44,9 +44,10 @@ namespace project_garage.Service
 
         public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
-
+            if (string.IsNullOrEmpty(lastRequestId))
+                throw new ArgumentException("Invalid friendId");
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
 
             return requests;
@@ -54,7 +55,7 @@ namespace project_garage.Service
 
         public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetIncomingRequestsAsync(userId, lastRequestId, limit);
             return requests;
@@ -62,7 +63,7 @@ namespace project_garage.Service
 
         public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
             return requests;

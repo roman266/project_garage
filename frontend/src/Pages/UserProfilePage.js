@@ -38,7 +38,7 @@ export default function UserProfilePage() {
     const checkFriendStatus = async () => {
         try {
             const [friendsRes, incomingRes, outgoingRes] = await Promise.all([
-                axios.get(`${API_BASE_URL}/api/friends/my-requests/friends?lastfriendId={userId}`, { withCredentials: true }),
+                axios.get(`${API_BASE_URL}/api/friends/my-requests/friends?lastfriendId=${userId}`, { withCredentials: true }),
                 axios.get(`${API_BASE_URL}/api/friends/my-requests/incoming`, { withCredentials: true }),
                 axios.get(`${API_BASE_URL}/api/friends/my-requests/outcoming`, { withCredentials: true }),
             ]);
@@ -47,11 +47,11 @@ export default function UserProfilePage() {
             const incomingRequests = incomingRes.data || [];
             const outgoingRequests = outgoingRes.data || [];
 
-            if (Array.isArray(friends) && friends.some(f => f.FriendId === userId || f.UserId === userId)) {
-                setFriendStatus("Friend");
-            } else if (Array.isArray(outgoingRequests) && outgoingRequests.some(r => r.FriendId === userId)) {
+            if (friends.some(f => f.FriendId === userId || f.UserId === userId)) {
+                setFriendStatus("Remove Friend");
+            } else if (outgoingRequests.some(r => r.FriendId === userId)) {
                 setFriendStatus("Request Sent");
-            } else if (Array.isArray(incomingRequests) && incomingRequests.some(r => r.UserId === userId)) {
+            } else if (incomingRequests.some(r => r.UserId === userId)) {
                 setFriendStatus("Accept Request");
             } else {
                 setFriendStatus("Add to Friends");
@@ -61,6 +61,17 @@ export default function UserProfilePage() {
             setFriendStatus("Add to Friends");
         }
     };
+
+    const handleRemoveFriend = async () => {
+        try {
+            await axios.delete(`${API_BASE_URL}/api/friends/reject/${userId}`, { withCredentials: true });
+            setFriendStatus("Add to Friends");
+        } catch (error) {
+            console.error("Error removing friend", error);
+        }
+    };
+
+
 
     const handleAddFriend = async () => {
         try {
@@ -145,11 +156,12 @@ export default function UserProfilePage() {
                             Accept Request
                         </Button>
                     )}
-                    {friendStatus === "Friend" && (
-                        <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#4CAF50", color: "white" }} disabled>
-                            Friend
+                    {friendStatus === "Remove Friend" && (
+                        <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#d32f2f", color: "white" }} onClick={handleRemoveFriend}>
+                            Remove Friend
                         </Button>
                     )}
+
                     <Button variant="outlined" sx={{ flex: 1, mx: 1, borderColor: "#365B87", color: "#365B87" }}>
                         Posts
                     </Button>
