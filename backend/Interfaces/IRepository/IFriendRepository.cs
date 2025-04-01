@@ -12,5 +12,6 @@ namespace project_garage.Interfaces.IRepository
         Task CreateNewRequestAsync(FriendModel friend);
         Task UpdateRequestAsync(FriendModel friend);
         Task DeleteFriendAsync(FriendModel friend);
+        Task<List<FriendModel>> GetFriendsByUserIdAsync(string userId);
     }
 }

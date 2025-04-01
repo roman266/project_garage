@@ -40,6 +40,8 @@ namespace project_garage.Extensions
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IUserInterestService, UserInterestService>();
+            services.AddScoped<IRecommendationService, RecommendationService>();
             services.AddScoped<IReactionRepository, ReactionRepository>();
             services.AddScoped<IReactionService, ReactionService>();
             services.AddScoped<IUserConversationRepository, UserConversationRepository>();
@@ -47,6 +49,8 @@ namespace project_garage.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserInterestRepository, UserInterestRepository>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<IPasswordHasher<UserModel>, PasswordHasher<UserModel>>();
+            services.AddScoped<SeedService>();
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();
@@ -149,5 +153,6 @@ namespace project_garage.Extensions
                     });
             });
         }
+        
     }
 }

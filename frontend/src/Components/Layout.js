@@ -12,13 +12,12 @@ import {
   ListItem,
   ListItemText,
   Button,
-  ListItemIcon
+  ListItemIcon,
 } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 const drawerWidth = 240;
 
-// Используйте относительные пути для ссылок
 const menuItems = [
   { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
   { text: "Friends", imgSrc: "/friends.svg", pageHref: "/friends" },
@@ -29,14 +28,13 @@ const menuItems = [
 const Layout = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
-  
-  // Handle logout with local navigation
+
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login', { replace: true });
+      navigate("/login", { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -45,7 +43,7 @@ const Layout = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", width: "100vw" }}>
       <Drawer
         variant="permanent"
         sx={{
@@ -78,8 +76,8 @@ const Layout = () => {
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
             <ListItem key={text} sx={{ cursor: "pointer", paddingY: 1 }}>
-              <Link to={pageHref} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link to={pageHref} style={{ textDecoration: "none", color: "inherit" }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
                   <ListItemIcon sx={{ minWidth: 30 }}>
                     <img src={imgSrc} alt={text} style={{ width: 24, height: 24 }} />
                   </ListItemIcon>
@@ -103,10 +101,10 @@ const Layout = () => {
               Post
             </Button>
           </Link>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            fullWidth 
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
             sx={{ borderRadius: "40px", backgroundColor: "#365B87", marginTop: "10px" }}
             onClick={handleLogout}
           >
@@ -115,10 +113,9 @@ const Layout = () => {
         </Box>
       </Drawer>
 
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", marginLeft: `${drawerWidth}px` }}>
-        {/* Header */}
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", ml: `${drawerWidth}px` }}>
         <AppBar position="fixed" sx={{ backgroundColor: "#2b2b2b", boxShadow: "none", zIndex: 1100 }}>
-          <Toolbar>
+          <Toolbar sx={{ width: "100%", boxSizing: "border-box" }}>
             <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
               Dashboard
             </Typography>
@@ -137,8 +134,18 @@ const Layout = () => {
           </Toolbar>
         </AppBar>
 
-        {/* Main Content */}
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px" }}>
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: "#365B87",
+            mt: "64px", 
+            overflowY: "auto",
+            overflowX: "hidden", 
+            minHeight: "calc(100vh - 64px)", 
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
           <Outlet />
         </Box>
       </Box>

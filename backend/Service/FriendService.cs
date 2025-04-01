@@ -12,7 +12,7 @@ namespace project_garage.Service
             _friendRepository = friendRepository;
         }
 
-        //user - curr user, friend - target user
+        //user - curr user, friend - target user  
         public async Task<bool> IsFriendAsync(string userId, string friendId)
         {
             var friends = await _friendRepository.GetByUserIdAsync(userId);
@@ -107,6 +107,19 @@ namespace project_garage.Service
         {
                 var list = await _friendRepository.GetByUserIdAsync(userId);
                 return list.Count;
+        }
+
+
+        public async Task<List<FriendModel>> GetFriendsByUserIdAsync(string userId)
+        {
+            return await _friendRepository.GetFriendsByUserIdAsync(userId);
+        }
+
+        public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
+        {
+            var result = await _friendRepository.GetByUserIdAsync(userId);
+            Console.WriteLine($"Friends for {userId}: {result.Count}, Accepted: {result.Count(f => f.IsAccepted)}");
+            return result;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace project_garage.Service
 {
     public class PostService : IPostService
     {
-        private readonly IPostRepository _postRepository;
+        private readonly IPostRepository _postRepository;  
         private readonly ICloudinaryService _cloudinaryService;
         public PostService(IPostRepository postRepository, ICloudinaryService cloudinaryService) 
         { 
@@ -64,5 +64,16 @@ namespace project_garage.Service
         {
             await _postRepository.DeletePostAsync(postId);
         }
+
+         public async Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds)
+        {
+            return await _postRepository.GetPostsByUserIdsAsync(userIds);
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _postRepository.GetPostsByUserIdAsync(userId);
+        }
+
     }
 }

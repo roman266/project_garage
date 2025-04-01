@@ -9,6 +9,7 @@ namespace project_garage.Repository
     public class PostRepository : IPostRepository
     {
         private readonly ApplicationDbContext _context;
+        
         public PostRepository(ApplicationDbContext context)
         {
             _context = context;
@@ -29,16 +30,21 @@ namespace project_garage.Repository
 
         public int GetUsersPostsCount(string userId)
         {
-            var count = _context.Posts
+            return _context.Posts.Count(p => p.UserId == userId);
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        {
+            return await _context.Posts
                 .Where(p => p.UserId == userId)
-                .Count();
-            return count;     
+                .ToListAsync();
         }
 
         public async Task<List<DisplayPostDto>> GetPaginatedPostsByUserIdAsync(string userId, string? lastPostId, int limit)
         {
             var lastPostDate = _context.Posts
                 .Where(p => p.Id == lastPostId)
+                .Include(p => p.User)
                 .Select(p => p.CreatedAt)
                 .FirstOrDefault();
 
@@ -55,13 +61,8 @@ namespace project_garage.Repository
                     SenderAvatarUlr = p.User.ProfilePicture,
                 })
                 .OrderByDescending(p => p.PostDate);
-                
 
-            var posts = await postsQuery
-                .Take(limit)
-                .ToListAsync();
-
-            return posts;
+            return await postsQuery.Take(limit).ToListAsync();
         }
 
         public async Task UpdatePostAsync(PostModel post)
@@ -78,6 +79,23 @@ namespace project_garage.Repository
                 _context.Posts.Remove(post);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds)
+        {
+            return await _context.Posts
+                .Where(p => userIds.Contains(p.UserId))
+                .Include(p => p.User)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId, bool includeUser = false)
+        {
+            var query = _context.Posts.Where(p => p.UserId == userId);
+            if (includeUser)
+                query = query.Include(p => p.User);
+            return await query.ToListAsync();
         }
     }
 }

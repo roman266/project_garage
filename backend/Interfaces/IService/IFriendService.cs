@@ -11,8 +11,10 @@ namespace project_garage.Interfaces.IService
         Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastFriendId, int limit);
         Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastFriendId, int limit);
         Task<FriendModel> GetByIdAsync(string id);
-        Task SendFriendRequestAsync(string userId, string friendId);
+        Task SendFriendRequestAsync(string userId, string friendId);  
         Task AcceptRequestAsync(string requestId);
         Task RejectOrDeleteAsync(string requestId);
+        Task<List<FriendModel>> GetFriendsByUserIdAsync(string userId);
+        Task<List<FriendModel>> GetByUserIdAsync(string userId);
     }
 }

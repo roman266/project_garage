@@ -16,7 +16,7 @@ namespace project_garage.Repository
         public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
         {
             return await _context.Friends
-                .Where(f => f.UserId == userId && f.FriendId == userId)
+                .Where(f => f.UserId == userId)
                 .ToListAsync();
         }
 
@@ -90,6 +90,12 @@ namespace project_garage.Repository
         {
             _context.Friends.Remove(friendModel);
             await _context.SaveChangesAsync();
+        }
+         public async Task<List<FriendModel>> GetFriendsByUserIdAsync(string userId)
+        {
+            return await _context.Friends
+                .Where(f => f.UserId == userId && f.IsAccepted)
+                .ToListAsync();
         }
     }
 }
