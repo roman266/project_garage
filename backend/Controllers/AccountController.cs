@@ -96,9 +96,9 @@ namespace project_garage.Controllers
                 Response.Cookies.Append("RefreshToken", authDto.RefreshToken, authDto.RefreshCookieOptions);
                 return Ok();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Invalid refresh token");
+                return StatusCode(500,ex.Message);
             }
         }
 

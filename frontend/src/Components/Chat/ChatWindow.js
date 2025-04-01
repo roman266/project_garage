@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
-import { API_URL } from "../constants";
-import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../services/chatService";
+import { API_URL } from "../../constants";
+import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../../services/chatService";
 import EmojiPickerComponent from "./EmojiPickerComponent";
 
 export default function ChatWindow({ selectedChatId }) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper, Button, Box } from "@mui/material";
 import axios from "axios";
-import { API_URL } from "../constants";
+import { API_URL } from "../../constants";
 
 export default function ChatsList({ onSelectChat }) {
   const [chats, setChats] = useState([]);
