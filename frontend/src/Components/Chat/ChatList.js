@@ -1,126 +1,113 @@
 import { useState, useEffect, useRef } from "react";
-import { HubConnectionBuilder } from "@microsoft/signalr";
-import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, IconButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper, Button, Box } from "@mui/material";
 import axios from "axios";
 import { API_URL } from "../../constants";
 
 export default function ChatsList({ onSelectChat }) {
   const [chats, setChats] = useState([]);
-  const [connection, setConnection] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [username, setUsername] = useState("");
-  const [users, setUsers] = useState([]);
-  const connectionRef = useRef(null);
+  const [lastConversationId, setLastConversationId] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchChats = async (loadMore = false) => {
+    try {
+      const params = { 
+        limit: 15,
+        lastConversationId: loadMore ? lastConversationId : null
+      };
+
+      const response = await axios.get(`${API_URL}/api/conversations/my-conversations`, { 
+        params,
+        withCredentials: true 
+      });
+      
+      // Handle the response data structure
+      let newChats = [];
+      if (response.data.$values) {
+        newChats = response.data.$values;
+      } else if (response.data.conversationList) {
+        newChats = response.data.conversationList;
+      } else if (Array.isArray(response.data)) {
+        newChats = response.data;
+      }
+      
+      if (newChats.length > 0) {
+        // Use conversationId instead of id
+        setLastConversationId(newChats[newChats.length - 1].conversationId);
+        setHasMore(newChats.length >= 15);
+        
+        if (loadMore) {
+          setChats(prev => [...prev, ...newChats]);
+        } else {
+          setChats(newChats);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error fetching chats", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/conversations/my-conversations`, { withCredentials: true });
-        setChats(response.data);
-      } catch (error) {
-        console.error("Error fetching chats", error);
-      }
-    };
     fetchChats();
   }, []);
 
-  useEffect(() => {
-    const connect = new HubConnectionBuilder()
-      .withUrl(`${API_URL}/chatHub`, { withCredentials: true })
-      .build();
-
-    connect.start()
-      .then(() => {
-        console.log("SignalR connected");
-        connectionRef.current = connect;
-        connect.on("ReceiveNewChat", (chat) => {
-          setChats((prevChats) => [...prevChats, chat]);
-        });
-      })
-      .catch((error) => console.error("SignalR connection error", error));
-
-    setConnection(connect);
-    return () => connect.stop();
-  }, []);
-
-  const handleSearchUsers = async () => {
-    if (!username.trim()) return;
-    try {
-      const response = await axios.get(`${API_URL}/api/profile/search-users`, {
-        params: { Query: username },
-        withCredentials: true,
-      });
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error searching for users", error);
-    }
+  const loadMoreChats = () => {
+    fetchChats(true);
   };
-
-  const handleCreateChat = (user) => {
-    axios.post(`${API_URL}/api/conversations/start/${user.id}`, {}, { withCredentials: true })
-  .then((response) => {
-    if (response.data && response.data.conversation) {
-      setChats((prevChats) => [...prevChats, response.data.conversation]);
-      onSelectChat(response.data.conversation.id); // Открываем чат после создания
-    }
-  })
-  .catch((error) => console.error("Error creating chat:", error));
-
-  };
-  
 
   return (
-    <Paper elevation={3} sx={{ width: "25%", padding: 2, borderRight: 1, borderColor: "grey.300" }}>
-      <Typography variant="h6" color="primary" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
+    <Paper elevation={3} sx={{ width: "25%", padding: 2, borderRight: 1, borderColor: "grey.300", display: "flex", flexDirection: "column" }}>
+      <Typography variant="h6" color="primary" gutterBottom>
         Messages
-        <IconButton onClick={() => setOpenDialog(true)} sx={{ marginLeft: 2 }}>
-          <SearchIcon />
-        </IconButton>
       </Typography>
-      <List>
-        {chats.map((chat) => (
-          <ListItem button key={chat.id} onClick={() => onSelectChat(chat.id)}>
-            <ListItemAvatar>
-              <Avatar sx={{ bgcolor: "black" }} />
-            </ListItemAvatar>
-            <ListItemText primary={chat.name} secondary={chat.lastMessage || "No messages"} />
-          </ListItem>
-        ))}
+      <List sx={{ flexGrow: 1, overflow: "auto" }}>
+        {chats.length > 0 ? (
+          chats.map((chat) => (
+            <ListItem 
+              button 
+              key={chat.conversationId} 
+              onClick={() => {
+                console.log("Chat selected:", chat.conversationId);
+                onSelectChat(chat.conversationId);
+              }}
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { backgroundColor: '#f5f5f5' }
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar 
+                  sx={{ bgcolor: "black" }} 
+                  src={chat.profilePictureUrl !== "None" ? chat.profilePictureUrl : null} 
+                />
+              </ListItemAvatar>
+              <ListItemText 
+                primary={chat.userName || "Unknown User"} 
+                secondary={
+                  <Typography 
+                    variant="body2" 
+                    sx={{ color: chat.activeStatus === "Online" ? "green" : "gray" }}
+                  >
+                    {chat.activeStatus || "Offline"}
+                  </Typography>
+                } 
+              />
+            </ListItem>
+          ))
+        ) : (
+          <Typography sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+            No conversations yet
+          </Typography>
+        )}
       </List>
-
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Search Users</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Enter Username"
-            fullWidth
-            variant="outlined"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <Button onClick={handleSearchUsers} color="primary" fullWidth sx={{ marginTop: 2 }}>
-            Search
+      {hasMore && (
+        <Box sx={{ textAlign: "center", mt: 1 }}>
+          <Button variant="outlined" onClick={loadMoreChats}>
+            Load More
           </Button>
-
-          {users.length > 0 && (
-            <List>
-              {users.map((user) => (
-                <ListItem button key={user.id} onClick={() => handleCreateChat(user)}>
-                  <ListItemText primary={user.username} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="secondary">
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      )}
     </Paper>
   );
 }
