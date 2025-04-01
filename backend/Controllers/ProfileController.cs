@@ -48,7 +48,7 @@ namespace project_garage.Controllers
                     ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
-                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    PostsCount = _postService.GetCountOfPosts(userId),
                     ReactionsCount = await _reactionService.GetUserReactionCountAsync(userId),
                     CanAddFriend = canAddFriend
                 };
@@ -77,7 +77,7 @@ namespace project_garage.Controllers
                     ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
-                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    PostsCount = _postService.GetCountOfPosts(userId),
                     CanAddFriend = false
                 };
                 return Ok(new { profile = viewModel });

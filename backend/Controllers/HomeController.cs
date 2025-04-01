@@ -50,12 +50,10 @@ namespace project_garage.Controllers
                 var posts = new List<PostModel>();
                 foreach (var friendId in friendIds)
                 {
-                    var friendPosts = await _postService.GetPostsByUserIdAsync(friendId);
-                    posts.AddRange(friendPosts);
+                    var friendPosts = await _postService.GetPaginatedPostsByUserIdAsync(friendId, null, 10);
                 }
 
-                var userPosts = await _postService.GetPostsByUserIdAsync(userId);
-                posts.AddRange(userPosts);
+                var userPosts = await _postService.GetPaginatedPostsByUserIdAsync(userId, null, 10);
                 posts = posts.OrderByDescending(p => p.CreatedAt).ToList();
 
                 var response = new
