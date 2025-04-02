@@ -6,6 +6,7 @@ namespace project_garage.Interfaces.IRepository
     public interface IFriendRepository
     {
         Task<FriendModel> GetByIdAsync(string id);
+        Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId);
         Task<List<FriendModel>> GetByUserIdAsync(string userId);
         Task<List<DisplayFriendDto>> GetFriendsAsync(string userId, string? lastRequestId, int limit);
         Task<List<DisplayFriendDto>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit);

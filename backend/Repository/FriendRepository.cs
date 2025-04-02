@@ -21,6 +21,19 @@ namespace project_garage.Repository
                 .ToListAsync();
         }
 
+        public async Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId)
+        {
+            var request = await _context.Friends
+                .FirstOrDefaultAsync(f => f.UserId == firstUserId && f.FriendId == secondUserId);
+            if (request == null)
+            {
+                request = await _context.Friends
+                    .FirstOrDefaultAsync(f => f.UserId == secondUserId && f.FriendId == firstUserId);
+            }
+
+            return request;
+        }
+
         public async Task<FriendModel> GetByIdAsync(string id)
         {
             var request = await _context.Friends.FirstOrDefaultAsync(friend => friend.Id == id);

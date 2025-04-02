@@ -36,7 +36,7 @@ namespace project_garage.Controllers
             {
                 var loggedInUserId = UserHelper.GetCurrentUserId(HttpContext); // Отримуємо ID залогіненого користувача
                 var user = await _userService.GetByIdAsync(userId);
-                var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
+                var canAddFriend = await _friendService.IsFriendAsync(loggedInUserId, userId);
 
                 var viewModel = new ProfileDto
                 {
@@ -50,7 +50,7 @@ namespace project_garage.Controllers
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = _postService.GetCountOfPosts(userId),
                     ReactionsCount = await _reactionService.GetUserReactionCountAsync(userId),
-                    CanAddFriend = canAddFriend
+                    CanAddFriend = !canAddFriend,
                 };
                 return Ok(new { profile = viewModel });
             }
