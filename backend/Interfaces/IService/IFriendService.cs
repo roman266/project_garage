@@ -7,7 +7,6 @@ namespace project_garage.Interfaces.IService
     {
         Task<int> GetFriendsCount(string id);
         Task<bool> IsFriendAsync(string userId, string friendId);
-        Task<bool> CanAddFriendAsync(string userId, string friendId);
         Task<List<DisplayFriendDto>> GetFriendsAsync(string userId, string? lastFriendId, int limit);
         Task<List<DisplayFriendDto>> GetIncomingRequestsAsync(string userId, string? lastFriendId, int limit);
         Task<List<DisplayFriendDto>> GetOutcomingRequestsAsync(string userId, string? lastFriendId, int limit);
