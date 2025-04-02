@@ -42,10 +42,12 @@ Console.WriteLine($"Connection String: {connectionString}");
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-   var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-   await dataSeeder.SeedAsync();
-}
+
+//uncomment if you need to populate ConversationModel, UserConversationModel and AspNetUsers with data
+//using (var scope = app.Services.CreateScope())
+//{
+//   var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+//   await dataSeeder.SeedAsync();
+//}
 
 app.Run();
