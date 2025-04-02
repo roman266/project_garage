@@ -23,11 +23,23 @@ namespace project_garage.Service
                 Id = Guid.NewGuid().ToString(),
                 IsPrivate = isPrivate,
                 StartedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
             };
 
             await _conversationRepository.CreateNewAsync(conversation);
 
             return conversation;
+        }
+
+        public async Task UpdateLastMessageAsync(string conversationId)
+        {
+            var conversation = await _conversationRepository.GetByIdAsync(conversationId);
+
+            if(conversationId == null)
+                throw new ArgumentException("Conversation with this id does not exist");
+
+            conversation.LastUpdatedAt = DateTime.UtcNow;
+            await _conversationRepository.UpdateAsync(conversation);
         }
 
         public async Task<ConversationModel> GetConversationByIdAsync(string conversationId)

@@ -14,6 +14,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using project_garage.Bogus;
 
 namespace project_garage.Extensions
 {
@@ -52,6 +53,7 @@ namespace project_garage.Extensions
             services.AddSingleton<JWTSettings>();
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<DataSeeder>();
         }
 
         public static void AddIdentity(this IServiceCollection services)
