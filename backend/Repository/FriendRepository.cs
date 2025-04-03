@@ -45,7 +45,7 @@ namespace project_garage.Repository
         public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
             var requests = await _context.Friends
-                .Where(f => f.UserId == userId && f.IsAccepted == false &&
+                .Where(f => f.FriendId == userId && f.IsAccepted == false &&
                     (lastRequestId == null ||
                       f.DateTime < _context.Friends
                       .Where(fr => fr.Id == lastRequestId)
@@ -61,7 +61,7 @@ namespace project_garage.Repository
         public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
             var requests = await _context.Friends
-                .Where(f => f.FriendId == userId && f.IsAccepted == false &&
+                .Where(f => f.UserId == userId && f.IsAccepted == false &&
                     (lastRequestId == null ||
                       f.DateTime < _context.Friends
                       .Where(fr => fr.Id == lastRequestId)
