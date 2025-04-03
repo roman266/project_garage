@@ -1,12 +1,45 @@
-import { HubConnectionBuilder } from "@microsoft/signalr";
-import { API_URL, WEBSOKET_URL } from "../constants";
+import { HubConnectionBuilder, HttpTransportType } from "@microsoft/signalr";
+import { API_URL, WEBSOCKET_URL } from "../constants";
 
 export const createChatConnection = (chatId, callbacks) => {
-  const hubUrl = WEBSOKET_URL || `${API_URL}/chatHub`;
+  // Use the HTTPS URL for SignalR connection
+  // SignalR will handle the upgrade to WebSocket internally
+  const hubUrl = `${API_URL}/chatHub`;
   
   const connection = new HubConnectionBuilder()
-    .withUrl(hubUrl, { withCredentials: true })
+    .withUrl(hubUrl, { 
+      withCredentials: true,
+      skipNegotiation: false,
+      transport: HttpTransportType.WebSockets
+    })
+    .withAutomaticReconnect([0, 2000, 5000, 10000])
     .build();
+
+  // Add connection event handlers
+  connection.onclose((error) => {
+    console.log("SignalR connection closed", error);
+    if (callbacks.onConnectionClosed) {
+      callbacks.onConnectionClosed(error);
+    }
+  });
+
+  connection.onreconnecting((error) => {
+    console.log("SignalR reconnecting", error);
+    if (callbacks.onReconnecting) {
+      callbacks.onReconnecting(error);
+    }
+  });
+
+  connection.onreconnected((connectionId) => {
+    console.log("SignalR reconnected", connectionId);
+    if (callbacks.onReconnected) {
+      callbacks.onReconnected(connectionId);
+    }
+    // Rejoin the chat after reconnection
+    connection.invoke("JoinChat", chatId).catch(err => {
+      console.error("Error rejoining chat after reconnection", err);
+    });
+  });
 
   const setupConnection = async () => {
     try {
@@ -18,7 +51,7 @@ export const createChatConnection = (chatId, callbacks) => {
       
       // Set up message handlers
       if (callbacks.onReceiveMessage) {
-        // Оновлюємо обробник для отримання повідомлень з файлом
+        // Update handler for receiving messages with file
         connection.on("ReceiveMessage", (senderId, text, fileUrl) => {
           callbacks.onReceiveMessage(senderId, text, fileUrl);
         });

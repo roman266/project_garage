@@ -266,6 +266,11 @@ export default function ChatWindow({ selectedChatId }) {
         // Відправляємо повідомлення через SignalR
         await chatServiceRef.current.connection.invoke("SendMessage", messageDto);
         
+        // Викликаємо ендпоінт для оновлення дати останнього повідомлення
+        await axios.patch(`${API_URL}/api/conversations/message-sended/${selectedChatId}`, {}, {
+          withCredentials: true
+        });
+        
         // Очищаємо стан прикріпленого файлу після відправки
         if (attachedFile) {
           setAttachedFile(null);

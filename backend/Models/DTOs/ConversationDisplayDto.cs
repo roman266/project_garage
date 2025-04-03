@@ -8,5 +8,6 @@
         public string ActiveStatus { get; set; }
         public bool IsPrivate { get; set; }
         public DateTime StartedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }

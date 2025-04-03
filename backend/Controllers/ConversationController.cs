@@ -37,6 +37,20 @@ namespace project_garage.Controllers
             }
         }
 
+        [HttpPatch("message-sended/{conversationId}")]
+        public async Task<IActionResult> UpdateLastSendedMessageTime(string conversationId)
+        {
+            try
+            {
+                await _conversationService.UpdateLastMessageAsync(conversationId);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("my-conversations")]
         public async Task<IActionResult> GetCurrentUserConversations(string? lastConversationId, int limit = 15)
         {
