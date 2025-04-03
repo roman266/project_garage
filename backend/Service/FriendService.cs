@@ -17,7 +17,7 @@ namespace project_garage.Service
         {
             var friends = await _friendRepository.GetByUserIdAsync(userId);
             foreach (var friend in friends) {
-                if (friend.FriendId == friendId) 
+                if (friend.ReceiverId == friendId) 
                     return true; }
             return false;
         }
@@ -46,8 +46,6 @@ namespace project_garage.Service
         {
             if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
-            if (string.IsNullOrEmpty(lastRequestId))
-                throw new ArgumentException("Invalid friendId");
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
 
             return requests;
@@ -77,8 +75,8 @@ namespace project_garage.Service
             var friendRequest = new FriendModel
             {
                 Id = Guid.NewGuid().ToString(),
-                UserId = userId,
-                FriendId = friendId,
+                SenderId = userId,
+                ReceiverId = friendId,
                 IsAccepted = false,
             };
 
