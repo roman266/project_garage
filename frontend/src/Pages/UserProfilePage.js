@@ -39,9 +39,13 @@ export default function UserProfilePage() {
                     axios.get(`${API_BASE_URL}/api/friends/my-requests/friends`, { withCredentials: true })
                 ]);
 
-                const isRequestSent = outcomingRes.data.some(request => request.friendId === userId);
-                const isRequestReceived = incomingRes.data.some(request => request.userId === userId);
-                const isFriend = friendsRes.data.some(friend => friend.friendId === userId);
+                const outcomingRequests = outcomingRes.data.$values;
+                const incomingRequests = incomingRes.data.$values;
+                const friends = friendsRes.data.$values;
+
+                const isRequestSent = Array.isArray(outcomingRequests) && outcomingRequests.some(request => request.friendId === userId || request.userId === userId);
+                const isRequestReceived = Array.isArray(incomingRequests) && incomingRequests.some(request => request.friendId === userId || request.userId === userId);
+                const isFriend = Array.isArray(friends) && friends.some(friend => friend.friendId === userId || friend.userId === userId);
 
                 if (isFriend) {
                     setFriendStatus("Already Friend");
