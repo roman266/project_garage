@@ -46,8 +46,6 @@ namespace project_garage.Service
         {
             if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
-            if (string.IsNullOrEmpty(lastRequestId))
-                throw new ArgumentException("Invalid friendId");
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
 
             return requests;

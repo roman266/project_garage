@@ -80,8 +80,6 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                Console.WriteLine("Received userId: " + userId);
-                Console.WriteLine("Received lastRequestId: " + lastRequestId);
                 var requests = await _friendService.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
                 return Ok(requests);
             }
@@ -120,8 +118,6 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                Console.WriteLine("Received userId: " + userId);
-                Console.WriteLine("Received lastfriendId: " + lastfriendId);
                 var requests = await _friendService.GetFriendsAsync(userId, lastfriendId, limit);
                 return Ok(requests);
             }
