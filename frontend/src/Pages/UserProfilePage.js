@@ -14,64 +14,50 @@ export default function UserProfilePage() {
         friendsCount: 0,
         reactionsCount: 0,
     });
+    const [friendStatus, setFriendStatus] = useState("Add to Friends");
 
-    const [friendStatus, setFriendStatus] = useState("loading"); // "Add to Friends", "Request Sent", "Friend"
     const { userId } = useParams();
     const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
 
     useEffect(() => {
-        fetchProfile();
-        checkFriendStatus();
-    }, [userId]);
-
-    const fetchProfile = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/api/profile/${userId}`, {
-                withCredentials: true,
-            });
-            setProfile(response.data.profile);
-        } catch (error) {
-            console.error("Error fetching profile data", error);
-        }
-    };
-
-    const checkFriendStatus = async () => {
-        try {
-            const [friendsRes, incomingRes, outgoingRes] = await Promise.all([
-                axios.get(`${API_BASE_URL}/api/friends/my-requests/friends?lastfriendId=${userId}`, { withCredentials: true }),
-                axios.get(`${API_BASE_URL}/api/friends/my-requests/incoming`, { withCredentials: true }),
-                axios.get(`${API_BASE_URL}/api/friends/my-requests/outcoming`, { withCredentials: true }),
-            ]);
-
-            const friends = friendsRes.data || [];
-            const incomingRequests = incomingRes.data || [];
-            const outgoingRequests = outgoingRes.data || [];
-
-            if (friends.some(f => f.FriendId === userId || f.UserId === userId)) {
-                setFriendStatus("Remove Friend");
-            } else if (outgoingRequests.some(r => r.FriendId === userId)) {
-                setFriendStatus("Request Sent");
-            } else if (incomingRequests.some(r => r.UserId === userId)) {
-                setFriendStatus("Accept Request");
-            } else {
-                setFriendStatus("Add to Friends");
+        const fetchProfile = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/api/profile/${userId}`, {
+                    withCredentials: true,
+                });
+                setProfile(response.data.profile);
+            } catch (error) {
+                console.error("Error fetching profile data", error);
             }
-        } catch (error) {
-            console.error("Error checking friend status", error);
-            setFriendStatus("Add to Friends");
-        }
-    };
+        };
 
-    const handleRemoveFriend = async () => {
-        try {
-            await axios.delete(`${API_BASE_URL}/api/friends/reject/${userId}`, { withCredentials: true });
-            setFriendStatus("Add to Friends");
-        } catch (error) {
-            console.error("Error removing friend", error);
-        }
-    };
+        const fetchFriendStatus = async () => {
+            try {
+                const [outcomingRes, incomingRes, friendsRes] = await Promise.all([
+                    axios.get(`${API_BASE_URL}/api/friends/my-requests/outcoming`, { withCredentials: true }),
+                    axios.get(`${API_BASE_URL}/api/friends/my-requests/incoming`, { withCredentials: true }),
+                    axios.get(`${API_BASE_URL}/api/friends/my-requests/friends`, { withCredentials: true })
+                ]);
 
+                const isRequestSent = outcomingRes.data.some(request => request.friendId === userId);
+                const isRequestReceived = incomingRes.data.some(request => request.userId === userId);
+                const isFriend = friendsRes.data.some(friend => friend.friendId === userId);
 
+                if (isFriend) {
+                    setFriendStatus("Already Friend");
+                } else if (isRequestSent || isRequestReceived) {
+                    setFriendStatus("Request Sent");
+                } else {
+                    setFriendStatus("Add to Friends");
+                }
+            } catch (error) {
+                console.error("Error fetching friend status", error);
+            }
+        };
+
+        fetchProfile();
+        fetchFriendStatus();
+    }, [userId, API_BASE_URL]);
 
     const handleAddFriend = async () => {
         try {
@@ -79,19 +65,6 @@ export default function UserProfilePage() {
             setFriendStatus("Request Sent");
         } catch (error) {
             console.error("Error sending friend request", error);
-        }
-    };
-
-    const handleAcceptFriend = async () => {
-        try {
-            const incomingRequests = await axios.get(`${API_BASE_URL}/api/friends/my-requests/incoming`, { withCredentials: true });
-            const request = incomingRequests.data.find(r => r.UserId === userId);
-            if (request) {
-                await axios.post(`${API_BASE_URL}/api/friends/accept/${request.Id}`, {}, { withCredentials: true });
-                setFriendStatus("Friend");
-            }
-        } catch (error) {
-            console.error("Error accepting friend request", error);
         }
     };
 
@@ -141,34 +114,50 @@ export default function UserProfilePage() {
                 </Typography>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-                    {friendStatus === "Add to Friends" && (
-                        <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#365B87", color: "white" }} onClick={handleAddFriend}>
-                            Add to Friends
-                        </Button>
-                    )}
-                    {friendStatus === "Request Sent" && (
-                        <Button variant="outlined" sx={{ flex: 1, mx: 1, color: "#777" }} disabled>
-                            Request Sent
-                        </Button>
-                    )}
-                    {friendStatus === "Accept Request" && (
-                        <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#4CAF50", color: "white" }} onClick={handleAcceptFriend}>
-                            Accept Request
-                        </Button>
-                    )}
-                    {friendStatus === "Remove Friend" && (
-                        <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#d32f2f", color: "white" }} onClick={handleRemoveFriend}>
-                            Remove Friend
-                        </Button>
-                    )}
-
-                    <Button variant="outlined" sx={{ flex: 1, mx: 1, borderColor: "#365B87", color: "#365B87" }}>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            flex: 1,
+                            mx: 1,
+                            backgroundColor: friendStatus === "Already Friend" ? "#388E3C" : "#365B87",
+                            "&:hover": { backgroundColor: friendStatus === "Already Friend" ? "#2C4A6E" : "#2C4A6E" },
+                            padding: "6px 12px",
+                            minWidth: "auto"
+                        }}
+                        onClick={friendStatus === "Add to Friends" ? handleAddFriend : null}
+                        disabled={friendStatus !== "Add to Friends"}
+                    >
+                        {friendStatus}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            flex: 1,
+                            mx: 1,
+                            borderColor: "#365B87",
+                            color: "#365B87",
+                            "&:hover": { borderColor: "#2C4A6E", color: "#2C4A6E" },
+                            padding: "6px 12px",
+                            minWidth: "auto"
+                        }}
+                    >
                         Posts
                     </Button>
-                    <Button variant="contained" sx={{ flex: 1, mx: 1, backgroundColor: "#365B87" }}>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            flex: 1,
+                            mx: 1,
+                            backgroundColor: "#365B87",
+                            "&:hover": { backgroundColor: "#388E3C" },
+                            padding: "6px 12px",
+                            minWidth: "auto"
+                        }}
+                    >
                         Message
                     </Button>
                 </Box>
+
             </Container>
         </Box>
     );
