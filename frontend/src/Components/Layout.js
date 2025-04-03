@@ -154,6 +154,10 @@ const Layout = () => {
                 backgroundColor: "rgba(255, 255, 255, 0.1)",
                 padding: "6px 12px",
                 borderRadius: "24px",
+                position: 'fixed',
+                top: '8px',
+                right: '16px',
+                zIndex: 1101
               }}
             >
               <IconButton onClick={handleSearch}>

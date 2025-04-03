@@ -11,10 +11,13 @@ const SearchResults = ({ results }) => {
         boxShadow: 1,
         mt: 1,
         p: 2,
-        position: 'absolute',
+        position: 'fixed',
+        top: '64px',
+        right: '16px',
         width: '250px',
         maxHeight: '300px',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        zIndex: 1101
       }}>
         <Typography variant="body1" sx={{ color: '#777' }}>{results}</Typography>
       </Box>
@@ -32,14 +35,17 @@ const SearchResults = ({ results }) => {
       boxShadow: 1,
       mt: 1,
       p: 1,
-      position: 'absolute',
+      position: 'fixed',
+      top: '64px',
+      right: '16px',
       width: '250px',
       maxHeight: '300px',
-      overflowY: 'auto'
+      overflowY: 'auto',
+      zIndex: 1101
     }}>
       <List>
         {results.map(({ id, userName, firstName, lastName, profilePicture }) => {
-          const displayFirstName = firstName && firstName !== 'None' ? firstName : 'Unknown';
+          const displayFirstName = firstName && firstName !== 'None' ? firstName : '';
           const displayLastName = lastName && lastName !== 'None' ? lastName : '';
           const avatarSrc = profilePicture && profilePicture !== 'None' ? profilePicture : '/default-avatar.png';
           
