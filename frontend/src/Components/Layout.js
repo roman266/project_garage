@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
+import SearchResults from "./SearchResults";
 import {
   AppBar,
   Toolbar,
@@ -12,9 +13,12 @@ import {
   ListItem,
   ListItemText,
   Button,
-  ListItemIcon
+  ListItemIcon,
+  IconButton
 } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
+import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
 
 const drawerWidth = 240;
 
@@ -30,6 +34,9 @@ const Layout = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
   
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+    
   // Handle logout with local navigation
   const handleLogout = async () => {
     try {
@@ -37,6 +44,25 @@ const Layout = () => {
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await axios.get(`https://localhost:7126/api/profile/search-users?query=${searchQuery}`, {
+        withCredentials: true
+      });
+
+      if (response.data.message === "No users founded") {
+        setSearchResults("No users found.");
+      } else {
+        setSearchResults(response.data.message.$values || []);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
     }
   };
 
@@ -103,10 +129,10 @@ const Layout = () => {
               Post
             </Button>
           </Link>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            fullWidth 
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
             sx={{ borderRadius: "40px", backgroundColor: "#365B87", marginTop: "10px" }}
             onClick={handleLogout}
           >
@@ -116,7 +142,6 @@ const Layout = () => {
       </Drawer>
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", marginLeft: `${drawerWidth}px` }}>
-        {/* Header */}
         <AppBar position="fixed" sx={{ backgroundColor: "#2b2b2b", boxShadow: "none", zIndex: 1100 }}>
           <Toolbar>
             <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
@@ -131,15 +156,23 @@ const Layout = () => {
                 borderRadius: "24px",
               }}
             >
-              <img src="/search_icon.svg" alt="Search" style={{ width: 20, height: 20, opacity: 0.6 }} />
-              <InputBase placeholder="Search" sx={{ marginLeft: 1, color: "white" }} />
+              <IconButton onClick={handleSearch}>
+                <SearchIcon style={{ color: "white" }} />
+              </IconButton>
+              <InputBase
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                sx={{ marginLeft: 1, color: "white" }}
+              />
             </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Main Content */}
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px" }}>
+        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px", padding: 2 }}>
           <Outlet />
+          <SearchResults results={searchResults} />
         </Box>
       </Box>
     </Box>
