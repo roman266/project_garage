@@ -2,14 +2,6 @@
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using project_garage.Models.DbModels;
-using Microsoft.IdentityModel.Tokens;
-using project_garage.Data;
-using System.Net;
-using System.Net.Http;
 
 namespace project_garage.Controllers
 {
@@ -52,7 +44,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var result = await _userService.CreateUserAsync(model.UserName, model.Email, model.Password);
+                var result = await _userService.CreateUserAsync(model);
                 return Ok(new { message = "Email confirmation code has been sended on your email" });
             }
             catch (Exception ex)

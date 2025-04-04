@@ -1,6 +1,8 @@
 ﻿using project_garage.Interfaces.IService;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace project_garage.Service
 {
@@ -16,22 +18,23 @@ namespace project_garage.Service
         public async Task<bool> IsFriendAsync(string userId, string friendId)
         {
             var friends = await _friendRepository.GetByUserIdAsync(userId);
-            foreach (var friend in friends) {
-                if (friend.FriendId == friendId) 
-                    return true; }
+            foreach (var friend in friends)
+            {
+                if (friend.FriendId == friendId)
+                { 
+                return true;
+                }
+            }
             return false;
         }
 
-        public async Task<bool> CanAddFriendAsync(string userId, string friendId)
+        public async Task<bool> IsRequestBetweenUsersExistAsync(string userId, string friendId)
         {
-            if (userId == friendId)
-                return false;
-
-            if (await IsFriendAsync(userId, friendId))
+            var request = await _friendRepository.GetRequestByUsersIdAsync(userId, friendId);
+            if (request == null)
                 return false;
 
             return true;
-
         }
 
         public async Task<FriendModel> GetByIdAsync(string id)
@@ -42,9 +45,9 @@ namespace project_garage.Service
             return request;
         }
 
-        public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
 
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
@@ -52,17 +55,17 @@ namespace project_garage.Service
             return requests;
         }
 
-        public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetIncomingRequestsAsync(userId, lastRequestId, limit);
             return requests;
         }
 
-        public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
-            if (!string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
             var requests = await _friendRepository.GetOutcomingRequestsAsync(userId, lastRequestId, limit);
             return requests;
@@ -70,7 +73,7 @@ namespace project_garage.Service
 
         public async Task SendFriendRequestAsync(string userId, string friendId)
         {
-            if (!await CanAddFriendAsync(userId, friendId))
+            if (await IsRequestBetweenUsersExistAsync(userId, friendId))
                 throw new InvalidOperationException("Users already are in friendship");
 
             var friendRequest = new FriendModel

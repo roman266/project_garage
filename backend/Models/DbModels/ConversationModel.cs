@@ -5,6 +5,7 @@
         public string Id { get; set; }
         public bool IsPrivate { get; set; }
         public DateTime StartedAt { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
 
         public ICollection<MessageModel> Messages { get; set; }
         public ICollection<UserConversationModel> UserConversations { get; set; }

@@ -8,6 +8,12 @@ appsettings.json
 .env
 
 #DataBase
+app.db
+app.db-shm
+app.db-wal
+app.exe
+
+#DataBase
 *.db-shm
 *.db-wal
 

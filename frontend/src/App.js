@@ -6,14 +6,14 @@ import LoginPage from "./Pages/LoginPage";
 import ConfirmEmailPage from "./Pages/ConfirmEmailPage"
 import HomePage from "./Pages/HomePage";
 import RegistrationPage from "./Pages/RegistrationPage";
-import Layout from "./Components/Layout";
+import Layout from "./Components/oth/Layout";
 import MessagesPage from "./Pages/MessagesPage";
 import FriendsPage from "./Pages/FriendsPage";
 import MyPostsPage from "./Pages/MyPostsPage";
 import MyProfilePage from "./Pages/MyProfilePage";
 import CreatePostPage from "./Pages/CreatePostPage";
-import ProtectedRoute from "./Components/ProtectedRoute";
-import PublicRoute from "./Components/PublicRoute";  // We'll create this component
+import ProtectedRoute from "./Components/oth/ProtectedRoute";
+import PublicRoute from "./Components/oth/PublicRoute";
 
 // Компонент для встановлення колбеку автентифікації
 const AuthCallbackSetter = () => {

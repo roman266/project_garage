@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography, Container } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom"; // Змінено з import { navigate }
-import API from "../utils/apiClient"; // Змінено шлях імпорту
+import API from "../../utils/apiClient"; // Змінено шлях імпорту
 
 const validationSchema = yup.object({
   email: yup.string().email("Enter correct email").required("Email is required"),

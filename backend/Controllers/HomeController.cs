@@ -45,17 +45,10 @@ namespace project_garage.Controllers
                 }
 
                 var friends = await _friendService.GetFriendsAsync(userId, lastRequestId, limit);
-                var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
 
                 var posts = new List<PostModel>();
-                foreach (var friendId in friendIds)
-                {
-                    var friendPosts = await _postService.GetPostsByUserIdAsync(friendId);
-                    posts.AddRange(friendPosts);
-                }
 
-                var userPosts = await _postService.GetPostsByUserIdAsync(userId);
-                posts.AddRange(userPosts);
+                var userPosts = await _postService.GetPaginatedPostsByUserIdAsync(userId, null, 10);
                 posts = posts.OrderByDescending(p => p.CreatedAt).ToList();
 
                 var response = new

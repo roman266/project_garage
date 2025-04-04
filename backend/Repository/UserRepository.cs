@@ -107,5 +107,11 @@ namespace project_garage.Repository
 
             return users;
         }
+
+        public async Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email)
+        {
+            var result = await _userManager.SetEmailAsync(user, email);
+            return result;
+        }
     }
 }
