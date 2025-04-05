@@ -1,13 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Interfaces.IService;
-using project_garage.Models.DbModels;
-using project_garage.Models.ViewModels;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Linq;
+using System;
 using System.Threading.Tasks;
-using project_garage.Data;
 
 namespace project_garage.Controllers
 {
@@ -19,12 +14,18 @@ namespace project_garage.Controllers
         private readonly IPostService _postService;
         private readonly IFriendService _friendService;
         private readonly IUserService _userService;
+        private readonly IRecommendationService _recommendationService;
 
-        public HomeController(IPostService postService, IFriendService friendService, IUserService userService)
+        public HomeController(
+            IPostService postService,
+            IFriendService friendService,
+            IUserService userService,
+            IRecommendationService recommendationService)
         {
             _postService = postService;
             _friendService = friendService;
             _userService = userService;
+            _recommendationService = recommendationService;
         }
 
         [HttpGet("feed")]
@@ -32,42 +33,35 @@ namespace project_garage.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userId == null)
-                {
-                    return Unauthorized(new { success = false, message = "Unauthorized" });
-                }
+                var userId = UserHelper.GetCurrentUserId(HttpContext);
+                Console.WriteLine($"Request: userId={userId}, lastRequestId={lastRequestId}, limit={limit}");
 
-                var user = await _userService.GetByIdAsync(userId);
-                if (user == null)
-                {
-                    return NotFound(new { success = false, message = "User not found" });
-                }
-
-                var friends = await _friendService.GetFriendsAsync(userId, lastRequestId, limit);
-
-                var posts = new List<PostModel>();
-
-                var userPosts = await _postService.GetPaginatedPostsByUserIdAsync(userId, null, 10);
-                posts = posts.OrderByDescending(p => p.CreatedAt).ToList();
-
-                var response = new
-                {
-                    success = true,
-                    data = new
-                    {
-                        user,
-                        posts,
-                        friendsCount = friends.Count
-                    }
-                };
-
+                var response = await _recommendationService.GetUserFeedAsync(userId, lastRequestId, limit);
                 return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { success = false, message = "Unauthorized" });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error: {ex.Message}");
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+    }
+
+    // Припускаю, що UserHelper виглядає так (додайте, якщо його немає)
+    public static class UserHelper
+    {
+        public static string GetCurrentUserId(HttpContext context)
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+            return userId;
         }
     }
 }
