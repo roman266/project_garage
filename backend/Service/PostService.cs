@@ -18,8 +18,8 @@ namespace project_garage.Service
 
         public int GetCountOfPosts(string userId) 
         {
-                var count = _postRepository.GetUsersPostsCount(userId);
-                return count;
+            var count = _postRepository.GetUsersPostsCount(userId);
+            return count;
         }
 
         public async Task CreatePostAndUploadImageToCloudAsync(string userId, PostOnCreationDto postDto)
@@ -63,6 +63,11 @@ namespace project_garage.Service
         public async Task DeletePostAsync(string postId)
         {
             await _postRepository.DeletePostAsync(postId);
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds)
+        {
+            return await _postRepository.GetPostsByUserIdsAsync(userIds);
         }
     }
 }

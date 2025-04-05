@@ -37,7 +37,7 @@ const Layout = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
+  }; 
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -137,7 +137,14 @@ const Layout = () => {
         </AppBar>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px" }}>
+        <Box 
+          sx={{ 
+            flex: 1, 
+            backgroundColor: "#365B87", 
+            marginTop: "63px", 
+            overflowY: "auto" 
+          }}
+        >
           <Outlet />
         </Box>
       </Box>

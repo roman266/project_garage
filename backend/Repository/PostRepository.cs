@@ -56,7 +56,6 @@ namespace project_garage.Repository
                 })
                 .OrderByDescending(p => p.PostDate);
                 
-
             var posts = await postsQuery
                 .Take(limit)
                 .ToListAsync();
@@ -78,6 +77,17 @@ namespace project_garage.Repository
                 _context.Posts.Remove(post);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds)
+        {
+            var posts = await _context.Posts
+                .Where(p => userIds.Contains(p.UserId))
+                .Include(p => p.User) 
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return posts;
         }
     }
 }
