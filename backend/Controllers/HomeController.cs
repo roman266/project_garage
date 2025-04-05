@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Interfaces.IService;
+using project_garage.Data;
 using System;
 using System.Threading.Tasks;
 
@@ -48,20 +49,6 @@ namespace project_garage.Controllers
                 Console.WriteLine($"Error: {ex.Message}");
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
-        }
-    }
-
-    // Припускаю, що UserHelper виглядає так (додайте, якщо його немає)
-    public static class UserHelper
-    {
-        public static string GetCurrentUserId(HttpContext context)
-        {
-            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new UnauthorizedAccessException("User ID not found in token.");
-            }
-            return userId;
         }
     }
 }

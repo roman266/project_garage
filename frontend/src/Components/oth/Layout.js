@@ -58,6 +58,7 @@ const Layout = () => {
         }}
       >
         <Box sx={{ padding: 2 }}>
+        <Link to="/" style={{ textDecoration: 'none' }}>
           <Typography
             variant="h6"
             sx={{
@@ -67,12 +68,14 @@ const Layout = () => {
               fontWeight: "light",
               fontFamily: "roboto",
               color: "#365B87",
+              cursor: "pointer", 
             }}
           >
             Sigm
             <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
           </Typography>
-        </Box>
+        </Link>
+      </Box>
         <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
