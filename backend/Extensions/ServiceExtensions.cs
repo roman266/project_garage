@@ -48,8 +48,9 @@ namespace project_garage.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserInterestRepository, UserInterestRepository>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
-            services.AddScoped<DataSeeder>();
-            services.AddScoped<ChatHub>();
+            services.AddScoped<IRecommendationService, RecommendationService>();
+            services.AddScoped<IUserInterestService, UserInterestService>();
+            services.AddScoped<DataSeeder>();      
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();
