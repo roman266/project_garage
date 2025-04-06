@@ -5,7 +5,7 @@ namespace project_garage.Interfaces.IRepository
 {
     public interface IMessageRepository
     {
-        Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageOnCreationDto);
+        Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageOnCreationDto, string senderId);
         Task<MessageModel> GetByIdAsync(string id);
         Task<List<MessageModel>> GetByUserIdAsync(string id);
         Task<List<MessageDto>> GetPaginatedMessagesByConversationId(string userId, string conversationId, string lastMessageId, int messageCountLimit);

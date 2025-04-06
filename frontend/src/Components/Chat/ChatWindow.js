@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
 import axios from "axios";
 import { API_URL } from "../../constants";
 import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../../services/chatService";
@@ -19,12 +21,21 @@ export default function ChatWindow({ selectedChatId }) {
   const messageLimit = 20;
   const messageIdsRef = useRef(new Set());
   const chatServiceRef = useRef(null);
-  // Add state for file attachment
   const [attachedFile, setAttachedFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  const formatMessageTime = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "??:??";
+    }
+  };
+
   useEffect(() => {
-    axios.get(`${API_URL}/api/user/current`, { withCredentials: true })
+    axios.get(`${API_URL}/api/profile/me`, { withCredentials: true })
       .then(response => {
         setCurrentUserId(response.data.id);
       })
@@ -57,6 +68,40 @@ export default function ChatWindow({ selectedChatId }) {
     }
   }, [messages]);
 
+  const markMessagesAsRead = async (messagesToRead) => {
+    if (!chatServiceRef.current || !selectedChatId || !currentUserId) return;
+    
+    const unreadMessages = messagesToRead.filter(msg => 
+      !msg.isCurrentUser && 
+      !msg.isSystem && 
+      !msg.isReaden
+    );
+    
+    for (const message of unreadMessages) {
+      try {
+        const isReaden = await chatServiceRef.current.readMessage(selectedChatId, message.id);
+        
+        if (isReaden) {
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              msg.id === message.id ? { ...msg, isReaden: true } : msg
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error marking message as read:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (messages.length > 0 && selectedChatId && currentUserId) {
+      setTimeout(() => {
+        markMessagesAsRead(messages);
+      }, 1000);
+    }
+  }, [messages, selectedChatId, currentUserId]);
+
   const addMessageToState = (newMsg, chatId) => {
     if (newMsg.id) {
       messageIdsRef.current.add(newMsg.id);
@@ -73,13 +118,15 @@ export default function ChatWindow({ selectedChatId }) {
 
   const createMessage = (text, senderId, isSystem = false, imageUrl = null) => {
     const msgId = Date.now().toString();
+    const now = new Date();
     
     if (isSystem) {
       return {
         id: msgId,
         text: text,
         isSystem: true,
-        sendedAt: new Date().toISOString()
+        sendedAt: now.toISOString(),
+        formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       };
     }
     
@@ -89,7 +136,8 @@ export default function ChatWindow({ selectedChatId }) {
       text: text,
       imageUrl: imageUrl,
       isCurrentUser: senderId === currentUserId,
-      sendedAt: new Date().toISOString()
+      sendedAt: now.toISOString(),
+      formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
   };
 
@@ -125,7 +173,18 @@ export default function ChatWindow({ selectedChatId }) {
           if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight - previousScrollHeight;
           }
-        }, 0);
+          
+          const messagesToRead = uniqueOlderMessages.filter(msg => 
+            !msg.isCurrentUser && !msg.isSystem && !msg.isReaden
+          );
+          
+          for (const message of messagesToRead) {
+            chatServiceRef.current.readMessage(selectedChatId, message.id)
+              .catch(error => {
+                console.error(`Error marking message ${message.id} as read:`, error);
+              });
+          }
+        }, 500);
       }
     } catch (error) {
       console.error("Error loading older messages:", error);
@@ -151,7 +210,6 @@ export default function ChatWindow({ selectedChatId }) {
     setHasMoreMessages(true);
     messageIdsRef.current.clear();
     
-    // Fetch chat info
     fetchChatInfo(selectedChatId)
       .then(info => {
         if (info) {
@@ -160,10 +218,21 @@ export default function ChatWindow({ selectedChatId }) {
       })
       .catch(err => console.error("Error fetching chat info", err));
 
-    // Create chat connection with callbacks
     const chatService = createChatConnection(selectedChatId, {
-      onReceiveMessage: (senderId, text, imageUrl) => {
-        const newMsg = createMessage(text, senderId, false, imageUrl);
+      onReceiveMessage: (message) => {
+        const newMsg = {
+          id: message.id,
+          senderId: message.senderId,
+          text: message.text,
+          imageUrl: message.imageUrl !== "None" ? message.imageUrl : null,
+          isCurrentUser: message.senderId === currentUserId,
+          isReaden: message.isReaden || false,
+          isVisible: message.isVisible,
+          sendedAt: message.sendedAt || new Date().toISOString(),
+          conversationId: message.conversationId || selectedChatId,
+          formattedLocalTime: message.formattedLocalTime
+        };
+        
         addMessageToState(newMsg, selectedChatId);
         setTimeout(scrollToBottom, 100);
       },
@@ -171,18 +240,24 @@ export default function ChatWindow({ selectedChatId }) {
         const newMsg = createMessage(message, null, true);
         addMessageToState(newMsg, selectedChatId);
         setTimeout(scrollToBottom, 100);
+      },
+      onMessageReaden: (messageId) => {
+        setMessages(prevMessages => {
+          const updatedMessages = prevMessages.map(msg => 
+            msg.id === messageId ? { ...msg, isReaden: true } : msg
+          );
+          return updatedMessages;
+        });
       }
     });
     
     chatServiceRef.current = chatService;
     
-    // Setup connection and load messages
     chatService.setupConnection()
       .then(conn => {
         setConnection(conn);
         connectionRef.current = conn;
         
-        // Load initial messages
         return fetchChatMessages(selectedChatId);
       })
       .then(messageData => {
@@ -200,11 +275,23 @@ export default function ChatWindow({ selectedChatId }) {
           setHasMoreMessages(false);
         }
         
-        setTimeout(scrollToBottom, 100);
+        setTimeout(() => {
+          scrollToBottom();
+          
+          const messagesToRead = uniqueMessages.filter(msg => 
+            !msg.isCurrentUser && !msg.isSystem && !msg.isReaden
+          );
+          
+          for (const message of messagesToRead) {
+            chatServiceRef.current.readMessage(selectedChatId, message.id)
+              .catch(error => {
+                console.error(`Error marking message ${message.id} as read:`, error);
+              });
+          }
+        }, 500);
       })
       .catch(error => console.error("Error setting up chat:", error));
 
-    // Cleanup function
     return () => {
       if (chatServiceRef.current) {
         chatServiceRef.current.leaveChat(selectedChatId);
@@ -212,7 +299,6 @@ export default function ChatWindow({ selectedChatId }) {
     };
   }, [selectedChatId, currentUserId]);
 
-  // File selection handler
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -220,7 +306,6 @@ export default function ChatWindow({ selectedChatId }) {
     }
   };
 
-  // Open file dialog
   const openFileDialog = () => {
     fileInputRef.current.click();
   };
@@ -231,21 +316,23 @@ export default function ChatWindow({ selectedChatId }) {
       try {
         setNewMessage("");
         
-        // Додаємо тимчасове повідомлення до UI
-        const tempMsg = createMessage(
-          messageText + (attachedFile ? (messageText ? ' ' : '') + `[Uploading: ${attachedFile.name}]` : ''), 
-          currentUserId
-        );
+        const now = new Date();
+        const tempMsg = {
+          ...createMessage(
+            messageText + (attachedFile ? (messageText ? ' ' : '') + `[Uploading: ${attachedFile.name}]` : ''), 
+            currentUserId
+          ),
+          formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        };
+        
         addMessageToState(tempMsg, selectedChatId);
         
-        let imageUrl = "None"; // Default value when no file is attached
+        let imageUrl = "None";
         
-        // Якщо є прикріплений файл, спочатку завантажуємо його
         if (attachedFile) {
           const formData = new FormData();
           formData.append('image', attachedFile);
           
-          // Завантажуємо зображення через API
           const response = await axios.post(`${API_URL}/api/message/upload-image`, formData, {
             withCredentials: true,
             headers: {
@@ -256,22 +343,34 @@ export default function ChatWindow({ selectedChatId }) {
           imageUrl = response.data;
         }
         
-        // Створюємо DTO для відправки через SignalR
         const messageDto = {
           ConversationId: selectedChatId,
           Text: messageText,
           ImageUrl: imageUrl
         };
         
-        // Відправляємо повідомлення через SignalR
-        await chatServiceRef.current.connection.invoke("SendMessage", messageDto);
+        const savedMessage = await chatServiceRef.current.sendMessage(messageDto);
         
-        // Викликаємо ендпоінт для оновлення дати останнього повідомлення
+        if (savedMessage && savedMessage.id) {
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              msg.id === tempMsg.id 
+                ? { 
+                    ...msg, 
+                    id: savedMessage.id,
+                    isReaden: savedMessage.isReaden || false,
+                    sendedAt: savedMessage.sendedAt,
+                    formattedLocalTime: savedMessage.formattedLocalTime
+                  } 
+                : msg
+            )
+          );
+        }
+        
         await axios.patch(`${API_URL}/api/conversations/message-sended/${selectedChatId}`, {}, {
           withCredentials: true
         });
         
-        // Очищаємо стан прикріпленого файлу після відправки
         if (attachedFile) {
           setAttachedFile(null);
         }
@@ -283,7 +382,6 @@ export default function ChatWindow({ selectedChatId }) {
 
   if (!selectedChatId) return <Box display="flex" flex={1} alignItems="center" justifyContent="center" color="gray" backgroundColor="white">Select a chat</Box>;
 
-  // Решта коду залишається без змін
   return (
     <Box display="flex" flexDirection="column" flex={1} component={Paper} elevation={2}>
       <Box display="flex" alignItems="center" padding={2} bgcolor="#e0e0e0">
@@ -326,11 +424,12 @@ export default function ChatWindow({ selectedChatId }) {
                 maxWidth: "60%",
                 padding: "10px 15px",
                 borderRadius: "18px",
-                bgcolor: msg.isSystem ? "#f5f5f5" : (msg.isCurrentUser ? "#e0e0e0" : "#1e88e5"),
+                bgcolor: msg.isSystem ? "#f5f5f5" : (msg.isCurrentUser ? "#b3b3b3" : "#365B87"),
                 color: msg.isSystem ? "gray" : (msg.isCurrentUser ? "black" : "white"),
                 alignSelf: msg.isSystem ? "center" : (msg.isCurrentUser ? "flex-end" : "flex-start"),
                 marginBottom: 1,
                 fontStyle: msg.isSystem ? "italic" : "normal",
+                position: "relative",
               }}
             >
               {msg.text || msg.content}
@@ -345,6 +444,50 @@ export default function ChatWindow({ selectedChatId }) {
                       maxHeight: '200px'
                     }} 
                   />
+                </Box>
+              )}
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  display: "block", 
+                  textAlign: msg.isCurrentUser ? "right" : "left",
+                  fontSize: "0.7rem",
+                  marginTop: "4px",
+                  opacity: 0.8,
+                  color: msg.isSystem ? "gray" : (msg.isCurrentUser ? "black" : "white"),
+                }}
+              >
+                {msg.formattedLocalTime || formatMessageTime(msg.sendedAt)}
+              </Typography>
+              {msg.isCurrentUser && (
+                <Box 
+                  sx={{ 
+                    position: "absolute", 
+                    right: 5, 
+                    bottom: 2, 
+                    fontSize: "0.8rem", 
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center"
+                  }}
+                >
+                  {msg.isReaden ? <DoneAllIcon fontSize="inherit" /> : <CheckIcon fontSize="inherit" />}
+                </Box>
+              )}
+              
+              {!msg.isCurrentUser && !msg.isSystem && (
+                <Box 
+                  sx={{ 
+                    position: "absolute", 
+                    left: 5, 
+                    bottom: 2, 
+                    fontSize: "0.8rem", 
+                    color: "#cccccc",
+                    display: "flex",
+                    alignItems: "center"
+                  }}
+                >
+                  {msg.isReaden ? <DoneAllIcon fontSize="inherit" /> : <CheckIcon fontSize="inherit" />}
                 </Box>
               )}
             </Box>

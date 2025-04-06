@@ -48,12 +48,13 @@ namespace project_garage.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserInterestRepository, UserInterestRepository>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<DataSeeder>();
+            services.AddScoped<ChatHub>();
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
-            services.AddScoped<DataSeeder>();
         }
 
         public static void AddIdentity(this IServiceCollection services)

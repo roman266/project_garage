@@ -18,15 +18,15 @@ namespace project_garage.Repository
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto)
+        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto, string senderId)
         {
             var message = new MessageModel
             {
                 Id = Guid.NewGuid().ToString(),
                 ConversationId = messageDto.ConversationId,
-                SenderId = messageDto.SenderId,
+                SenderId = senderId,
                 Text = messageDto.Text,
-                ImageUrl = messageDto.ImageUrl,
+                ImageUrl = messageDto.ImageUrl ?? "None",
                 SendedAt = DateTime.UtcNow,
                 IsReaden = false,
                 IsVisible = true,
