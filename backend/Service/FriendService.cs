@@ -1,5 +1,5 @@
 ﻿using project_garage.Interfaces.IService;
-using project_garage.Interfaces.IRepository;
+using project_garage.Interfaces.IRepository; 
 using project_garage.Models.DbModels;
 using project_garage.Models.ViewModels;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -22,7 +22,7 @@ namespace project_garage.Service
             {
                 if (friend.FriendId == friendId)
                 { 
-                return true;
+                    return true;
                 }
             }
             return false;
@@ -108,8 +108,13 @@ namespace project_garage.Service
 
         public async Task<int> GetFriendsCount(string userId) 
         {
-                var list = await _friendRepository.GetByUserIdAsync(userId);
-                return list.Count;
+            var list = await _friendRepository.GetByUserIdAsync(userId);
+            return list.Count;
+        }
+
+        public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
+        {
+            return await _friendRepository.GetByUserIdAsync(userId);
         }
     }
 }

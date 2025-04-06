@@ -3,7 +3,7 @@ using project_garage.Models.ViewModels;
 
 namespace project_garage.Interfaces.IRepository
 {
-    public interface IFriendRepository
+    public interface IFriendRepository 
     {
         Task<FriendModel> GetByIdAsync(string id);
         Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId);
