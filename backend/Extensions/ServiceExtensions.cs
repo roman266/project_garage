@@ -41,7 +41,6 @@ namespace project_garage.Extensions
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IMessageService, MessageService>();
-            services.AddScoped<IUserInterestService, UserInterestService>();
             services.AddScoped<IReactionRepository, ReactionRepository>();
             services.AddScoped<IReactionService, ReactionService>();
             services.AddScoped<IUserConversationRepository, UserConversationRepository>();
@@ -50,13 +49,13 @@ namespace project_garage.Extensions
             services.AddScoped<IUserInterestRepository, UserInterestRepository>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<IRecommendationService, RecommendationService>();
-
+            services.AddScoped<IUserInterestService, UserInterestService>();
+            services.AddScoped<DataSeeder>();      
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
-            services.AddScoped<DataSeeder>();
         }
 
         public static void AddIdentity(this IServiceCollection services)

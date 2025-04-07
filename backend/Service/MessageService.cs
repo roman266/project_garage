@@ -1,6 +1,9 @@
-﻿using project_garage.Interfaces.IRepository;
+﻿using Microsoft.AspNetCore.SignalR;
+using project_garage.Data;
+using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
+using project_garage.Models.DTOs;
 using project_garage.Models.ViewModels;
 
 namespace project_garage.Service
@@ -9,27 +12,44 @@ namespace project_garage.Service
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IConversationService _conversationService;
+        private readonly IHubContext<ChatHub> _chatHubContext;
 
-        public MessageService(IMessageRepository messageRepository, IConversationService conversationService)
+        public MessageService(IMessageRepository messageRepository, IConversationService conversationService, IHubContext<ChatHub> chatHubContext)
         {
             _messageRepository = messageRepository;
             _conversationService = conversationService;
         }
 
-        public async Task<MessageModel> AddMessageAsync(MessageOnCreationDto messageOnCreationDto)
+        public async Task<SendMessageDto> AddMessageAsync(MessageOnCreationDto messageOnCreationDto, string senderId)
         {
 
-            if (!await _conversationService.IsUserInConversationAsync(messageOnCreationDto.SenderId, 
+            if (!await _conversationService.IsUserInConversationAsync(senderId, 
                 messageOnCreationDto.ConversationId))
-                throw new Exception($"User with id: {messageOnCreationDto.SenderId} " + 
+                throw new Exception($"User with id: {senderId} " + 
                     $"isn't in conversation with id: {messageOnCreationDto.ConversationId}");
 
-            var message = await _messageRepository.CreateNewAsync(messageOnCreationDto);
-            
-            return message;
+            var message = await _messageRepository.CreateNewAsync(messageOnCreationDto, senderId);
+            var sendMessageDto = MapMessage(message, senderId);
+
+            return sendMessageDto;
         }
 
-        public async Task ReadMessageAsync(string messageId)
+        private SendMessageDto MapMessage(MessageModel message, string senderId)
+        {
+            return new SendMessageDto
+            {
+                Id = message.Id,
+                ConversationId = message.ConversationId,
+                SenderId = message.SenderId,
+                Text = message.Text,
+                ImageUrl = message.ImageUrl,
+                SendedAt = message.SendedAt,
+                IsReaden = message.IsReaden,
+                IsVisible = message.IsVisible,
+            };
+        }
+
+        public async Task<bool> ReadMessageAsync(string messageId, string currentUserId)
         {
             if (string.IsNullOrEmpty(messageId))
                 throw new ArgumentException("Wrong message id");
@@ -38,8 +58,14 @@ namespace project_garage.Service
             if (message == null)
                 throw new ArgumentException("No message with this id found");
 
-            message.IsReaden = true;
-            await _messageRepository.UpdateAsync(message);
+            if (message.SenderId != currentUserId) 
+            {
+                message.IsReaden = true;
+                await _messageRepository.UpdateAsync(message);
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<List<MessageDto>> GetPaginatedConversationMessagesAsync(string conversationId, string lastMessageId, int messageCountLimit, string userId)
@@ -51,7 +77,6 @@ namespace project_garage.Service
                 throw new InvalidOperationException($"User is not part of conversation {conversationId}");
 
             var messages = await _messageRepository.GetPaginatedMessagesByConversationId(userId, conversationId, lastMessageId, messageCountLimit);
-
             if (!messages.Any())
                 throw new KeyNotFoundException("You dont have messages with this user");
 
