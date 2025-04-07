@@ -11,5 +11,6 @@ namespace project_garage.Interfaces.IRepository
         int GetUsersPostsCount(string userId);
         Task DeletePostAsync(string postId);
         Task<List<DisplayPostDto>> GetPaginatedPostsByUserIdAsync(string userId, string? lastPostId, int limit);
+        Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds);
     }
 }
