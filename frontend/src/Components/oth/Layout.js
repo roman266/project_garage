@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import SearchResults from "./SearchResults";
+import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   AppBar,
@@ -40,9 +42,10 @@ const Layout = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  
-  const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
+  const [alert, setAlert] = useState(null);
 
+  const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
+  
   // Handle logout with local navigation
   const handleLogout = async () => {
     try {
@@ -61,17 +64,19 @@ const Layout = () => {
         withCredentials: true
       });
 
-      if (response.data.message === "No users founded") {
-        setSearchResults("No users found.");
-      } else {
-        setSearchResults(response.data.message.$values || []);
-      }
+      setSearchResults(response.data.message.$values || []);
+      setAlert(null);
     } catch (error) {
-      <Alert variant="outlined" severity="error">
-		Something went wrong. Please try again
-	 </Alert>
-       setSearchResults([]);
-     }
+      const errorMessage = error.response?.data?.message;
+
+      if (errorMessage === "No users founded") {
+        setSearchResults([]);
+        setAlert({ type: "info", message: "No users found." });
+      } else {
+        setSearchResults([]);
+        setAlert({ type: "error", message: "Something went wrong. Please try again." });
+      }
+    }
   };
 
   if (isLoading) {
@@ -93,25 +98,24 @@ const Layout = () => {
         }}
       >
         <Box sx={{ padding: 2 }}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Typography
-            variant="h6"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              fontSize: "60px",
-              fontWeight: "light",
-              fontFamily: "roboto",
-              color: "#365B87",
-              cursor: "pointer", 
-
-            }}
-          >
-            Sigm
-            <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
-          </Typography>
-        </Link>
-      </Box>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "60px",
+                fontWeight: "light",
+                fontFamily: "roboto",
+                color: "#365B87",
+                cursor: "pointer",
+              }}
+            >
+              Sigm
+              <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
+            </Typography>
+          </Link>
+        </Box>
         <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
@@ -201,6 +205,21 @@ const Layout = () => {
           <SearchResults results={searchResults} />
         </Box>
       </Box>
+
+      {/* Snackbar Alert */}
+      <Snackbar
+        open={!!alert}
+        autoHideDuration={5000}
+        onClose={() => setAlert(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {alert && (
+          <Alert onClose={() => setAlert(null)} severity={alert.type} sx={{ width: '100%' }}>
+            <AlertTitle>{alert.type === "error" ? "Error" : "Info"}</AlertTitle>
+            {alert.message}
+          </Alert>
+        )}
+      </Snackbar>
     </Box>
   );
 };
