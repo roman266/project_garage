@@ -29,7 +29,6 @@ export default function CreatePostPage() {
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
-    // Fetch categories when component mounts
     fetchCategories();
     
     if (image) {
@@ -55,19 +54,17 @@ export default function CreatePostPage() {
       }
       
       const data = await response.json();
-      // Ensure data is an array
       const categoriesArray = Array.isArray(data) ? data : 
                              (data.$values ? data.$values : []);
       
       setCategories(categoriesArray);
       
-      // Set default category if available
       if (categoriesArray.length > 0) {
         setSelectedCategory(categoriesArray[0].id.toString());
       }
     } catch (err) {
       console.error("Error fetching categories:", err);
-      setCategories([]); // Ensure categories is always an array
+      setCategories([]);
     } finally {
       setLoadingCategories(false);
     }
@@ -96,10 +93,8 @@ export default function CreatePostPage() {
       formData.append('description', content);
       formData.append('image', image);
       
-      // Find the selected category object to get both ID and name
       const selectedCategoryObj = categories.find(cat => cat.id.toString() === selectedCategory);
       
-      // Add both category ID and name
       formData.append('CategoryId', selectedCategory);
       formData.append('Category', selectedCategoryObj ? selectedCategoryObj.name : '');
       
@@ -115,7 +110,6 @@ export default function CreatePostPage() {
 
       setContent("");
       setImage(null);
-      // Reset to default category if available
       if (categories.length > 0) {
         setSelectedCategory(categories[0].id.toString());
       } else {
