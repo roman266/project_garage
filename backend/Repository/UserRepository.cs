@@ -103,7 +103,10 @@ namespace project_garage.Repository
                 .Select(u => new UserModel
                 {
                     Id = u.Id,
-                    UserName = u.UserName
+                    UserName = u.UserName,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    ProfilePicture = u.ProfilePicture
                 })
                 .ToListAsync();
 
