@@ -3,7 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { setAuthFailureCallback } from "./utils/apiClient";
 import { useEffect } from "react";
 import LoginPage from "./Pages/LoginPage";
-import ConfirmEmailPage from "./Pages/ConfirmEmailPage"
+import ConfirmEmailPage from "./Pages/ConfirmEmailPage";
 import HomePage from "./Pages/HomePage";
 import RegistrationPage from "./Pages/RegistrationPage";
 import Layout from "./Components/oth/Layout";
@@ -11,6 +11,7 @@ import MessagesPage from "./Pages/MessagesPage";
 import FriendsPage from "./Pages/FriendsPage";
 import MyPostsPage from "./Pages/MyPostsPage";
 import MyProfilePage from "./Pages/MyProfilePage";
+import UserProfilePage from "./Pages/UserProfilePage";
 import CreatePostPage from "./Pages/CreatePostPage";
 import ProtectedRoute from "./Components/oth/ProtectedRoute";
 import PublicRoute from "./Components/oth/PublicRoute";
@@ -61,6 +62,7 @@ function App() {
             <Route path="/my-posts" element={<MyPostsPage />} />
             <Route path="/my-profile" element={<MyProfilePage />} />
             <Route path="/create-post" element={<CreatePostPage />} />
+			<Route path="/profile/:userId" element={<UserProfilePage />} />
           </Route>
         </Routes>
       </AuthProvider>

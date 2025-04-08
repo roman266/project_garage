@@ -49,7 +49,6 @@ namespace project_garage.Service
         {
             if (string.IsNullOrEmpty(userId))
                 throw new ArgumentException("Invalid userId");
-
             var requests = await _friendRepository.GetFriendsAsync(userId, lastRequestId, limit);
 
             return requests;
@@ -108,7 +107,7 @@ namespace project_garage.Service
 
         public async Task<int> GetFriendsCount(string userId) 
         {
-            var list = await _friendRepository.GetByUserIdAsync(userId);
+            var list = await _friendRepository.GetByUserIdAcceptedAsync(userId);
             return list.Count;
         }
 

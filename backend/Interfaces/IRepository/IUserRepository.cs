@@ -9,6 +9,7 @@ namespace project_garage.Interfaces.IRepository
         Task<UserModel> GetByEmailAsync(string email);
         Task<UserModel> GetByIdAsync(string id);
         Task<IdentityResult> UpdateUserInfoAsync(UserModel user);
+        Task<IdentityResult> SetUserNameAsync(UserModel user, string userName);
         Task<IdentityResult> UpdateUserPasswordAsync(string userId, string password);
         Task<bool> CheckPasswordAsync(UserModel user, string password);
         Task<IdentityResult> DeleteUserAsync(string id);

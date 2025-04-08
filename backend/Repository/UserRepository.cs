@@ -46,7 +46,7 @@ namespace project_garage.Repository
 
             if (user == null)
             {
-                throw new Exception("No user finded");
+                throw new Exception("No user found");
             }
 
             return user;
@@ -56,6 +56,11 @@ namespace project_garage.Repository
         {
             var result = await _userManager.UpdateAsync(user);
             return result;
+        }
+
+        public async Task<IdentityResult> SetUserNameAsync(UserModel user, string userName)
+        {
+            return await _userManager.SetUserNameAsync(user, userName);
         }
 
         public async Task<IdentityResult> UpdateUserPasswordAsync(string userId, string password)
@@ -98,7 +103,10 @@ namespace project_garage.Repository
                 .Select(u => new UserModel
                 {
                     Id = u.Id,
-                    UserName = u.UserName
+                    UserName = u.UserName,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    ProfilePicture = u.ProfilePicture
                 })
                 .ToListAsync();
 

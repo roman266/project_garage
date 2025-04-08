@@ -1,6 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
+import SearchResults from "./SearchResults";
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+
 import {
   AppBar,
   Toolbar,
@@ -12,11 +17,17 @@ import {
   ListItem,
   ListItemText,
   Button,
-  ListItemIcon
+
+  ListItemIcon,
+  IconButton
 } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
+import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
 
 const drawerWidth = 240;
+
+// Используйте относительные пути для ссылок
 
 const menuItems = [
   { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
@@ -29,6 +40,12 @@ const Layout = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
   
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [alert, setAlert] = useState(null);
+
+  const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
+  
   // Handle logout with local navigation
   const handleLogout = async () => {
     try {
@@ -37,7 +54,30 @@ const Layout = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
-  }; 
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/profile/search-users?query=${searchQuery}`, {
+        withCredentials: true
+      });
+
+      setSearchResults(response.data.message.$values || []);
+      setAlert(null);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message;
+
+      if (errorMessage === "No users founded") {
+        setSearchResults([]);
+        setAlert({ type: "info", message: "No users found." });
+      } else {
+        setSearchResults([]);
+        setAlert({ type: "error", message: "Something went wrong. Please try again." });
+      }
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -58,24 +98,24 @@ const Layout = () => {
         }}
       >
         <Box sx={{ padding: 2 }}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Typography
-            variant="h6"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              fontSize: "60px",
-              fontWeight: "light",
-              fontFamily: "roboto",
-              color: "#365B87",
-              cursor: "pointer", 
-            }}
-          >
-            Sigm
-            <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
-          </Typography>
-        </Link>
-      </Box>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "60px",
+                fontWeight: "light",
+                fontFamily: "roboto",
+                color: "#365B87",
+                cursor: "pointer",
+              }}
+            >
+              Sigm
+              <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
+            </Typography>
+          </Link>
+        </Box>
         <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
@@ -105,10 +145,10 @@ const Layout = () => {
               Post
             </Button>
           </Link>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            fullWidth 
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
             sx={{ borderRadius: "40px", backgroundColor: "#365B87", marginTop: "10px" }}
             onClick={handleLogout}
           >
@@ -131,10 +171,22 @@ const Layout = () => {
                 backgroundColor: "rgba(255, 255, 255, 0.1)",
                 padding: "6px 12px",
                 borderRadius: "24px",
+                position: 'fixed',
+                top: '8px',
+                right: '16px',
+                zIndex: 1101
               }}
             >
-              <img src="/search_icon.svg" alt="Search" style={{ width: 20, height: 20, opacity: 0.6 }} />
-              <InputBase placeholder="Search" sx={{ marginLeft: 1, color: "white" }} />
+              <IconButton onClick={handleSearch}>
+                <SearchIcon style={{ color: "white" }} />
+              </IconButton>
+              <InputBase
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                sx={{ marginLeft: 1, color: "white" }}
+              />
             </Box>
           </Toolbar>
         </AppBar>
@@ -145,12 +197,29 @@ const Layout = () => {
             flex: 1, 
             backgroundColor: "#365B87", 
             marginTop: "63px", 
-            overflowY: "auto" 
+            overflowY: "auto",
+            padding: 2
           }}
         >
           <Outlet />
+          <SearchResults results={searchResults} />
         </Box>
       </Box>
+
+      {/* Snackbar Alert */}
+      <Snackbar
+        open={!!alert}
+        autoHideDuration={5000}
+        onClose={() => setAlert(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {alert && (
+          <Alert onClose={() => setAlert(null)} severity={alert.type} sx={{ width: '100%' }}>
+            <AlertTitle>{alert.type === "error" ? "Error" : "Info"}</AlertTitle>
+            {alert.message}
+          </Alert>
+        )}
+      </Snackbar>
     </Box>
   );
 };
