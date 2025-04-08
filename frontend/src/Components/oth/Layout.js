@@ -39,6 +39,8 @@ const Layout = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  
+  const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
 
   // Handle logout with local navigation
   const handleLogout = async () => {
@@ -54,7 +56,7 @@ const Layout = () => {
     if (!searchQuery.trim()) return;
 
     try {
-      const response = await axios.get(`https://localhost:7126/api/profile/search-users?query=${searchQuery}`, {
+      const response = await axios.get(`${API_BASE_URL}/api/profile/search-users?query=${searchQuery}`, {
         withCredentials: true
       });
 
