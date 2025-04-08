@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import SearchResults from "./SearchResults";
+import Alert from '@mui/material/Alert';
 
 import {
   AppBar,
@@ -18,7 +19,7 @@ import {
   ListItemIcon,
   IconButton
 } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 
@@ -66,9 +67,11 @@ const Layout = () => {
         setSearchResults(response.data.message.$values || []);
       }
     } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
-    }
+      <Alert variant="outlined" severity="error">
+		Something went wrong. Please try again
+	 </Alert>
+       setSearchResults([]);
+     }
   };
 
   if (isLoading) {
