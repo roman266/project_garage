@@ -102,5 +102,41 @@ namespace project_garage.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpDelete("{messageId}/delete")]
+        public async Task<IActionResult> DeleteMessage(string messageId)
+        {
+            try
+            {
+                await _messageService.DeleteMessageAsync(messageId);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPatch("{messageId}/update")]
+        public async Task<IActionResult> EditMessage(string messageId, [FromBody] string editedText)
+        {
+            try
+            {
+                await _messageService.UpdateMessageTextAsync(messageId, editedText);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }

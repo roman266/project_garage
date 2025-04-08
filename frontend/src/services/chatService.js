@@ -49,6 +49,7 @@ export const createChatConnection = (chatId, callbacks) => {
             text: message.text,
             imageUrl: message.imageUrl,
             messageId: message.id,
+            isEdited: message.isEdited,
             isReaden: message.isReaden,
             conversationId: message.conversationId || chatId,
             id: message.id,
@@ -96,6 +97,21 @@ export const createChatConnection = (chatId, callbacks) => {
           callbacks.onMessageReaden(messageId);
         });
       }
+      
+      if (callbacks.onMessageDeleted) {
+        connection.on("MessageDeleted", function(messageId) {
+          console.log(`ChatService received MessageDeleted for message ${messageId}`);
+          callbacks.onMessageDeleted(messageId);
+        });
+      }
+
+      if (callbacks.onMessageUpdated) {
+        connection.on("MessageUpdated", function(messageId) {
+          console.log(`ChatService received MessageUpdated for message ${messageId}`);
+          callbacks.onMessageUpdated(messageId);
+        });
+      }
+      
       return connection;
     } catch (error) {
       console.error("SignalR connection error", error);
@@ -161,17 +177,71 @@ export const createChatConnection = (chatId, callbacks) => {
         }
         
         return isReaden;
-      } catch (error) {
+
+      } 
+      catch (error) 
+      {
         console.error("Error reading message", error);
         return false;
       }
     },
-    leaveChat: async (chatId) => {
+    // Add delete message function inside the returned object
+    deleteMessage: async (messageId, conversationId) => {
       try {
+        const response = await fetch(`${API_URL}/api/message/${messageId}/delete`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Use the connection instance from this context
+        await connection.invoke("DeleteMessage", messageId, conversationId);
+
+        return true;
+      }
+      catch (error) {
+        console.error("Error deleting message", error);
+        return false;
+      }
+    },
+    updateMessage: async (messageId, conversationId, newText) => {
+      try{
+        const response = await fetch(`${API_URL}/api/message/${messageId}/update`, 
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newText),
+        }
+        );
+
+        if(!response.ok){
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        await connection.invoke("UpdateMessage", messageId, conversationId, newText);
+
+        return true;
+      }
+      catch (error) {
+        console.error("Error updating message", error);
+        return false;
+      }
+    },
+    leaveChat: async (chatId) => {
+      try 
+      {
         await connection.invoke("LeaveChat", chatId);
         await connection.stop();
         return true;
-      } catch (error) {
+      } 
+        catch (error) 
+      {
         console.error("Error leaving chat", error);
         return false;
       }
@@ -179,6 +249,8 @@ export const createChatConnection = (chatId, callbacks) => {
   };
 };
 
+// Remove this standalone function since we've moved it inside createChatConnection
+// export const deleteChatMessages = async (messageId, conversationId) => { ... }
 export const fetchChatMessages = async (chatId, lastMessageId = null, limit = 20) => {
   try {
     let url = `${API_URL}/api/message/${chatId}`;

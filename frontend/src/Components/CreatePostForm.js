@@ -8,7 +8,11 @@ import {
   Box, 
   CircularProgress,
   IconButton,
-  Container
+  Container,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from "@mui/material";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import ClearIcon from '@mui/icons-material/Clear';
@@ -20,8 +24,13 @@ export default function CreatePostPage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
+    fetchCategories();
+    
     if (image) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -33,6 +42,34 @@ export default function CreatePostPage() {
     }
   }, [image]);
 
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const response = await fetch(`${API_URL}/api/post/get-categories`, {
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      
+      const data = await response.json();
+      const categoriesArray = Array.isArray(data) ? data : 
+                             (data.$values ? data.$values : []);
+      
+      setCategories(categoriesArray);
+      
+      if (categoriesArray.length > 0) {
+        setSelectedCategory(categoriesArray[0].id.toString());
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      setCategories([]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) {
@@ -43,6 +80,10 @@ export default function CreatePostPage() {
       setError("Image is required.");
       return;
     }
+    if (!selectedCategory) {
+      setError("Please select a category.");
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -51,6 +92,11 @@ export default function CreatePostPage() {
       const formData = new FormData();
       formData.append('description', content);
       formData.append('image', image);
+      
+      const selectedCategoryObj = categories.find(cat => cat.id.toString() === selectedCategory);
+      
+      formData.append('CategoryId', selectedCategory);
+      formData.append('Category', selectedCategoryObj ? selectedCategoryObj.name : '');
       
       const response = await fetch(`${API_URL}/api/post/create`, {
         method: 'POST',
@@ -64,6 +110,11 @@ export default function CreatePostPage() {
 
       setContent("");
       setImage(null);
+      if (categories.length > 0) {
+        setSelectedCategory(categories[0].id.toString());
+      } else {
+        setSelectedCategory("");
+      }
     } catch (err) {
       setError("Something went wrong. Please try again.");
     }
@@ -112,6 +163,30 @@ export default function CreatePostPage() {
             margin="normal"
             sx={{ fontFamily: "Roboto, sans-serif" }}
           />
+          
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={selectedCategory}
+              label="Category"
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              disabled={loadingCategories}
+            >
+              {loadingCategories ? (
+                <MenuItem value="">
+                  <CircularProgress size={20} />
+                </MenuItem>
+              ) : (
+                categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
           
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <IconButton onClick={handleEmojiClick} color="primary">

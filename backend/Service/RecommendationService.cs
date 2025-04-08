@@ -52,7 +52,7 @@ namespace project_garage.Service
             var formattedPosts = paginatedPosts.Select(p => new
             {
                 Id = p.Id,
-                Content = p.Content,
+                Content = p.Description,
                 CreatedAt = p.CreatedAt,
                 Author = p.User != null ? new
                 {

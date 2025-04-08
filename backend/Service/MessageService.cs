@@ -44,6 +44,7 @@ namespace project_garage.Service
                 Text = message.Text,
                 ImageUrl = message.ImageUrl,
                 SendedAt = message.SendedAt,
+                IsEdited = message.IsEdited,
                 IsReaden = message.IsReaden,
                 IsVisible = message.IsVisible,
             };
@@ -94,6 +95,17 @@ namespace project_garage.Service
                 throw new Exception("No messages for user found");
 
             return messages;
+        }
+
+        public async Task UpdateMessageTextAsync(string messageId, string messageText)
+        {
+            if (string.IsNullOrEmpty(messageId))
+                throw new ArgumentException("Invalid edited text");
+
+            var message = await _messageRepository.GetByIdAsync(messageId);
+            message.Text = messageText;
+            message.IsEdited = true;
+            await _messageRepository.UpdateAsync(message);
         }
 
         public async Task DeleteMessageAsync(string messageId) 
