@@ -46,7 +46,7 @@ namespace project_garage.Repository
 
             if (user == null)
             {
-                throw new Exception("No user finded");
+                throw new Exception("No user found");
             }
 
             return user;
