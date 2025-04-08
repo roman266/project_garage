@@ -2,6 +2,7 @@
 using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.DTOs;
 
 namespace project_garage.Repository
 {
@@ -26,27 +27,40 @@ namespace project_garage.Repository
                 ?? throw new Exception("No post with this id");
         }
 
-
-        public async Task<List<PostModel>> GetPostByUserId(string id)
+        public int GetUsersPostsCount(string userId)
         {
-            var posts = await _context.Posts
-                .Where(x => x.UserId == id)
-                .ToListAsync();
-
-            if (posts == null || !posts.Any())
-            {
-                throw new Exception("No posts found for this user");
-            }
-
-            return posts;
+            var count = _context.Posts
+                .Where(p => p.UserId == userId)
+                .Count();
+            return count;     
         }
 
-        public async Task<List<PostModel>> GetPostsByUserIdAsync(string userId)
+        public async Task<List<DisplayPostDto>> GetPaginatedPostsByUserIdAsync(string userId, string? lastPostId, int limit)
         {
-            return await _context.Posts
-                .Where(p => p.UserId == userId)
-                .OrderByDescending(p => p.CreatedAt)
+            var lastPostDate = _context.Posts
+                .Where(p => p.Id == lastPostId)
+                .Select(p => p.CreatedAt)
+                .FirstOrDefault();
+
+            var postsQuery = _context.Posts
+                .Where(p => p.UserId == userId &&
+                    (lastPostDate == DateTime.MinValue || p.CreatedAt < lastPostDate))
+                .Select(p => new DisplayPostDto
+                {
+                    PostId = p.Id,
+                    PostImageUrl = p.ImageUrl,
+                    PostDescription = p.Description,
+                    PostDate = p.CreatedAt,
+                    SenderNickName = p.User.UserName,
+                    SenderAvatarUlr = p.User.ProfilePicture,
+                })
+                .OrderByDescending(p => p.PostDate);
+                
+            var posts = await postsQuery
+                .Take(limit)
                 .ToListAsync();
+
+            return posts;
         }
 
         public async Task UpdatePostAsync(PostModel post)
@@ -63,6 +77,17 @@ namespace project_garage.Repository
                 _context.Posts.Remove(post);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<PostModel>> GetPostsByUserIdsAsync(List<string> userIds)
+        {
+            var posts = await _context.Posts
+                .Where(p => userIds.Contains(p.UserId))
+                .Include(p => p.User) 
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return posts;
         }
     }
 }

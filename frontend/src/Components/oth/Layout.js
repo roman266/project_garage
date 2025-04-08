@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import SearchResults from "./SearchResults";
+
 import {
   AppBar,
   Toolbar,
@@ -13,6 +14,7 @@ import {
   ListItem,
   ListItemText,
   Button,
+
   ListItemIcon,
   IconButton
 } from "@mui/material";
@@ -23,6 +25,7 @@ import axios from "axios";
 const drawerWidth = 240;
 
 // Используйте относительные пути для ссылок
+
 const menuItems = [
   { text: "My profile", imgSrc: "/profile.svg", pageHref: "/my-profile" },
   { text: "Friends", imgSrc: "/friends.svg", pageHref: "/friends" },
@@ -36,7 +39,7 @@ const Layout = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-    
+
   // Handle logout with local navigation
   const handleLogout = async () => {
     try {
@@ -85,6 +88,7 @@ const Layout = () => {
         }}
       >
         <Box sx={{ padding: 2 }}>
+        <Link to="/" style={{ textDecoration: 'none' }}>
           <Typography
             variant="h6"
             sx={{
@@ -94,12 +98,15 @@ const Layout = () => {
               fontWeight: "light",
               fontFamily: "roboto",
               color: "#365B87",
+              cursor: "pointer", 
+
             }}
           >
             Sigm
             <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
           </Typography>
-        </Box>
+        </Link>
+      </Box>
         <ProfileCard profile={user} />
         <List>
           {menuItems.map(({ text, imgSrc, pageHref }) => (
@@ -142,6 +149,7 @@ const Layout = () => {
       </Drawer>
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", marginLeft: `${drawerWidth}px` }}>
+        {/* Header */}
         <AppBar position="fixed" sx={{ backgroundColor: "#2b2b2b", boxShadow: "none", zIndex: 1100 }}>
           <Toolbar>
             <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
@@ -174,7 +182,16 @@ const Layout = () => {
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px", padding: 2 }}>
+        {/* Main Content */}
+        <Box 
+          sx={{ 
+            flex: 1, 
+            backgroundColor: "#365B87", 
+            marginTop: "63px", 
+            overflowY: "auto",
+            padding: 2
+          }}
+        >
           <Outlet />
           <SearchResults results={searchResults} />
         </Box>

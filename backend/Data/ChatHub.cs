@@ -1,19 +1,14 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using project_garage.Interfaces.IService;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using project_garage.Models.DTOs;
 using project_garage.Models.ViewModels;
 using System.Security.Claims;
 
 namespace project_garage.Data
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        private readonly IMessageService _messageService;
-
-        public ChatHub(IMessageService messageService)
-        {
-            _messageService = messageService;
-        }
-
         public async Task JoinChat(string conversationId)
         {
             try
@@ -24,8 +19,9 @@ namespace project_garage.Data
                     throw new HubException("Unauthorized");
                 }
 
+                Console.WriteLine(userId);
+
                 await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-                await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {userId} joined the chat.");
             }
             catch (Exception ex)
             {
@@ -34,22 +30,38 @@ namespace project_garage.Data
             }
         }
 
-        public async Task SendMessage(string conversationId, string text)
+        public async Task SendMessage(SendMessageDto message)
         {
             try
             {
-                var message = new MessageOnCreationDto
-                {
-                    ConversationId = conversationId,
-                    SenderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                    Text = text,
-                };
-                
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                await _messageService.AddMessageAsync(message);
-                await Clients.Group(conversationId).SendAsync("ReceiveMessage", message.SenderId, text);
+                if (userId == null)
+                    throw new HubException("Unauthorized");
+
+                await Clients.OthersInGroup(message.ConversationId).SendAsync("ReceiveMessage",
+                    message);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task ReadMessage(string conversationId, string messageId)
+        {
+            try
+            {
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userId == null)
+                    throw new HubException("Unauthorized");
+
+                await Clients.Group(conversationId).SendAsync("MessageReaden", messageId);
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
                 throw;
             }
@@ -60,7 +72,6 @@ namespace project_garage.Data
             var userId = Context.User?.FindFirst("sub")?.Value;
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
-            await Clients.Group(conversationId).SendAsync("ReceiveSystemMessage", $"User {Context.ConnectionId} left the chat.");
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)

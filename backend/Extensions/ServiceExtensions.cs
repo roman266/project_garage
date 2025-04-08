@@ -14,6 +14,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using project_garage.Bogus;
 
 namespace project_garage.Extensions
 {
@@ -47,6 +48,9 @@ namespace project_garage.Extensions
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserInterestRepository, UserInterestRepository>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<IRecommendationService, RecommendationService>();
+            services.AddScoped<IUserInterestService, UserInterestService>();
+            services.AddScoped<DataSeeder>();      
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();

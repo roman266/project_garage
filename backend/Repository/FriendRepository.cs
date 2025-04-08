@@ -2,10 +2,11 @@
 using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Repository
 {
-    public class FriendRepository : IFriendRepository
+    public class FriendRepository : IFriendRepository 
     {
         ApplicationDbContext _context;
         public FriendRepository(ApplicationDbContext context)
@@ -16,8 +17,21 @@ namespace project_garage.Repository
         public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
         {
             return await _context.Friends
-                .Where(f => f.UserId == userId && f.FriendId == userId)
+                .Where(f => f.UserId == userId || f.FriendId == userId)
                 .ToListAsync();
+        }
+
+        public async Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId)
+        {
+            var request = await _context.Friends
+                .FirstOrDefaultAsync(f => f.UserId == firstUserId && f.FriendId == secondUserId);
+            if (request == null)
+            {
+                request = await _context.Friends
+                    .FirstOrDefaultAsync(f => f.UserId == secondUserId && f.FriendId == firstUserId);
+            }
+
+            return request;
         }
 
         public async Task<FriendModel> GetByIdAsync(string id)
@@ -26,23 +40,35 @@ namespace project_garage.Repository
             return request;
         }
 
-        public async Task<List<FriendModel>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetFriendsAsync(string userId, string? lastRequestId, int limit)
         {
             var requests = await _context.Friends
-                .Where(f => ( f.UserId == userId || f.FriendId == userId)  && f.IsAccepted == true &&
+                .Where(f => (f.UserId == userId || f.FriendId == userId) && f.IsAccepted == true &&
                     (lastRequestId == null ||
                       f.DateTime < _context.Friends
                       .Where(fr => fr.Id == lastRequestId)
                       .Select(fr => fr.DateTime)
                       .FirstOrDefault()))
-                .Take(20)
-                .OrderByDescending(f => f.DateTime)
+                .Take(limit)
+                .Select(f => new
+                {
+                    RequestId = f.Id,
+                    FriendId = f.UserId == userId ? f.FriendId : f.UserId
+                })
+                .Join(_context.Users, anon => anon.FriendId, u => u.Id, (anon, user) => new DisplayFriendDto
+                {
+                    Id = anon.RequestId,
+                    AvatarUrl = user.ProfilePicture,
+                    FriendId = user.Id,
+                    NickName = user.UserName,
+                    ActiveStatus = user.ActiveStatus,
+                })
                 .ToListAsync();
 
             return requests;
         }
 
-        public async Task<List<FriendModel>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetIncomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
             var requests = await _context.Friends
                 .Where(f => f.FriendId == userId && f.IsAccepted == false &&
@@ -51,14 +77,26 @@ namespace project_garage.Repository
                       .Where(fr => fr.Id == lastRequestId)
                       .Select(fr => fr.DateTime)
                       .FirstOrDefault()))
-                .Take(20)
-                .OrderByDescending(f => f.DateTime)
+                .Take(limit)
+                .Select(f => new
+                {
+                    RequestId = f.Id,
+                    FriendId = f.UserId == userId ? f.FriendId : f.UserId
+                })
+                .Join(_context.Users, anon => anon.FriendId, u => u.Id, (anon, user) => new DisplayFriendDto
+                {
+                    Id = anon.RequestId,
+                    AvatarUrl = user.ProfilePicture,
+                    FriendId = user.Id,
+                    NickName = user.UserName,
+                    ActiveStatus = user.ActiveStatus,
+                })
                 .ToListAsync();
 
             return requests;
         } 
         
-        public async Task<List<FriendModel>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
+        public async Task<List<DisplayFriendDto>> GetOutcomingRequestsAsync(string userId, string? lastRequestId, int limit)
         {
             var requests = await _context.Friends
                 .Where(f => f.UserId == userId && f.IsAccepted == false &&
@@ -67,8 +105,21 @@ namespace project_garage.Repository
                       .Where(fr => fr.Id == lastRequestId)
                       .Select(fr => fr.DateTime)
                       .FirstOrDefault()))
-                .Take(20)
+                .Take(limit)
                 .OrderByDescending(f => f.DateTime)
+                .Select(f => new
+                {
+                    RequestId = f.Id,
+                    FriendId = f.UserId == userId ? f.FriendId : f.UserId
+                })
+                .Join(_context.Users, anon => anon.FriendId, u => u.Id, (anon, user) => new DisplayFriendDto
+                {
+                    Id = anon.RequestId,
+                    AvatarUrl = user.ProfilePicture,
+                    FriendId = user.Id,
+                    NickName = user.UserName,
+                    ActiveStatus = user.ActiveStatus,
+                })
                 .ToListAsync();
 
             return requests;
@@ -91,5 +142,6 @@ namespace project_garage.Repository
             _context.Friends.Remove(friendModel);
             await _context.SaveChangesAsync();
         }
+
     }
 }

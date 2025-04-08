@@ -140,11 +140,26 @@ export default function CreatePostPage() {
           </Button>
           
           {imagePreview && (
-            <Box sx={{ position: 'relative', mt: 2, width: '100%' }}>
+            <Box sx={{ 
+              position: 'relative', 
+              mt: 2, 
+              width: '100%', 
+              height: '300px', 
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'black',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
               <img 
                 src={imagePreview} 
                 alt="Preview" 
-                style={{ width: '100%', borderRadius: '4px' }} 
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '100%',
+                  objectFit: 'contain'
+                }} 
               />
               <IconButton 
                 onClick={clearImage}

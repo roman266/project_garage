@@ -36,7 +36,7 @@ namespace project_garage.Controllers
             {
                 var loggedInUserId = UserHelper.GetCurrentUserId(HttpContext); // Отримуємо ID залогіненого користувача
                 var user = await _userService.GetByIdAsync(userId);
-                var canAddFriend = await _friendService.CanAddFriendAsync(loggedInUserId, userId);
+                var canAddFriend = await _friendService.IsFriendAsync(loggedInUserId, userId);
 
                 var viewModel = new ProfileDto
                 {
@@ -48,9 +48,9 @@ namespace project_garage.Controllers
                     ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
-                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    PostsCount = _postService.GetCountOfPosts(userId),
                     ReactionsCount = await _reactionService.GetUserReactionCountAsync(userId),
-                    CanAddFriend = canAddFriend
+                    CanAddFriend = !canAddFriend,
                 };
                 return Ok(new { profile = viewModel });
             }
@@ -77,7 +77,7 @@ namespace project_garage.Controllers
                     ProfilePicture = user.ProfilePicture,
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
-                    PostsCount = await _postService.GetCountOfPosts(userId),
+                    PostsCount = _postService.GetCountOfPosts(userId),
                     CanAddFriend = false
                 };
                 return Ok(new { profile = viewModel });
@@ -99,7 +99,8 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _userService.UpdateUserInfoAsync(userId, editProfileDto.UserName, editProfileDto.FirstName, editProfileDto.LastName, editProfileDto.Description, editProfileDto.Email, editProfileDto.Password);
+                await _userService.UpdateUserInfoAsync(userId, editProfileDto.UserName, editProfileDto.FirstName, 
+                    editProfileDto.LastName, editProfileDto.Description, editProfileDto.Email, editProfileDto.Password);
 
                 return Ok(new { message = "User info successfully updated" });
             }
