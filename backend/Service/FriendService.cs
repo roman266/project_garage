@@ -107,7 +107,7 @@ namespace project_garage.Service
 
         public async Task<int> GetFriendsCount(string userId) 
         {
-            var list = await _friendRepository.GetByUserIdAsync(userId);
+            var list = await _friendRepository.GetByUserIdAcceptedAsync(userId);
             return list.Count;
         }
 
