@@ -28,6 +28,7 @@ namespace project_garage.Repository
                 Text = messageDto.Text,
                 ImageUrl = messageDto.ImageUrl ?? "None",
                 SendedAt = DateTime.UtcNow,
+                IsEdited = false,
                 IsReaden = false,
                 IsVisible = true,
             };

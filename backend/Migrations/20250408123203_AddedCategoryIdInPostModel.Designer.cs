@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250406135359_NewMigration")]
-    partial class NewMigration
+    [Migration("20250408123203_AddedCategoryIdInPostModel")]
+    partial class AddedCategoryIdInPostModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,6 +238,9 @@ namespace project_garage.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsReaden")
                         .HasColumnType("INTEGER");
 
@@ -262,6 +265,21 @@ namespace project_garage.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.PostCategoryModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PostCategories");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
@@ -301,6 +319,9 @@ namespace project_garage.Migrations
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Content")
                         .IsRequired()

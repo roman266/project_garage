@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
-using System.Security.Claims;
-using project_garage.Models.DbModels;
+using project_garage.Interfaces.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Data;
 
@@ -14,10 +13,12 @@ namespace project_garage.Controllers
     public class PostsController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly IPostCategoryRepository _postCategoryRepository;
 
-        public PostsController(IPostService postService)
+        public PostsController(IPostService postService, IPostCategoryRepository postCategoryRepository)
         {
             _postService = postService;
+            _postCategoryRepository = postCategoryRepository;
         }
 
         [HttpPost("create")]
@@ -88,6 +89,17 @@ namespace project_garage.Controllers
 
             await _postService.DeletePostAsync(postId);
             return Ok(new { success = true, message = "Post deleted successfully" });
+        }
+
+        [HttpGet("get-categories")]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            var categories = await _postCategoryRepository.GetAllAsync();
+
+            if(!categories.Any())
+                return BadRequest();
+
+            return Ok(categories);
         }
     }
 }

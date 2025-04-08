@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress } from "@mui/material";
+import { Box, Typography, Avatar, Paper, IconButton, InputBase, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
@@ -23,6 +23,9 @@ export default function ChatWindow({ selectedChatId }) {
   const chatServiceRef = useRef(null);
   const [attachedFile, setAttachedFile] = useState(null);
   const fileInputRef = useRef(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [editedMessageText, setEditedMessageText] = useState("");
 
   const formatMessageTime = (dateString) => {
     try {
@@ -218,6 +221,8 @@ export default function ChatWindow({ selectedChatId }) {
       })
       .catch(err => console.error("Error fetching chat info", err));
 
+    
+    
     const chatService = createChatConnection(selectedChatId, {
       onReceiveMessage: (message) => {
         const newMsg = {
@@ -248,6 +253,24 @@ export default function ChatWindow({ selectedChatId }) {
           );
           return updatedMessages;
         });
+      },
+      onMessageDeleted: (messageId) => {
+        setMessages(prevMessages =>
+          prevMessages.map(msg => 
+            msg.id === messageId 
+              ? { ...msg, isDeleted: true, text: "This message was deleted" } 
+              : msg
+          )
+        );
+      },
+      onMessageUpdated: (messageId, newText) => {
+        setMessages(prevMessages =>
+          prevMessages.map(msg => 
+            msg.id === messageId 
+              ? { ...msg, text: newText } 
+              : msg
+          )
+        );
       }
     });
     
@@ -380,6 +403,71 @@ export default function ChatWindow({ selectedChatId }) {
     }
   };
 
+  const handleMessageClick = (message) => {
+    // Only allow actions on user's own messages that aren't deleted
+    if (message.isCurrentUser && !message.isDeleted && !message.isSystem) {
+      setSelectedMessage(message);
+      setEditedMessageText(message.text || "");
+      setIsMessageDialogOpen(true);
+    }
+  };
+
+  const handleCloseMessageDialog = () => {
+    setIsMessageDialogOpen(false);
+    setSelectedMessage(null);
+    setEditedMessageText("");
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!selectedMessage || !chatServiceRef.current) return;
+    
+    try {
+      // Fix the parameter order - should be (messageId, conversationId)
+      const isDeleted = await chatServiceRef.current.deleteMessage(selectedMessage.id, selectedChatId);
+      
+      if (isDeleted) {
+        setMessages(prevMessages =>
+          prevMessages.map(msg => 
+            msg.id === selectedMessage.id 
+              ? { ...msg, isDeleted: true, text: "This message was deleted" } 
+              : msg
+          )
+        );
+      }
+      
+      handleCloseMessageDialog();
+    } catch (error) {
+      console.error("Error deleting message:", error);
+    }
+  };
+
+  const handleUpdateMessage = async () => {
+    if (!selectedMessage || !chatServiceRef.current || !editedMessageText.trim()) return;
+    
+    try {
+      // Fix the parameter order - should be (messageId, conversationId, newText)
+      const isUpdated = await chatServiceRef.current.updateMessage(
+        selectedMessage.id,
+        selectedChatId, 
+        editedMessageText
+      );
+      
+      if (isUpdated) {
+        setMessages(prevMessages =>
+          prevMessages.map(msg => 
+            msg.id === selectedMessage.id 
+              ? { ...msg, text: editedMessageText } 
+              : msg
+          )
+        );
+      }
+      
+      handleCloseMessageDialog();
+    } catch (error) {
+      console.error("Error updating message:", error);
+    }
+  };
+
   if (!selectedChatId) return <Box display="flex" flex={1} alignItems="center" justifyContent="center" color="gray" backgroundColor="white">Select a chat</Box>;
 
   return (
@@ -420,20 +508,25 @@ export default function ChatWindow({ selectedChatId }) {
           .map((msg, index) => (
             <Box
               key={msg.id || index}
+              onClick={() => handleMessageClick(msg)}
               sx={{
                 maxWidth: "60%",
                 padding: "10px 15px",
                 borderRadius: "18px",
-                bgcolor: msg.isSystem ? "#f5f5f5" : (msg.isCurrentUser ? "#b3b3b3" : "#365B87"),
-                color: msg.isSystem ? "gray" : (msg.isCurrentUser ? "black" : "white"),
+                bgcolor: msg.isDeleted ? "#f0f0f0" : (msg.isSystem ? "#f5f5f5" : (msg.isCurrentUser ? "#b3b3b3" : "#365B87")),
+                color: msg.isDeleted ? "#888" : (msg.isSystem ? "gray" : (msg.isCurrentUser ? "black" : "white")),
                 alignSelf: msg.isSystem ? "center" : (msg.isCurrentUser ? "flex-end" : "flex-start"),
                 marginBottom: 1,
-                fontStyle: msg.isSystem ? "italic" : "normal",
+                fontStyle: msg.isDeleted || msg.isSystem ? "italic" : "normal",
                 position: "relative",
+                cursor: msg.isCurrentUser && !msg.isDeleted && !msg.isSystem ? "pointer" : "default",
+                "&:hover": {
+                  opacity: msg.isCurrentUser && !msg.isDeleted && !msg.isSystem ? 0.9 : 1,
+                }
               }}
             >
-              {msg.text || msg.content}
-              {msg.imageUrl && msg.imageUrl !== "None" && (
+              {msg.isDeleted ? "This message was deleted" : (msg.text || msg.content)}
+              {!msg.isDeleted && msg.imageUrl && msg.imageUrl !== "None" && (
                 <Box mt={1}>
                   <img 
                     src={msg.imageUrl} 
@@ -583,6 +676,42 @@ export default function ChatWindow({ selectedChatId }) {
           accept="image/*"
         />
       </Box>
+      
+      {/* Add Dialog component here */}
+      <Dialog open={isMessageDialogOpen} onClose={handleCloseMessageDialog}>
+        <DialogTitle>Message Options</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Edit Message"
+            type="text"
+            fullWidth
+            value={editedMessageText}
+            onChange={(e) => setEditedMessageText(e.target.value)}
+            disabled={!selectedMessage || selectedMessage.isDeleted}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseMessageDialog} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteMessage} 
+            color="error"
+            disabled={!selectedMessage || selectedMessage.isDeleted}
+          >
+            Delete
+          </Button>
+          <Button 
+            onClick={handleUpdateMessage} 
+            color="primary"
+            disabled={!selectedMessage || selectedMessage.isDeleted || !editedMessageText.trim()}
+          >
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

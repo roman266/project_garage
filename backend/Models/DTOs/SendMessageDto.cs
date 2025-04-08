@@ -24,6 +24,9 @@ namespace project_garage.Models.DTOs
         [Required(ErrorMessage = "SendedAt is required.")]
         public DateTime SendedAt { get; set; }
 
+        [Required(ErrorMessage = "IsEdited is required.")]
+        public bool IsEdited { get; set; }
+
         [Required(ErrorMessage = "IsReaden is required.")]
         public bool IsReaden { get; set; }
 
