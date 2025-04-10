@@ -1,4 +1,5 @@
 using DotNetEnv;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using project_garage.Bogus;
 using project_garage.Data;
@@ -20,6 +21,7 @@ builder.Services.ConfigureApplicationCookies();
 builder.Services.AddController();
 builder.Services.AddAuthorization(configuration);
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 builder.Services.AddCors(configuration);
 
 var app = builder.Build();
@@ -35,6 +37,7 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
     endpoints.MapHub<ChatHub>("/chatHub").RequireAuthorization();
+    endpoints.MapHub<UserStatusHub>("/userStatusHub").RequireAuthorization();
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

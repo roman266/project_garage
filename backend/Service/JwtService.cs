@@ -28,7 +28,8 @@ namespace project_garage.Service
             {
             new Claim(JwtRegisteredClaimNames.Sub, userId),
             new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId) // Трекінг статусу користувача
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));

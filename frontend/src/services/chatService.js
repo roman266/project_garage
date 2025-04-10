@@ -33,7 +33,13 @@ export const createChatConnection = (chatId, callbacks) => {
       console.error("Error rejoining chat after reconnection", err);
     });
   });
-
+  
+  connection.on("UserStatusChanged", (userId, status) => {
+    if (callbacks.onUserStatusChanged) {
+      callbacks.onUserStatusChanged(userId, status);
+    }
+  });
+  
   const setupConnection = async () => {
     try {
       await connection.start();

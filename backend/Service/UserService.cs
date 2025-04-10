@@ -208,5 +208,11 @@ namespace project_garage.Service
             var user = await _userRepository.GetByIdAsync(userId);
             return user != null;
         }
+        public async Task UpdateUserStatusAsync(string userId, string status)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            user.ActiveStatus = status;
+            await _userRepository.UpdateUserInfoAsync(user);
+        }
     }
 }

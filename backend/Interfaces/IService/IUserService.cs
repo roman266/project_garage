@@ -1,6 +1,7 @@
 ﻿using project_garage.Models.DbModels;
 using Microsoft.AspNetCore.Identity;
 using project_garage.Models.ViewModels;
+using project_garage.Service;
 
 namespace project_garage.Interfaces.IService
 {
@@ -19,5 +20,6 @@ namespace project_garage.Interfaces.IService
         Task<IdentityResult> DeleteUserAsync(string id);
         Task<List<UserModel>> SearchUsersAsync(string query);
         Task<bool> CheckForExistanceByIdAsync(string userId);
+        Task UpdateUserStatusAsync(string userId, string status);
     }
 }

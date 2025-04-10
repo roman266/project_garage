@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { setAuthFailureCallback } from "./utils/apiClient";
 import { useEffect } from "react";
+import { UserStatusProvider } from "./context/UserStatusContext";
 import LoginPage from "./Pages/LoginPage";
 import ConfirmEmailPage from "./Pages/ConfirmEmailPage";
 import HomePage from "./Pages/HomePage";
