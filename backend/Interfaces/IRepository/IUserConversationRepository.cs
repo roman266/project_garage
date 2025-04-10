@@ -8,6 +8,7 @@ namespace project_garage.Interfaces.IRepository
         Task<bool> IsUserInConversationAsync(string userId, string conversationId);
         Task AddUserToConversationAsync(UserConversationModel userConversation);
         Task<bool> ExistsPrivateConversationAsync(string userId, string anotherUserId);
+        Task<List<UserModel>> GetConversationMembersAsync(string conversationId);
         Task RemoveUserFromConversationAsync(string userId, string conversationId);
         Task<List<ConversationDisplayDto>> GetPaginatedUserConversationsAsync(string userId, string? lastConversationId, int limit);
     }

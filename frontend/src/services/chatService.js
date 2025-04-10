@@ -142,9 +142,13 @@ export const createChatConnection = (chatId, callbacks) => {
         const messageDate = savedMessage.sendedAt ? new Date(savedMessage.sendedAt) : new Date();
         savedMessage.formattedLocalTime = messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        // Отримуємо ID розмови з збереженого повідомлення або з DTO
+        const conversationId = savedMessage.conversationId || messageDto.ConversationId;
+        
+        // Надсилаємо повідомлення через SignalR
         await connection.invoke("SendMessage", {
           id: savedMessage.id,
-          conversationId: savedMessage.conversationId || messageDto.ConversationId,
+          conversationId: conversationId,
           senderId: savedMessage.senderId,
           text: savedMessage.text,
           imageUrl: savedMessage.imageUrl,
@@ -153,6 +157,39 @@ export const createChatConnection = (chatId, callbacks) => {
           isVisible: savedMessage.isVisible
         });
         
+        // Отримуємо список учасників розмови
+        const membersResponse = await fetch(`${API_URL}/api/conversations/${conversationId}/get-members`, {
+          credentials: 'include'
+        });
+        
+        if (!membersResponse.ok) {
+          console.error("Failed to fetch conversation members");
+        } else {
+          const members = await membersResponse.json();
+          
+          // Отримуємо список ID учасників
+          const memberIds = members.$values 
+            ? members.$values.map(m => m.userId || m.id) 
+            : Array.isArray(members) 
+              ? members.map(m => m.userId || m.id)
+              : [];
+          
+          // Викликаємо метод для сповіщення всіх учасників розмови
+          if (memberIds.length > 0) {
+            await connection.invoke("NotifyUsersAboutReceivedMessage", conversationId, memberIds);
+          }
+        }
+        
+        // Оновлюємо час останнього повідомлення в розмові
+        try {
+          await fetch(`${API_URL}/api/conversations/message-sended/${conversationId}`, {
+            method: 'PATCH',
+            credentials: 'include'
+          });
+        } catch (updateError) {
+          console.error("Error updating last message time:", updateError);
+        }
+
         return savedMessage;
       } catch (error) {
         console.error("Error sending message", error);

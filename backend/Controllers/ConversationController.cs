@@ -51,6 +51,24 @@ namespace project_garage.Controllers
             }
         }
 
+        [HttpGet("{conversationId}/get-members")]
+        public async Task<IActionResult> GetConversationMembers(string conversationId)
+        {
+            try
+            {
+                var members = await _conversationService.GetConversationMembersAsync(conversationId);
+                return Ok(members);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An unexpected error occured");
+            }
+        }
+
         [HttpGet("my-conversations")]
         public async Task<IActionResult> GetCurrentUserConversations(string? lastConversationId, int limit = 15)
         {

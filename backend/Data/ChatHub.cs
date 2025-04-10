@@ -1,12 +1,60 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using project_garage.Models.DbModels;
 using project_garage.Models.DTOs;
+using System.Security.Claims;
 
 namespace project_garage.Data
 {
     [Authorize]
     public class ChatHub : Hub
     {
+        public string GetUserId()
+        {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                throw new UnauthorizedAccessException();
+
+            return userId;
+        }
+
+        public async Task OnLoginConnection()
+        {
+            try
+            {
+                var userId = GetUserId();
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+        
+        public async Task NotifyUserAboutRecievedMessage(string conversationId, List<UserModel> users)
+        {
+            try
+            {
+                foreach (var user in users)
+                {
+                    await Clients.Group($"user_{user.Id}").SendAsync("RecievedMessage", conversationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+
+        public async Task LogOut()
+        {
+            var userId = GetUserId();
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
+        }
+
         public async Task JoinChat(string conversationId)
         {
             try
@@ -75,7 +123,6 @@ namespace project_garage.Data
 
         public async Task LeaveChat(string conversationId)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
         }
 

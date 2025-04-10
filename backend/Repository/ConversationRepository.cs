@@ -7,7 +7,7 @@ namespace project_garage.Repository
 {
     public class ConversationRepository : IConversationRepository
     {
-        ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public ConversationRepository(ApplicationDbContext context) 
         {
