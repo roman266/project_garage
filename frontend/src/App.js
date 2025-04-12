@@ -15,17 +15,20 @@ import UserProfilePage from "./Pages/UserProfilePage";
 import CreatePostPage from "./Pages/CreatePostPage";
 import ProtectedRoute from "./Components/oth/ProtectedRoute";
 import PublicRoute from "./Components/oth/PublicRoute";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 // Компонент для встановлення колбеку автентифікації
 const AuthCallbackSetter = () => {
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     setAuthFailureCallback(() => {
       navigate('/login', { replace: true });
     });
   }, [navigate]);
-  
+
   return null;
 };
 
@@ -33,6 +36,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastContainer /> {/* Make sure this is here */}
         <AuthCallbackSetter />
         <Routes>
           <Route path="login" element={
@@ -50,7 +54,7 @@ function App() {
               <ConfirmEmailPage />
             </PublicRoute>
           } />
-          
+
           <Route path="/" element={
             <ProtectedRoute>
               <Layout />
@@ -58,11 +62,12 @@ function App() {
           }>
             <Route index element={<HomePage />} />
             <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/messages/:conversationId" element={<MessagesPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/my-posts" element={<MyPostsPage />} />
             <Route path="/my-profile" element={<MyProfilePage />} />
             <Route path="/create-post" element={<CreatePostPage />} />
-			<Route path="/profile/:userId" element={<UserProfilePage />} />
+            <Route path="/profile/:userId" element={<UserProfilePage />} />
           </Route>
         </Routes>
       </AuthProvider>

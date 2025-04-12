@@ -3,7 +3,7 @@ import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper
 import axios from "axios";
 import { API_URL } from "../../constants";
 
-export default function ChatsList({ onSelectChat }) {
+export default function ChatsList({ onSelectChat, currentChatId }) {
   const [chats, setChats] = useState([]);
   const [lastConversationId, setLastConversationId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -13,16 +13,16 @@ export default function ChatsList({ onSelectChat }) {
   const fetchChats = async (loadMore = false) => {
     try {
       setLoading(true);
-      const params = { 
+      const params = {
         limit: 15,
         lastConversationId: loadMore ? lastConversationId : null
       };
 
-      const response = await axios.get(`${API_URL}/api/conversations/my-conversations`, { 
+      const response = await axios.get(`${API_URL}/api/conversations/my-conversations`, {
         params,
-        withCredentials: true 
+        withCredentials: true
       });
-      
+
       // Handle the response data structure
       let newChats = [];
       if (response.data.$values) {
@@ -32,12 +32,12 @@ export default function ChatsList({ onSelectChat }) {
       } else if (Array.isArray(response.data)) {
         newChats = response.data;
       }
-      
+
       if (newChats.length > 0) {
         // Use conversationId instead of id
         setLastConversationId(newChats[newChats.length - 1].conversationId);
         setHasMore(newChats.length >= 15);
-        
+
         if (loadMore) {
           setChats(prev => [...prev, ...newChats]);
         } else {
@@ -59,10 +59,11 @@ export default function ChatsList({ onSelectChat }) {
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    
+
     // When user scrolls to bottom (with a small threshold)
     if (scrollHeight - scrollTop - clientHeight < 50) {
       if (hasMore && !loading) {
+        console.log("Loading more chats...");
         loadMoreChats();
       }
     }
@@ -70,8 +71,17 @@ export default function ChatsList({ onSelectChat }) {
 
   const loadMoreChats = () => {
     if (!loading) {
+      console.log("Fetching more chats with lastConversationId:", lastConversationId);
       fetchChats(true);
     }
+  };
+
+  // Add a function to refresh chats when needed
+  const refreshChats = () => {
+    setChats([]);
+    setLastConversationId(null);
+    setHasMore(true);
+    fetchChats(false);
   };
 
   return (
@@ -79,11 +89,11 @@ export default function ChatsList({ onSelectChat }) {
       <Typography variant="h6" color="primary" gutterBottom>
         Messages
       </Typography>
-      <List 
+      <List
         ref={listRef}
-        sx={{ 
-          flexGrow: 1, 
-          overflow: "auto", 
+        sx={{
+          flexGrow: 1,
+          overflow: "auto",
           maxHeight: "calc(100vh - 150px)",
           '&::-webkit-scrollbar': {
             width: '8px',
@@ -97,34 +107,35 @@ export default function ChatsList({ onSelectChat }) {
       >
         {chats.length > 0 ? (
           chats.map((chat) => (
-            <ListItem 
-              button 
-              key={chat.conversationId} 
+            <ListItem
+              button
+              key={chat.conversationId}
               onClick={() => {
                 console.log("Chat selected:", chat.conversationId);
                 onSelectChat(chat.conversationId);
               }}
-              sx={{ 
+              sx={{
                 cursor: 'pointer',
-                '&:hover': { backgroundColor: '#f5f5f5' }
+                backgroundColor: currentChatId === chat.conversationId ? '#e6e6e6' : 'transparent',
+                '&:hover': { backgroundColor: currentChatId === chat.conversationId ? '#e6e6e6' : '#f5f5f5' }
               }}
             >
               <ListItemAvatar>
-                <Avatar 
-                  sx={{ bgcolor: "black" }} 
-                  src={chat.profilePictureUrl !== "None" ? chat.profilePictureUrl : null} 
+                <Avatar
+                  sx={{ bgcolor: "black" }}
+                  src={chat.profilePictureUrl !== "None" ? chat.profilePictureUrl : null}
                 />
               </ListItemAvatar>
-              <ListItemText 
-                primary={chat.userName || "Unknown User"} 
+              <ListItemText
+                primary={chat.userName || "Unknown User"}
                 secondary={
-                  <Typography 
-                    variant="body2" 
+                  <Typography
+                    variant="body2"
                     sx={{ color: chat.activeStatus === "Online" ? "green" : "gray" }}
                   >
                     {chat.activeStatus || "Offline"}
                   </Typography>
-                } 
+                }
               />
             </ListItem>
           ))

@@ -155,7 +155,9 @@ export default function ChatWindow({ selectedChatId }) {
       const oldestMessage = messages[0];
       const oldestMessageId = oldestMessage.id;
       
+      console.log("Loading older messages before:", oldestMessageId);
       const olderMessages = await fetchChatMessages(selectedChatId, oldestMessageId, messageLimit);
+      console.log("Loaded older messages:", olderMessages.length);
       
       if (olderMessages.length === 0 || olderMessages.length < messageLimit) {
         setHasMoreMessages(false);
@@ -172,22 +174,15 @@ export default function ChatWindow({ selectedChatId }) {
         
         setMessages(prevMessages => [...uniqueOlderMessages, ...prevMessages]);
         
+        // Maintain scroll position after loading older messages
         setTimeout(() => {
           if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight - previousScrollHeight;
           }
           
-          const messagesToRead = uniqueOlderMessages.filter(msg => 
-            !msg.isCurrentUser && !msg.isSystem && !msg.isReaden
-          );
-          
-          for (const message of messagesToRead) {
-            chatServiceRef.current.readMessage(selectedChatId, message.id)
-              .catch(error => {
-                console.error(`Error marking message ${message.id} as read:`, error);
-              });
-          }
-        }, 500);
+          // Mark newly loaded messages as read if needed
+          markMessagesAsRead(uniqueOlderMessages);
+        }, 100);
       }
     } catch (error) {
       console.error("Error loading older messages:", error);
@@ -201,14 +196,18 @@ export default function ChatWindow({ selectedChatId }) {
     
     const { scrollTop } = messagesContainerRef.current;
     
+    // Load more messages when scrolling to the top
     if (scrollTop < 50 && !isLoading && hasMoreMessages) {
+      console.log("Scroll triggered loadOlderMessages");
       loadOlderMessages();
     }
   };
 
+  // Reset state when changing chats
   useEffect(() => {
     if (!selectedChatId) return;
 
+    console.log("Chat changed to:", selectedChatId);
     setMessages([]);
     setHasMoreMessages(true);
     messageIdsRef.current.clear();

@@ -32,14 +32,17 @@ namespace project_garage.Data
                 throw;
             }
         }
-        
-        public async Task NotifyUserAboutRecievedMessage(string conversationId, List<UserModel> users)
+
+        public async Task NotifyUsersAboutReceivedMessage(string conversationId, List<UserModel> users)
         {
             try
             {
                 foreach (var user in users)
                 {
-                    await Clients.Group($"user_{user.Id}").SendAsync("RecievedMessage", conversationId);
+                    if (user.Id != GetUserId())
+                    {
+                        await Clients.Group($"user_{user.Id}").SendAsync("ReceivedMessage", conversationId);
+                    }
                 }
             }
             catch (Exception ex)
