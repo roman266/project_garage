@@ -157,26 +157,6 @@ export const createChatConnection = (chatId, callbacks) => {
           isVisible: savedMessage.isVisible
         });
 
-        const membersResponse = await fetch(`${API_URL}/api/conversations/${conversationId}/get-members`, {
-          credentials: 'include'
-        });
-
-        if (!membersResponse.ok) {
-          console.error("Failed to fetch conversation members");
-        } else {
-          const members = await membersResponse.json();
-
-          // Make sure we have a valid members array
-          if (members && (members.$values || Array.isArray(members))) {
-            const membersList = members.$values || members;
-            if (membersList.length > 0) {
-              // Update method name to match what's available on the server
-              await connection.invoke("NotifyUsersAboutReceivedMessage", conversationId, membersList);
-              console.log("Notification sent to users about new message in conversation:", conversationId);
-            }
-          }
-        }
-
         try {
           await fetch(`${API_URL}/api/conversations/message-sended/${conversationId}`, {
             method: 'PATCH',
@@ -192,6 +172,52 @@ export const createChatConnection = (chatId, callbacks) => {
         return false;
       }
     },
+    notifyUsersAboutNewMessage: async (conversationId) => {
+      try {
+        const membersResponse = await fetch(`${API_URL}/api/conversations/${conversationId}/get-members`, {
+          credentials: 'include'
+        });
+
+        if (!membersResponse.ok) {
+          console.error("Failed to fetch conversation members");
+          return false;
+        }
+
+        const members = await membersResponse.json();
+
+        if (members && (members.$values || Array.isArray(members))) {
+          const membersList = members.$values || members;
+          if (membersList.length > 0) {
+            const senderInfoResponse = await fetch(`${API_URL}/api/profile/me`, {
+              credentials: 'include'
+            });
+
+            if (senderInfoResponse.ok) {
+              const responseData = await senderInfoResponse.json();
+              const senderInfo = responseData.profile;
+
+              if (senderInfo) {
+                await connection.invoke("NotifyUsersAboutReceivedMessage", conversationId, membersList, senderInfo);
+                console.log("Notification sent to users about new message in conversation:", conversationId);
+                return true;
+              } else {
+                console.error("Sender info is null or undefined");
+                await connection.invoke("NotifyUsersAboutReceivedMessage", conversationId, membersList, {});
+              }
+            } else {
+              console.error("Failed to fetch sender info:", senderInfoResponse.status);
+              // Still notify but with potentially empty sender info
+              await connection.invoke("NotifyUsersAboutReceivedMessage", conversationId, membersList, {});
+            }
+          }
+        }
+        return false;
+      } catch (error) {
+        console.error("Error notifying users about new message:", error);
+        return false;
+      }
+    },
+
     readMessage: async (conversationId, messageId) => {
       try {
         const response = await fetch(`${API_URL}/api/message/${conversationId}/${messageId}/read`, {

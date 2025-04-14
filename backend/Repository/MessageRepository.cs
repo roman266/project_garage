@@ -45,6 +45,28 @@ namespace project_garage.Repository
             return message;
         }
 
+        public async Task<List<MessageModel>> GetUnreadedMessagesByConversationIdAsync(string conversationId)
+        {
+            var messages = await _context.Messages
+                .Where(m => m.ConversationId == conversationId && m.IsReaden == false)
+                .ToListAsync();
+            return messages;
+        }
+
+        public async Task<List<MessageModel>> GetUnreadedMessagesByUserIdAsync(string userId)
+        {
+            var messages = await _context.Messages
+                .Where(m => 
+                    m.IsReaden == false && 
+                    m.SenderId != userId && 
+                    _context.UserConversations.Any(uc => 
+                        uc.UserId == userId && 
+                        uc.ConversationId == m.ConversationId))
+                .ToListAsync();
+
+            return messages;
+        }
+
         public async Task<List<MessageModel>> GetByUserIdAsync(string id)
         {
             var messages = await _context.Messages.Where(m => m.SenderId == id).ToListAsync();

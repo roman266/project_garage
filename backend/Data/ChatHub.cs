@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using project_garage.Models.DbModels;
 using project_garage.Models.DTOs;
+using project_garage.Models.ViewModels;
 using System.Security.Claims;
 
 namespace project_garage.Data
@@ -33,15 +34,15 @@ namespace project_garage.Data
             }
         }
 
-        public async Task NotifyUsersAboutReceivedMessage(string conversationId, List<UserModel> users)
+        public async Task NotifyUsersAboutReceivedMessage(string conversationId, List<string> userIds, ProfileDto senderInfo)
         {
             try
             {
-                foreach (var user in users)
+                foreach (var userId in userIds)
                 {
-                    if (user.Id != GetUserId())
+                    if (userId != GetUserId())
                     {
-                        await Clients.Group($"user_{user.Id}").SendAsync("ReceivedMessage", conversationId);
+                        await Clients.Group($"user_{userId}").SendAsync("ReceivedMessage", conversationId, senderInfo);
                     }
                 }
             }

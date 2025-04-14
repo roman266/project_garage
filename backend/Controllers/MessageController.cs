@@ -103,6 +103,27 @@ namespace project_garage.Controllers
             }
         }
 
+        [HttpGet("{conversationId}/unreaded-count")]
+        public async Task<IActionResult> GetUnreadedMessagesForConversation(string conversationId)
+        {
+            if (conversationId == null)
+            {
+                return BadRequest("Invalid conversationId");
+            }
+
+            var userId = UserHelper.GetCurrentUserId(HttpContext);
+            var countOfMessages = await _messageService.GetConversationUnreadedMessagesCountAsync(conversationId, userId);
+            return Ok(countOfMessages);
+        }
+
+        [HttpGet("my/unreaden")]
+        public async Task<IActionResult> GetUnreadedMessagesForCurrentUser()
+        {
+            var userId = UserHelper.GetCurrentUserId(HttpContext);
+            var countOfMessages = await _messageService.GetUserUnreadedMessagesCountAsync(userId);
+            return Ok(countOfMessages);
+        }
+
         [HttpDelete("{messageId}/delete")]
         public async Task<IActionResult> DeleteMessage(string messageId)
         {

@@ -17,6 +17,7 @@ import ProtectedRoute from "./Components/oth/ProtectedRoute";
 import PublicRoute from "./Components/oth/PublicRoute";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UnreadMessagesProvider } from "./context/UnreadMessagesContext";
 
 
 // Компонент для встановлення колбеку автентифікації
@@ -34,44 +35,48 @@ const AuthCallbackSetter = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ToastContainer /> {/* Make sure this is here */}
-        <AuthCallbackSetter />
-        <Routes>
-          <Route path="login" element={
-            <PublicRoute>
-              <LoginPage />
-            </PublicRoute>
-          } />
-          <Route path="registration" element={
-            <PublicRoute>
-              <RegistrationPage />
-            </PublicRoute>
-          } />
-          <Route path="confirmEmail" element={
-            <PublicRoute>
-              <ConfirmEmailPage />
-            </PublicRoute>
-          } />
 
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<HomePage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/:conversationId" element={<MessagesPage />} />
-            <Route path="/friends" element={<FriendsPage />} />
-            <Route path="/my-posts" element={<MyPostsPage />} />
-            <Route path="/my-profile" element={<MyProfilePage />} />
-            <Route path="/create-post" element={<CreatePostPage />} />
-            <Route path="/profile/:userId" element={<UserProfilePage />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <BrowserRouter>
+      <UnreadMessagesProvider>
+        <AuthProvider>
+          <ToastContainer /> {/* Make sure this is here */}
+          <AuthCallbackSetter />
+          <Routes>
+            <Route path="login" element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } />
+            <Route path="registration" element={
+              <PublicRoute>
+                <RegistrationPage />
+              </PublicRoute>
+            } />
+            <Route path="confirmEmail" element={
+              <PublicRoute>
+                <ConfirmEmailPage />
+              </PublicRoute>
+            } />
+
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<HomePage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/messages/:conversationId" element={<MessagesPage />} />
+              <Route path="/friends" element={<FriendsPage />} />
+              <Route path="/my-posts" element={<MyPostsPage />} />
+              <Route path="/my-profile" element={<MyProfilePage />} />
+              <Route path="/create-post" element={<CreatePostPage />} />
+              <Route path="/profile/:userId" element={<UserProfilePage />} />
+            </Route>
+          </Routes>
+        </AuthProvider>
+      </UnreadMessagesProvider>
+    </BrowserRouter >
+
   );
 }
 

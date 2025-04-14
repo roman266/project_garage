@@ -12,9 +12,8 @@ namespace project_garage.Service
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IConversationService _conversationService;
-        private readonly IHubContext<ChatHub> _chatHubContext;
 
-        public MessageService(IMessageRepository messageRepository, IConversationService conversationService, IHubContext<ChatHub> chatHubContext)
+        public MessageService(IMessageRepository messageRepository, IConversationService conversationService)
         {
             _messageRepository = messageRepository;
             _conversationService = conversationService;
@@ -48,6 +47,20 @@ namespace project_garage.Service
                 IsReaden = message.IsReaden,
                 IsVisible = message.IsVisible,
             };
+        }
+
+        public async Task<int> GetConversationUnreadedMessagesCountAsync(string conversationId, string userId)
+        {
+            var messages = await _messageRepository.GetUnreadedMessagesByConversationIdAsync(conversationId);
+            var receivedMessages = messages.Where(m => m.SenderId != userId).ToList();
+
+            return receivedMessages.Count;
+        }
+
+        public async Task<int> GetUserUnreadedMessagesCountAsync(string userId)
+        {
+            var messages = await _messageRepository.GetUnreadedMessagesByUserIdAsync(userId);
+            return messages.Count;
         }
 
         public async Task<bool> ReadMessageAsync(string messageId, string currentUserId)

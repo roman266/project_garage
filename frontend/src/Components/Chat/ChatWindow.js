@@ -7,6 +7,7 @@ import axios from "axios";
 import { API_URL } from "../../constants";
 import { createChatConnection, fetchChatMessages, fetchChatInfo } from "../../services/chatService";
 import EmojiPickerComponent from "./EmojiPickerComponent";
+import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 
 export default function ChatWindow({ selectedChatId }) {
   const [messages, setMessages] = useState([]);
@@ -30,7 +31,7 @@ export default function ChatWindow({ selectedChatId }) {
   const formatMessageTime = (dateString) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch (error) {
       console.error("Error formatting date:", error);
       return "??:??";
@@ -71,25 +72,30 @@ export default function ChatWindow({ selectedChatId }) {
     }
   }, [messages]);
 
+  const { decrement } = useUnreadMessages();
+
   const markMessagesAsRead = async (messagesToRead) => {
     if (!chatServiceRef.current || !selectedChatId || !currentUserId) return;
-    
-    const unreadMessages = messagesToRead.filter(msg => 
-      !msg.isCurrentUser && 
-      !msg.isSystem && 
+
+    const unreadMessages = messagesToRead.filter(msg =>
+      !msg.isCurrentUser &&
+      !msg.isSystem &&
       !msg.isReaden
     );
-    
+
     for (const message of unreadMessages) {
       try {
         const isReaden = await chatServiceRef.current.readMessage(selectedChatId, message.id);
-        
+
         if (isReaden) {
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
+          setMessages(prevMessages =>
+            prevMessages.map(msg =>
               msg.id === message.id ? { ...msg, isReaden: true } : msg
             )
           );
+
+          // Decrement unread count when message is marked as read
+          decrement();
         }
       } catch (error) {
         console.error("Error marking message as read:", error);
@@ -109,7 +115,7 @@ export default function ChatWindow({ selectedChatId }) {
     if (newMsg.id) {
       messageIdsRef.current.add(newMsg.id);
     }
-    
+
     setMessages(prevMessages => {
       const updatedMessages = [...prevMessages, newMsg];
       if (chatId) {
@@ -122,17 +128,17 @@ export default function ChatWindow({ selectedChatId }) {
   const createMessage = (text, senderId, isSystem = false, imageUrl = null) => {
     const msgId = Date.now().toString();
     const now = new Date();
-    
+
     if (isSystem) {
       return {
         id: msgId,
         text: text,
         isSystem: true,
         sendedAt: now.toISOString(),
-        formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        formattedLocalTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
     }
-    
+
     return {
       id: msgId,
       senderId: senderId,
@@ -140,29 +146,29 @@ export default function ChatWindow({ selectedChatId }) {
       imageUrl: imageUrl,
       isCurrentUser: senderId === currentUserId,
       sendedAt: now.toISOString(),
-      formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      formattedLocalTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
   };
 
   const loadOlderMessages = async () => {
     if (!selectedChatId || isLoading || !hasMoreMessages || messages.length === 0) return;
-    
+
     setIsLoading(true);
     try {
       const scrollContainer = messagesContainerRef.current;
       const previousScrollHeight = scrollContainer.scrollHeight;
-      
+
       const oldestMessage = messages[0];
       const oldestMessageId = oldestMessage.id;
-      
+
       console.log("Loading older messages before:", oldestMessageId);
       const olderMessages = await fetchChatMessages(selectedChatId, oldestMessageId, messageLimit);
       console.log("Loaded older messages:", olderMessages.length);
-      
+
       if (olderMessages.length === 0 || olderMessages.length < messageLimit) {
         setHasMoreMessages(false);
       }
-      
+
       if (olderMessages.length > 0) {
         const uniqueOlderMessages = olderMessages.filter(msg => {
           if (!messageIdsRef.current.has(msg.id)) {
@@ -171,15 +177,15 @@ export default function ChatWindow({ selectedChatId }) {
           }
           return false;
         });
-        
+
         setMessages(prevMessages => [...uniqueOlderMessages, ...prevMessages]);
-        
+
         // Maintain scroll position after loading older messages
         setTimeout(() => {
           if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight - previousScrollHeight;
           }
-          
+
           // Mark newly loaded messages as read if needed
           markMessagesAsRead(uniqueOlderMessages);
         }, 100);
@@ -193,9 +199,9 @@ export default function ChatWindow({ selectedChatId }) {
 
   const handleScroll = () => {
     if (!messagesContainerRef.current) return;
-    
+
     const { scrollTop } = messagesContainerRef.current;
-    
+
     // Load more messages when scrolling to the top
     if (scrollTop < 50 && !isLoading && hasMoreMessages) {
       console.log("Scroll triggered loadOlderMessages");
@@ -211,7 +217,7 @@ export default function ChatWindow({ selectedChatId }) {
     setMessages([]);
     setHasMoreMessages(true);
     messageIdsRef.current.clear();
-    
+
     fetchChatInfo(selectedChatId)
       .then(info => {
         if (info) {
@@ -220,8 +226,8 @@ export default function ChatWindow({ selectedChatId }) {
       })
       .catch(err => console.error("Error fetching chat info", err));
 
-    
-    
+
+
     const chatService = createChatConnection(selectedChatId, {
       onReceiveMessage: (message) => {
         const newMsg = {
@@ -236,7 +242,7 @@ export default function ChatWindow({ selectedChatId }) {
           conversationId: message.conversationId || selectedChatId,
           formattedLocalTime: message.formattedLocalTime
         };
-        
+
         addMessageToState(newMsg, selectedChatId);
         setTimeout(scrollToBottom, 100);
       },
@@ -247,7 +253,7 @@ export default function ChatWindow({ selectedChatId }) {
       },
       onMessageReaden: (messageId) => {
         setMessages(prevMessages => {
-          const updatedMessages = prevMessages.map(msg => 
+          const updatedMessages = prevMessages.map(msg =>
             msg.id === messageId ? { ...msg, isReaden: true } : msg
           );
           return updatedMessages;
@@ -255,31 +261,31 @@ export default function ChatWindow({ selectedChatId }) {
       },
       onMessageDeleted: (messageId) => {
         setMessages(prevMessages =>
-          prevMessages.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, isDeleted: true, text: "This message was deleted" } 
+          prevMessages.map(msg =>
+            msg.id === messageId
+              ? { ...msg, isDeleted: true, text: "This message was deleted" }
               : msg
           )
         );
       },
       onMessageUpdated: (messageId, newText) => {
         setMessages(prevMessages =>
-          prevMessages.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, text: newText } 
+          prevMessages.map(msg =>
+            msg.id === messageId
+              ? { ...msg, text: newText }
               : msg
           )
         );
       }
     });
-    
+
     chatServiceRef.current = chatService;
-    
+
     chatService.setupConnection()
       .then(conn => {
         setConnection(conn);
         connectionRef.current = conn;
-        
+
         return fetchChatMessages(selectedChatId);
       })
       .then(messageData => {
@@ -290,22 +296,28 @@ export default function ChatWindow({ selectedChatId }) {
           }
           return false;
         });
-        
+
         setMessages(uniqueMessages);
-        
+
         if (uniqueMessages.length < messageLimit) {
           setHasMoreMessages(false);
         }
-        
+
         setTimeout(() => {
           scrollToBottom();
-          
-          const messagesToRead = uniqueMessages.filter(msg => 
+
+          const messagesToRead = uniqueMessages.filter(msg =>
             !msg.isCurrentUser && !msg.isSystem && !msg.isReaden
           );
-          
+
           for (const message of messagesToRead) {
             chatServiceRef.current.readMessage(selectedChatId, message.id)
+              .then(isReaden => {
+                if (isReaden) {
+                  // Decrement unread count for each message marked as read
+                  decrement();
+                }
+              })
               .catch(error => {
                 console.error(`Error marking message ${message.id} as read:`, error);
               });
@@ -337,62 +349,65 @@ export default function ChatWindow({ selectedChatId }) {
       const messageText = newMessage.trim();
       try {
         setNewMessage("");
-        
+
         const now = new Date();
         const tempMsg = {
           ...createMessage(
-            messageText + (attachedFile ? (messageText ? ' ' : '') + `[Uploading: ${attachedFile.name}]` : ''), 
+            messageText + (attachedFile ? (messageText ? ' ' : '') + `[Uploading: ${attachedFile.name}]` : ''),
             currentUserId
           ),
-          formattedLocalTime: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          formattedLocalTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
-        
+
         addMessageToState(tempMsg, selectedChatId);
-        
+
         let imageUrl = "None";
-        
+
         if (attachedFile) {
           const formData = new FormData();
           formData.append('image', attachedFile);
-          
+
           const response = await axios.post(`${API_URL}/api/message/upload-image`, formData, {
             withCredentials: true,
             headers: {
               'Content-Type': 'multipart/form-data'
             }
           });
-          
+
           imageUrl = response.data;
         }
-        
+
         const messageDto = {
           ConversationId: selectedChatId,
           Text: messageText,
           ImageUrl: imageUrl
         };
-        
+
         const savedMessage = await chatServiceRef.current.sendMessage(messageDto);
-        
+
         if (savedMessage && savedMessage.id) {
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
-              msg.id === tempMsg.id 
-                ? { 
-                    ...msg, 
-                    id: savedMessage.id,
-                    isReaden: savedMessage.isReaden || false,
-                    sendedAt: savedMessage.sendedAt,
-                    formattedLocalTime: savedMessage.formattedLocalTime
-                  } 
+          setMessages(prevMessages =>
+            prevMessages.map(msg =>
+              msg.id === tempMsg.id
+                ? {
+                  ...msg,
+                  id: savedMessage.id,
+                  isReaden: savedMessage.isReaden || false,
+                  sendedAt: savedMessage.sendedAt,
+                  formattedLocalTime: savedMessage.formattedLocalTime
+                }
                 : msg
             )
           );
+
+          // Додаємо виклик функції нотифікації після успішного надсилання повідомлення
+          await chatServiceRef.current.notifyUsersAboutNewMessage(selectedChatId);
         }
-        
+
         await axios.patch(`${API_URL}/api/conversations/message-sended/${selectedChatId}`, {}, {
           withCredentials: true
         });
-        
+
         if (attachedFile) {
           setAttachedFile(null);
         }
@@ -419,21 +434,21 @@ export default function ChatWindow({ selectedChatId }) {
 
   const handleDeleteMessage = async () => {
     if (!selectedMessage || !chatServiceRef.current) return;
-    
+
     try {
       // Fix the parameter order - should be (messageId, conversationId)
       const isDeleted = await chatServiceRef.current.deleteMessage(selectedMessage.id, selectedChatId);
-      
+
       if (isDeleted) {
         setMessages(prevMessages =>
-          prevMessages.map(msg => 
-            msg.id === selectedMessage.id 
-              ? { ...msg, isDeleted: true, text: "This message was deleted" } 
+          prevMessages.map(msg =>
+            msg.id === selectedMessage.id
+              ? { ...msg, isDeleted: true, text: "This message was deleted" }
               : msg
           )
         );
       }
-      
+
       handleCloseMessageDialog();
     } catch (error) {
       console.error("Error deleting message:", error);
@@ -442,25 +457,25 @@ export default function ChatWindow({ selectedChatId }) {
 
   const handleUpdateMessage = async () => {
     if (!selectedMessage || !chatServiceRef.current || !editedMessageText.trim()) return;
-    
+
     try {
       // Fix the parameter order - should be (messageId, conversationId, newText)
       const isUpdated = await chatServiceRef.current.updateMessage(
         selectedMessage.id,
-        selectedChatId, 
+        selectedChatId,
         editedMessageText
       );
-      
+
       if (isUpdated) {
         setMessages(prevMessages =>
-          prevMessages.map(msg => 
-            msg.id === selectedMessage.id 
-              ? { ...msg, text: editedMessageText } 
+          prevMessages.map(msg =>
+            msg.id === selectedMessage.id
+              ? { ...msg, text: editedMessageText }
               : msg
           )
         );
       }
-      
+
       handleCloseMessageDialog();
     } catch (error) {
       console.error("Error updating message:", error);
@@ -472,24 +487,24 @@ export default function ChatWindow({ selectedChatId }) {
   return (
     <Box display="flex" flexDirection="column" flex={1} component={Paper} elevation={2}>
       <Box display="flex" alignItems="center" padding={2} bgcolor="#e0e0e0">
-        <Avatar 
-          sx={{ bgcolor: "black", marginRight: 2 }} 
+        <Avatar
+          sx={{ bgcolor: "black", marginRight: 2 }}
           src={chatInfo?.profilePictureUrl !== "None" ? chatInfo?.profilePictureUrl : null}
         />
         <Typography variant="h6">{chatInfo?.userName || `Chat ${selectedChatId.substring(0, 8)}...`}</Typography>
       </Box>
-      <Box 
-        flex={1} 
-        padding={2} 
-        bgcolor="white" 
-        overflow="auto" 
-        display="flex" 
+      <Box
+        flex={1}
+        padding={2}
+        bgcolor="white"
+        overflow="auto"
+        display="flex"
         flexDirection="column"
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        sx={{ 
-          height: "calc(100vh - 200px)", 
-          maxHeight: "calc(100vh - 200px)" 
+        sx={{
+          height: "calc(100vh - 200px)",
+          maxHeight: "calc(100vh - 200px)"
         }}
       >
         {isLoading && (
@@ -497,9 +512,9 @@ export default function ChatWindow({ selectedChatId }) {
             <CircularProgress size={24} />
           </Box>
         )}
-        
+
         {messages
-          .filter((msg, index, self) => 
+          .filter((msg, index, self) =>
             index === self.findIndex(m => m.id === msg.id)
           )
           .slice()
@@ -527,21 +542,21 @@ export default function ChatWindow({ selectedChatId }) {
               {msg.isDeleted ? "This message was deleted" : (msg.text || msg.content)}
               {!msg.isDeleted && msg.imageUrl && msg.imageUrl !== "None" && (
                 <Box mt={1}>
-                  <img 
-                    src={msg.imageUrl} 
-                    alt="Attached" 
-                    style={{ 
-                      maxWidth: '100%', 
+                  <img
+                    src={msg.imageUrl}
+                    alt="Attached"
+                    style={{
+                      maxWidth: '100%',
                       borderRadius: '8px',
                       maxHeight: '200px'
-                    }} 
+                    }}
                   />
                 </Box>
               )}
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  display: "block", 
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
                   textAlign: msg.isCurrentUser ? "right" : "left",
                   fontSize: "0.7rem",
                   marginTop: "4px",
@@ -552,12 +567,12 @@ export default function ChatWindow({ selectedChatId }) {
                 {msg.formattedLocalTime || formatMessageTime(msg.sendedAt)}
               </Typography>
               {msg.isCurrentUser && (
-                <Box 
-                  sx={{ 
-                    position: "absolute", 
-                    right: 5, 
-                    bottom: 2, 
-                    fontSize: "0.8rem", 
+                <Box
+                  sx={{
+                    position: "absolute",
+                    right: 5,
+                    bottom: 2,
+                    fontSize: "0.8rem",
                     color: "white",
                     display: "flex",
                     alignItems: "center"
@@ -566,14 +581,14 @@ export default function ChatWindow({ selectedChatId }) {
                   {msg.isReaden ? <DoneAllIcon fontSize="inherit" /> : <CheckIcon fontSize="inherit" />}
                 </Box>
               )}
-              
+
               {!msg.isCurrentUser && !msg.isSystem && (
-                <Box 
-                  sx={{ 
-                    position: "absolute", 
-                    left: 5, 
-                    bottom: 2, 
-                    fontSize: "0.8rem", 
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 5,
+                    bottom: 2,
+                    fontSize: "0.8rem",
                     color: "#cccccc",
                     display: "flex",
                     alignItems: "center"
@@ -585,11 +600,11 @@ export default function ChatWindow({ selectedChatId }) {
             </Box>
           ))}
       </Box>
-      <Box 
-        padding={2} 
-        bgcolor="#e0e0e0" 
-        display="flex" 
-        alignItems="center" 
+      <Box
+        padding={2}
+        bgcolor="#e0e0e0"
+        display="flex"
+        alignItems="center"
         borderRadius={1.7}
         sx={{
           position: "sticky",
@@ -609,10 +624,10 @@ export default function ChatWindow({ selectedChatId }) {
           }}
         >
           {attachedFile && (
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
                 backgroundColor: '#c4c4c4',
                 padding: '2px 8px',
                 borderRadius: 10,
@@ -621,12 +636,12 @@ export default function ChatWindow({ selectedChatId }) {
               }}
             >
               <Typography variant="caption" sx={{ marginRight: 1 }}>
-                {attachedFile.name.length > 15 
-                  ? attachedFile.name.substring(0, 12) + '...' 
+                {attachedFile.name.length > 15
+                  ? attachedFile.name.substring(0, 12) + '...'
                   : attachedFile.name}
               </Typography>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setAttachedFile(null)}
                 sx={{ padding: '2px' }}
               >
@@ -646,7 +661,7 @@ export default function ChatWindow({ selectedChatId }) {
             }}
           />
         </Box>
-        <IconButton 
+        <IconButton
           sx={{ marginLeft: 1 }}
           onClick={handleSendMessage}
           disabled={!newMessage.trim() && !attachedFile}
@@ -656,12 +671,12 @@ export default function ChatWindow({ selectedChatId }) {
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </IconButton>
-        
-        <EmojiPickerComponent 
-          onEmojiSelect={(emoji) => setNewMessage(prev => prev + emoji)} 
+
+        <EmojiPickerComponent
+          onEmojiSelect={(emoji) => setNewMessage(prev => prev + emoji)}
         />
-        
-        <IconButton 
+
+        <IconButton
           sx={{ marginLeft: 1 }}
           onClick={openFileDialog}
         >
@@ -675,7 +690,7 @@ export default function ChatWindow({ selectedChatId }) {
           accept="image/*"
         />
       </Box>
-      
+
       {/* Add Dialog component here */}
       <Dialog open={isMessageDialogOpen} onClose={handleCloseMessageDialog}>
         <DialogTitle>Message Options</DialogTitle>
@@ -695,15 +710,15 @@ export default function ChatWindow({ selectedChatId }) {
           <Button onClick={handleCloseMessageDialog} color="primary">
             Cancel
           </Button>
-          <Button 
-            onClick={handleDeleteMessage} 
+          <Button
+            onClick={handleDeleteMessage}
             color="error"
             disabled={!selectedMessage || selectedMessage.isDeleted}
           >
             Delete
           </Button>
-          <Button 
-            onClick={handleUpdateMessage} 
+          <Button
+            onClick={handleUpdateMessage}
             color="primary"
             disabled={!selectedMessage || selectedMessage.isDeleted || !editedMessageText.trim()}
           >

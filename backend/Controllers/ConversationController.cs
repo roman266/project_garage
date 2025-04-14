@@ -52,11 +52,11 @@ namespace project_garage.Controllers
         }
 
         [HttpGet("{conversationId}/get-members")]
-        public async Task<IActionResult> GetConversationMembers(string conversationId)
+        public async Task<IActionResult> GetConversationMembersIds(string conversationId)
         {
             try
             {
-                var members = await _conversationService.GetConversationMembersAsync(conversationId);
+                var members = await _conversationService.GetConversationMembersIdsAsync(conversationId);
                 return Ok(members);
             }
             catch (ArgumentException ex)
