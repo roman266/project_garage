@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using project_garage.Models.DbModels;
 using project_garage.Models.DTOs;
 using project_garage.Models.ViewModels;
+using project_garage.Interfaces.IRepository;
 using System.Security.Claims;
 
 namespace project_garage.Data
@@ -10,6 +10,13 @@ namespace project_garage.Data
     [Authorize]
     public class ChatHub : Hub
     {
+        private readonly IUserRepository _userRepository;
+
+        public ChatHub(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
         public string GetUserId()
         {
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -25,7 +32,12 @@ namespace project_garage.Data
             try
             {
                 var userId = GetUserId();
+
+                // Додаємо користувача до групи
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
+                
+                // Оновлюємо статус користувача в базі даних
+                await _userRepository.UpdateUserStatusAsync(userId, "Online");
             }
             catch (Exception ex)
             {
@@ -55,8 +67,21 @@ namespace project_garage.Data
 
         public async Task LogOut()
         {
-            var userId = GetUserId();
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
+            try
+            {
+                var userId = GetUserId();
+
+                // Видаляємо користувача з групи
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
+                
+                // Оновлюємо статус користувача в базі даних
+                await _userRepository.UpdateUserStatusAsync(userId, "Offline");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
         }
 
         public async Task JoinChat(string conversationId)
@@ -76,8 +101,7 @@ namespace project_garage.Data
         {
             try
             {
-                await Clients.OthersInGroup(message.ConversationId).SendAsync("ReceiveMessage",
-                    message);
+                await Clients.OthersInGroup(message.ConversationId).SendAsync("ReceiveMessage", message);
             }
             catch (Exception ex)
             {
@@ -132,6 +156,18 @@ namespace project_garage.Data
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            try
+            {
+                var userId = GetUserId();
+
+                // Оновлюємо статус користувача при відключенні
+                await _userRepository.UpdateUserStatusAsync(userId, "Offline");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
     }

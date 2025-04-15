@@ -57,6 +57,18 @@ namespace project_garage.Repository
             var result = await _userManager.UpdateAsync(user);
             return result;
         }
+        public async Task UpdateUserStatusAsync(string userId, string status)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            user.ActiveStatus = status;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+        }
 
         public async Task<IdentityResult> SetUserNameAsync(UserModel user, string userName)
         {
