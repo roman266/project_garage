@@ -1,12 +1,64 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using project_garage.Models.DbModels;
 using project_garage.Models.DTOs;
+using project_garage.Models.ViewModels;
+using System.Security.Claims;
 
 namespace project_garage.Data
 {
     [Authorize]
     public class ChatHub : Hub
     {
+        public string GetUserId()
+        {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                throw new UnauthorizedAccessException();
+
+            return userId;
+        }
+
+        public async Task OnLoginConnection()
+        {
+            try
+            {
+                var userId = GetUserId();
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+
+        public async Task NotifyUsersAboutReceivedMessage(string conversationId, List<string> userIds, ProfileDto senderInfo)
+        {
+            try
+            {
+                foreach (var userId in userIds)
+                {
+                    if (userId != GetUserId())
+                    {
+                        await Clients.Group($"user_{userId}").SendAsync("ReceivedMessage", conversationId, senderInfo);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+
+        public async Task LogOut()
+        {
+            var userId = GetUserId();
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
+        }
+
         public async Task JoinChat(string conversationId)
         {
             try
@@ -75,7 +127,6 @@ namespace project_garage.Data
 
         public async Task LeaveChat(string conversationId)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
         }
 

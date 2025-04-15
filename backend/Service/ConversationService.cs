@@ -54,7 +54,22 @@ namespace project_garage.Service
 
             throw new Exception("No conversation with this id found");
         }
-        
+
+        public async Task<List<string>> GetConversationMembersIdsAsync(string conversationId)
+        {
+            if (string.IsNullOrEmpty(conversationId))
+                throw new ArgumentException("Invalid conversationId");
+
+            var users = await _userConversationRepository.GetConversationMembersAsync(conversationId);
+
+            if (!users.Any())
+                throw new InvalidOperationException("Conversation does not exist");
+
+            var userIds = users.Select(x => x.Id).ToList();
+
+            return userIds;
+        }
+
         public async Task CreatePrivateConversationBetweenUsersAsync(string userId, string anotherUserId)
         {
             if (await _userConversationRepository.ExistsPrivateConversationAsync(userId, anotherUserId))

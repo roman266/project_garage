@@ -28,7 +28,6 @@ const HomePage = () => {
         }
 
         const fetchedPosts = data.data.posts?.$values || [];
-        console.log("Fetched Posts:", fetchedPosts);
 
         if (!Array.isArray(fetchedPosts)) {
           setError("Invalid post data format");
@@ -90,10 +89,10 @@ const HomePage = () => {
                     @{post.author?.username || "unknown"} ·{" "}
                     {post.createdAt
                       ? new Date(post.createdAt).toLocaleDateString("uk-UA", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                       : "Unknown Date"}
                   </Typography>
                 </Box>
