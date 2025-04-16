@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using project_garage.Models.DbModels;
 using project_garage.Models.DTOs;
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IRepository;
@@ -16,7 +17,6 @@ namespace project_garage.Data
         {
             _userRepository = userRepository;
         }
-
         public string GetUserId()
         {
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -33,7 +33,6 @@ namespace project_garage.Data
             {
                 var userId = GetUserId();
 
-                // Додаємо користувача до групи
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
                 
                 // Оновлюємо статус користувача в базі даних
@@ -71,7 +70,6 @@ namespace project_garage.Data
             {
                 var userId = GetUserId();
 
-                // Видаляємо користувача з групи
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
                 
                 // Оновлюємо статус користувача в базі даних
