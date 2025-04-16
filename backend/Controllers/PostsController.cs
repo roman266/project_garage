@@ -59,6 +59,23 @@ namespace project_garage.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpGet("user-posts")]
+        public async Task<IActionResult> GetUserPosts(string userId, string? lastPostId, int limit = 15)
+        {
+            try
+            {
+                var posts = await _postService.GetPaginatedPostsByUserIdAsync(userId, lastPostId, limit);
+                return Ok(posts);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         [HttpPatch("edit/{postId}")]
         public async Task<IActionResult> EditPost([FromBody]EditPostDto editPostDto)

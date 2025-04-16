@@ -16,5 +16,6 @@ namespace project_garage.Models.ViewModels
         public int ReactionsCount { get; set; }
         public bool CanAddFriend { get; set; }
         public List<PostModel> Posts { get; set; }
+        public string ActiveStatus { get; set; }
     }
 }

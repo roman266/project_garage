@@ -15,5 +15,6 @@ namespace project_garage.Interfaces.IRepository
         Task<IdentityResult> DeleteUserAsync(string id);
         Task<List<UserModel>> SearchUsersAsync(string query);
         Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email);
+        Task UpdateUserStatusAsync(string userId, string status);
     }
 }

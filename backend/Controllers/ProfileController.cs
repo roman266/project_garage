@@ -51,6 +51,7 @@ namespace project_garage.Controllers
                     PostsCount = _postService.GetCountOfPosts(userId),
                     ReactionsCount = await _reactionService.GetUserReactionCountAsync(userId),
                     CanAddFriend = !canAddFriend,
+                    ActiveStatus = user.ActiveStatus
                 };
                 return Ok(new { profile = viewModel });
             }
@@ -78,7 +79,8 @@ namespace project_garage.Controllers
                     Description = user.Description,
                     FriendsCount = await _friendService.GetFriendsCount(userId),
                     PostsCount = _postService.GetCountOfPosts(userId),
-                    CanAddFriend = false
+                    CanAddFriend = false,
+                    ActiveStatus = user.ActiveStatus
                 };
                 return Ok(new { profile = viewModel });
             }
