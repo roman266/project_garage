@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../../constants";
 import ProfileCard from "./ProfileCard";
@@ -44,7 +44,23 @@ const Layout = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [alert, setAlert] = useState(null);
-  // Видаляємо локальний стан unreadCount, оскільки тепер використовуємо контекст
+  const [isResultsVisible, setIsResultsVisible] = useState(false);
+  
+  const searchContainerRef = useRef(null);
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setIsResultsVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Handle logout with local navigation
   const handleLogout = async () => {
@@ -65,6 +81,7 @@ const Layout = () => {
       });
 
       setSearchResults(response.data.message.$values || []);
+	  setIsResultsVisible(true);
       setAlert(null);
     } catch (error) {
       const errorMessage = error.response?.data?.message;
@@ -84,7 +101,7 @@ const Layout = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
+    <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }} ref={searchContainerRef}>
       <Drawer
         variant="permanent"
         sx={{
@@ -222,7 +239,12 @@ const Layout = () => {
           }}
         >
           <Outlet />
-          <SearchResults results={searchResults} />
+		  {isResultsVisible && (
+			<SearchResults 
+			  results={searchResults} 
+			  onClose={() => setIsResultsVisible(false)} 
+			/>
+		  )}
         </Box>
       </Box>
 
