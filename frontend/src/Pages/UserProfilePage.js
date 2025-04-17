@@ -24,7 +24,7 @@ export default function UserProfilePage() {
     postsCount: 0,
     friendsCount: 0,
     reactionsCount: 0,
-    activeStatus: "Offline", // Default to Offline
+    activeStatus: "Offline",
   });
   const [friendStatus, setFriendStatus] = useState("Add to Friends");
   const [posts, setPosts] = useState([]);
