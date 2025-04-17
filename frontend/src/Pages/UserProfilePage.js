@@ -24,6 +24,7 @@ export default function UserProfilePage() {
     postsCount: 0,
     friendsCount: 0,
     reactionsCount: 0,
+    activeStatus: "Offline", // Default to Offline
   });
   const [friendStatus, setFriendStatus] = useState("Add to Friends");
   const [posts, setPosts] = useState([]);
@@ -118,6 +119,17 @@ export default function UserProfilePage() {
     <Box sx={{ display: "flex", justifyContent: "center", minHeight: "100vh", backgroundColor: "#365B87", py: 4 }}>
       <Container maxWidth="sm" sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: 3, p: 4, textAlign: "center" }}>
         <Avatar src={profile.profilePicture} sx={{ width: 100, height: 100, mx: "auto", mb: 2, bgcolor: "black" }} />
+        <Typography
+          variant="body2"
+          sx={{
+            color: profile.activeStatus === "Online" ? "green" : "gray",
+            fontWeight: "bold",
+            mt: -4,
+			ml: 13,
+          }}
+        >
+          {profile.activeStatus}
+        </Typography>
         <Typography variant="h5" sx={{ color: "#365B87", fontWeight: "bold" }} gutterBottom>
           {profile.firstName} {profile.lastName}
         </Typography>
