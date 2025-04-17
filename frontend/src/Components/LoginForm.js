@@ -46,6 +46,7 @@ const LoginForm = () => {
     },
   });
 
+  // Решта компонента залишається без змін
   return (
     <Container maxWidth="md">
       <Box

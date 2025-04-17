@@ -1,11 +1,12 @@
 ﻿using project_garage.Models.DbModels;
 using Microsoft.AspNetCore.Identity;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Interfaces.IService
 {
     public interface IUserService
     {
-        Task<IdentityResult> CreateUserAsync(string userName, string email, string password);
+        Task<IdentityResult> CreateUserAsync(RegisterDto registerDto);
         Task<IdentityResult> ChangeUserEmailAsync(string password, string email, string userId);
         Task<IdentityResult> ChangeUserPasswordAsync(string userId, string password, string code);
         Task SendPasswordResetEmailAsync(string userId);

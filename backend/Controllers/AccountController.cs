@@ -44,7 +44,7 @@ namespace project_garage.Controllers
         {
             try
             {
-                var result = await _userService.CreateUserAsync(model.UserName, model.Email, model.Password);
+                var result = await _userService.CreateUserAsync(model);
                 return Ok(new { message = "Email confirmation code has been sended on your email" });
             }
             catch (Exception ex)

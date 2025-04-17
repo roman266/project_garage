@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using project_garage.Interfaces.IRepository;
 using project_garage.Interfaces.IService;
 using project_garage.Models.DbModels;
+using project_garage.Models.ViewModels;
 using System;
 
 namespace project_garage.Service
@@ -21,10 +22,10 @@ namespace project_garage.Service
             _baseUrl = config["MailSender:FrontendURL"];
         }
 
-        public async Task<IdentityResult> CreateUserAsync(string userName, string email, string password)
+        public async Task<IdentityResult> CreateUserAsync(RegisterDto registerDto)
         {
             
-            var isUserExist = await CheckForExistanceByEmail(email);
+            var isUserExist = await CheckForExistanceByEmail(registerDto.Email);
             
 
             if (isUserExist)
@@ -32,16 +33,16 @@ namespace project_garage.Service
 
             var userModel = new UserModel
                 {
-                    UserName = userName,
-                    Email = email,
+                    UserName = registerDto.UserName,
+                    Email = registerDto.Email,
                     EmailConfirmationCode = Guid.NewGuid().ToString()
                 };
 
-            var result = await _userRepository.CreateUserAsync(userModel, password);
+            var result = await _userRepository.CreateUserAsync(userModel, registerDto.Password);
             if (!result.Succeeded)
                 throw new ArgumentException("This username is already in use");
 
-            await SendEmailAsync(email);
+            //await SendEmailAsync(registerDto.Email);
 
             return result;
         }
@@ -94,6 +95,15 @@ namespace project_garage.Service
             user.FirstName = string.IsNullOrWhiteSpace(firstName) ? user.FirstName : firstName;
             user.LastName = string.IsNullOrWhiteSpace(lastName) ? user.LastName : lastName;
             user.Description = string.IsNullOrWhiteSpace(description) ? user.Description : description;
+
+            if (!string.IsNullOrWhiteSpace(userName) && user.UserName != userName)
+            {
+                var setUserNameResult = await _userRepository.SetUserNameAsync(user, userName);
+                if (!setUserNameResult.Succeeded)
+                {
+                    throw new InvalidOperationException("Failed to update username");
+                }
+            }
 
             return await _userRepository.UpdateUserInfoAsync(user);
         }

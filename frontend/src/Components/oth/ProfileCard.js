@@ -20,19 +20,19 @@ const ProfileCard = ({ profile }) => {
       <Typography variant="h6" sx={{ fontWeight: "bold", color: "#365B87" }}>
         {profile.userName}
       </Typography>
-      
+
       {(profile.firstName !== "None" || profile.lastName !== "None") && (
         <Typography variant="body1" sx={{ color: "#555" }}>
           {profile.firstName !== "None" ? profile.firstName : ""} {profile.lastName !== "None" ? profile.lastName : ""}
         </Typography>
       )}
-      
+
       {profile.description !== "None" && (
         <Typography variant="body2" sx={{ color: "#777", textAlign: "center", mt: 1 }}>
           {profile.description}
         </Typography>
       )}
-      
+
       <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", mt: 2 }}>
         <Box sx={{ textAlign: "center" }}>
           <Typography variant="body2" sx={{ fontWeight: "bold" }}>

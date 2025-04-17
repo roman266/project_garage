@@ -1,5 +1,6 @@
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using project_garage.Bogus;
 using project_garage.Data;
 using project_garage.Extensions;
 
@@ -40,5 +41,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 Console.WriteLine($"Connection String: {connectionString}");
 
 app.MapControllers();
+
+
+//uncomment if you need to populate ConversationModel, UserConversationModel and AspNetUsers with data
+//using (var scope = app.Services.CreateScope())
+//{
+//   var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+//   await dataSeeder.SeedAsync();
+//}
 
 app.Run();

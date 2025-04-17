@@ -18,16 +18,17 @@ namespace project_garage.Repository
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto)
+        public async Task<MessageModel> CreateNewAsync(MessageOnCreationDto messageDto, string senderId)
         {
             var message = new MessageModel
             {
                 Id = Guid.NewGuid().ToString(),
                 ConversationId = messageDto.ConversationId,
-                SenderId = messageDto.SenderId,
+                SenderId = senderId,
                 Text = messageDto.Text,
-                ImageUrl = messageDto.ImageUrl,
+                ImageUrl = messageDto.ImageUrl ?? "None",
                 SendedAt = DateTime.UtcNow,
+                IsEdited = false,
                 IsReaden = false,
                 IsVisible = true,
             };
@@ -42,6 +43,28 @@ namespace project_garage.Repository
         {
             var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == id);
             return message;
+        }
+
+        public async Task<List<MessageModel>> GetUnreadedMessagesByConversationIdAsync(string conversationId)
+        {
+            var messages = await _context.Messages
+                .Where(m => m.ConversationId == conversationId && m.IsReaden == false)
+                .ToListAsync();
+            return messages;
+        }
+
+        public async Task<List<MessageModel>> GetUnreadedMessagesByUserIdAsync(string userId)
+        {
+            var messages = await _context.Messages
+                .Where(m => 
+                    m.IsReaden == false && 
+                    m.SenderId != userId && 
+                    _context.UserConversations.Any(uc => 
+                        uc.UserId == userId && 
+                        uc.ConversationId == m.ConversationId))
+                .ToListAsync();
+
+            return messages;
         }
 
         public async Task<List<MessageModel>> GetByUserIdAsync(string id)

@@ -6,7 +6,7 @@ using project_garage.Models.ViewModels;
 
 namespace project_garage.Repository
 {
-    public class FriendRepository : IFriendRepository
+    public class FriendRepository : IFriendRepository 
     {
         ApplicationDbContext _context;
         public FriendRepository(ApplicationDbContext context)
@@ -17,8 +17,27 @@ namespace project_garage.Repository
         public async Task<List<FriendModel>> GetByUserIdAsync(string userId)
         {
             return await _context.Friends
-                .Where(f => f.UserId == userId && f.FriendId == userId)
+                .Where(f => f.UserId == userId || f.FriendId == userId)
                 .ToListAsync();
+        }
+        public async Task<List<FriendModel>> GetByUserIdAcceptedAsync(string userId)
+        {
+            return await _context.Friends
+                .Where(f => (f.UserId == userId || f.FriendId == userId) && f.IsAccepted == true)
+                .ToListAsync();
+        }
+
+        public async Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId)
+        {
+            var request = await _context.Friends
+                .FirstOrDefaultAsync(f => f.UserId == firstUserId && f.FriendId == secondUserId);
+            if (request == null)
+            {
+                request = await _context.Friends
+                    .FirstOrDefaultAsync(f => f.UserId == secondUserId && f.FriendId == firstUserId);
+            }
+
+            return request;
         }
 
         public async Task<FriendModel> GetByIdAsync(string id)
@@ -129,5 +148,6 @@ namespace project_garage.Repository
             _context.Friends.Remove(friendModel);
             await _context.SaveChangesAsync();
         }
+
     }
 }

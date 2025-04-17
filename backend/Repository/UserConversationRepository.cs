@@ -31,6 +31,15 @@ namespace project_garage.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<List<UserModel>> GetConversationMembersAsync(string conversationId)
+        {
+            var users = await _context.UserConversations
+                .Where(uc => uc.ConversationId == conversationId)
+                .Select(uc => uc.User)
+                .ToListAsync();
+
+            return users;
+        }
         public async Task RemoveUserFromConversationAsync(string userId, string conversationId)
         {
             var userConversation = await _context.UserConversations.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ConversationId == conversationId);
@@ -52,59 +61,42 @@ namespace project_garage.Repository
         }
 
         public async Task<List<ConversationDisplayDto>> GetPaginatedUserConversationsAsync(
-    string userId, string? lastConversationId, int limit)
+            string userId, string? lastConversationId, int limit)
         {
-            var query = _context.UserConversations
-                .Where(uc => uc.UserId == userId)
-                .Join(_context.Conversations, uc => uc.ConversationId, c => c.Id, (uc, c) => new { uc, c })
-                .OrderByDescending(x => x.c.StartedAt);
+            var lastMessageDate = await _context.UserConversations
+                .Where(uc => uc.ConversationId == lastConversationId)
+                .Select(uc => uc.Conversation.LastUpdatedAt)
+                .FirstOrDefaultAsync();
 
-            if (!string.IsNullOrEmpty(lastConversationId))
-            {
-                var lastConversation = await _context.Conversations
-                    .Where(c => c.Id == lastConversationId)
-                    .Select(c => c.StartedAt)
-                    .FirstOrDefaultAsync();
-
-                if (lastConversation != default)
+            var conversations = await _context.UserConversations
+                .Where(uc => uc.UserId == userId &&
+                    (lastMessageDate == DateTime.MinValue || uc.Conversation.LastUpdatedAt < lastMessageDate))
+                .OrderByDescending(uc => uc.Conversation.LastUpdatedAt)
+                .Take(limit)
+                .Include(uc => uc.Conversation)
+                .Include(uc => uc.Conversation.UserConversations)
+                .ThenInclude(uc => uc.User)
+                .Select(uc => new
                 {
-                    query = query.Where(x => x.c.StartedAt < lastConversation)
-                        .OrderByDescending(x => x.c.StartedAt);
-                }
-            }
-
-            var conversationData = await query.Take(limit)
-                .Select(x => new
-                {
-                    x.c.Id,
-                    x.c.IsPrivate,
-                    x.c.StartedAt,
-                    UserId = _context.UserConversations
-                        .Where(uc => uc.ConversationId == x.c.Id && uc.UserId != userId)
-                        .Select(uc => uc.UserId)
+                    uc.Conversation,
+                    OtherUser = uc.Conversation.UserConversations
+                        .Where(u => u.UserId != userId)
+                        .Select(u => u.User)
                         .FirstOrDefault()
+                })
+                .Select(c => new ConversationDisplayDto
+                {
+                    ConversationId = c.Conversation.Id,
+                    ProfilePictureUrl = c.OtherUser.ProfilePicture,
+                    UserName = c.OtherUser.UserName,
+                    ActiveStatus = c.OtherUser.ActiveStatus,
+                    IsPrivate = c.Conversation.IsPrivate,
+                    StartedAt = c.Conversation.StartedAt,
+                    LastUpdatedAt = c.Conversation.LastUpdatedAt,
                 })
                 .ToListAsync();
 
-            var userIds = conversationData.Select(x => x.UserId).Distinct().ToList();
-            var users = await _context.Users
-                .Where(u => userIds.Contains(u.Id))
-                .ToDictionaryAsync(u => u.Id);
-
-            var conversations = conversationData.Select(x => new ConversationDisplayDto
-            {
-                ConversationId = x.Id,
-                IsPrivate = x.IsPrivate,
-                StartedAt = x.StartedAt,
-                UserName = users.TryGetValue(x.UserId, out var user) ? user.UserName : null,
-                ProfilePictureUrl = users.TryGetValue(x.UserId, out user) ? user.ProfilePicture : null,
-                ActiveStatus = users.TryGetValue(x.UserId, out user) ? user.ActiveStatus : null
-            }).ToList();
-
             return conversations;
         }
-
-
-
     }
 }
