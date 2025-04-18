@@ -33,12 +33,12 @@ namespace project_garage.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddUserInterestForCurrentUser(List<string> interests)
+        public async Task<IActionResult> AddUserInterestForCurrentUser(List<int> interestIds)
         {
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _userInterestService.AddInterestAsync(userId, interests);
+                await _userInterestService.AddInterestAsync(userId, interestIds);
                 return Ok("User interest successfully added");
             }
             catch (ArgumentException ex)
