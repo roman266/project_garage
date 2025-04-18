@@ -222,6 +222,21 @@ namespace project_garage.Migrations
                     b.ToTable("Friends");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.InterestModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Interests");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.MessageModel", b =>
                 {
                     b.Property<string>("Id")
@@ -432,7 +447,7 @@ namespace project_garage.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Interest")
+                    b.Property<int>("InterestId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
@@ -440,6 +455,8 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InterestId");
 
                     b.HasIndex("UserId");
 
@@ -728,11 +745,19 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserInterestModel", b =>
                 {
+                    b.HasOne("project_garage.Models.DbModels.InterestModel", "Interest")
+                        .WithMany()
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
                         .WithMany("UserInterests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Interest");
 
                     b.Navigation("User");
                 });

@@ -32,5 +32,18 @@ namespace project_garage.Repository
             var interests = _context.Interests.ToList();
             return interests;
         }
+
+        public void AddInterestRange(List<InterestModel> interests)
+        {
+            _context.Interests.AddRange(interests);
+            _context.SaveChanges();
+        }
+
+        public void ClearAllInterests()
+        {
+            var interests = GetAllInterests();
+            _context.Interests.RemoveRange(interests);
+            _context.SaveChanges();
+        }
     }
 }

@@ -51,7 +51,7 @@ namespace project_garage.Extensions
             services.AddScoped<IRecommendationService, RecommendationService>();
             services.AddScoped<IUserInterestService, UserInterestService>();
             services.AddScoped<IInterestRepository, InterestRepository>();
-            services.AddScoped<DataSeeder>();      
+            services.AddScoped<DataSeeder>();
 
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();

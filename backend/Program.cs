@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using project_garage.Bogus;
 using project_garage.Data;
 using project_garage.Extensions;
+using project_garage.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -24,6 +25,7 @@ builder.Services.AddCors(configuration);
 
 var app = builder.Build();
 
+app.UseMiddleware<EnsureInterestsMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

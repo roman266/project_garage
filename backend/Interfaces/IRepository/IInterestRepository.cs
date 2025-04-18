@@ -7,5 +7,7 @@ namespace project_garage.Interfaces.IRepository
         InterestModel GetInterestById(int id);
         List<InterestModel> GetInterestRange(List<int> interestIds);
         List<InterestModel> GetAllInterests();
+        void ClearAllInterests();
+        void AddInterestRange(List<InterestModel> interests);
     }
 }
