@@ -20,6 +20,12 @@ namespace project_garage.Repository
                 .Where(f => f.UserId == userId || f.FriendId == userId)
                 .ToListAsync();
         }
+        public async Task<List<FriendModel>> GetByUserIdAcceptedAsync(string userId)
+        {
+            return await _context.Friends
+                .Where(f => (f.UserId == userId || f.FriendId == userId) && f.IsAccepted == true)
+                .ToListAsync();
+        }
 
         public async Task<FriendModel> GetRequestByUsersIdAsync(string firstUserId, string secondUserId)
         {

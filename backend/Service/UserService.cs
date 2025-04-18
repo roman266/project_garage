@@ -96,6 +96,15 @@ namespace project_garage.Service
             user.LastName = string.IsNullOrWhiteSpace(lastName) ? user.LastName : lastName;
             user.Description = string.IsNullOrWhiteSpace(description) ? user.Description : description;
 
+            if (!string.IsNullOrWhiteSpace(userName) && user.UserName != userName)
+            {
+                var setUserNameResult = await _userRepository.SetUserNameAsync(user, userName);
+                if (!setUserNameResult.Succeeded)
+                {
+                    throw new InvalidOperationException("Failed to update username");
+                }
+            }
+
             return await _userRepository.UpdateUserInfoAsync(user);
         }
 

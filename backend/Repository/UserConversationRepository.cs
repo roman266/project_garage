@@ -31,6 +31,15 @@ namespace project_garage.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<List<UserModel>> GetConversationMembersAsync(string conversationId)
+        {
+            var users = await _context.UserConversations
+                .Where(uc => uc.ConversationId == conversationId)
+                .Select(uc => uc.User)
+                .ToListAsync();
+
+            return users;
+        }
         public async Task RemoveUserFromConversationAsync(string userId, string conversationId)
         {
             var userConversation = await _context.UserConversations.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ConversationId == conversationId);

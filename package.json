@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "emoji-picker-react": "^4.12.2"
+    "@microsoft/signalr": "^8.0.7",
+    "emoji-picker-react": "^4.12.2",
+    "react-toastify": "^11.0.5"
   }
 }

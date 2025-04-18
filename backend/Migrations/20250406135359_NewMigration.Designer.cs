@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250402201853_Added column LastUpdatedAt in ConversationModel")]
-    partial class AddedcolumnLastUpdatedAtinConversationModel
+    [Migration("20250406135359_NewMigration")]
+    partial class NewMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -296,6 +296,14 @@ namespace project_garage.Migrations
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")

@@ -10,6 +10,7 @@
         public string ImageUrl { get; set; }
         public DateTime SendedAt { get; set; }
         public bool IsReaden { get; set; }
+        public bool IsEdited { get; set; }
         public bool IsVisible { get; set; }
         public bool IsCurrentUser { get; set; }
     }
