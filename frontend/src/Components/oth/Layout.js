@@ -218,7 +218,6 @@ const Layout = () => {
             backgroundColor: "#365B87",
             marginTop: "63px",
             overflowY: "auto",
-            padding: 2
           }}
         >
           <Outlet />
