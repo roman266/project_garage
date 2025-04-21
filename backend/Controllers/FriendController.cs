@@ -25,7 +25,7 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _friendService.SendFriendRequestAsync(friendId, userId);
+                await _friendService.SendFriendRequestAsync(userId, friendId);
                 return Ok(new { message = "Request sended" });
             }
             catch (ArgumentException ex)

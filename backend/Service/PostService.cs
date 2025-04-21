@@ -32,6 +32,8 @@ namespace project_garage.Service
                 UserId = userId,
                 Description = postDto.Description,
                 ImageUrl = imageUrl,
+                CategoryId = postDto.CategoryId,
+                Category = postDto.Category,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };

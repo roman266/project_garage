@@ -1,7 +1,9 @@
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using project_garage.Bogus;
 using project_garage.Data;
 using project_garage.Extensions;
+using project_garage.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -23,6 +25,7 @@ builder.Services.AddCors(configuration);
 
 var app = builder.Build();
 
+app.UseMiddleware<EnsureInterestsMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -40,5 +43,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 Console.WriteLine($"Connection String: {connectionString}");
 
 app.MapControllers();
+
+
+//uncomment if you need to populate ConversationModel, UserConversationModel and AspNetUsers with data
+//using (var scope = app.Services.CreateScope())
+//{
+//   var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+//   await dataSeeder.SeedAsync();
+//}
 
 app.Run();

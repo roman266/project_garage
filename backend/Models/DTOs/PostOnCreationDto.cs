@@ -7,8 +7,16 @@ namespace project_garage.Models.ViewModels
         [Required]
         [StringLength(250)]
         public string Description { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         [Required]
         public IFormFile Image { get; set; }
+
+        [Required]
+        public int CategoryId { get; set; }
+
+        [Required]
+        public string Category { get; set; }
     }
 }

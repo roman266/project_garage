@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using project_garage.Models.ViewModels;
 using project_garage.Interfaces.IService;
-using System.Security.Claims;
-using project_garage.Models.DbModels;
+using project_garage.Interfaces.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using project_garage.Data;
 
@@ -14,10 +13,12 @@ namespace project_garage.Controllers
     public class PostsController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly IPostCategoryRepository _postCategoryRepository;
 
-        public PostsController(IPostService postService)
+        public PostsController(IPostService postService, IPostCategoryRepository postCategoryRepository)
         {
             _postService = postService;
+            _postCategoryRepository = postCategoryRepository;
         }
 
         [HttpPost("create")]
@@ -46,6 +47,23 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
+                var posts = await _postService.GetPaginatedPostsByUserIdAsync(userId, lastPostId, limit);
+                return Ok(posts);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("user-posts")]
+        public async Task<IActionResult> GetUserPosts(string userId, string? lastPostId, int limit = 15)
+        {
+            try
+            {
                 var posts = await _postService.GetPaginatedPostsByUserIdAsync(userId, lastPostId, limit);
                 return Ok(posts);
             }
@@ -88,6 +106,17 @@ namespace project_garage.Controllers
 
             await _postService.DeletePostAsync(postId);
             return Ok(new { success = true, message = "Post deleted successfully" });
+        }
+
+        [HttpGet("get-categories")]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            var categories = await _postCategoryRepository.GetAllAsync();
+
+            if(!categories.Any())
+                return BadRequest();
+
+            return Ok(categories);
         }
     }
 }

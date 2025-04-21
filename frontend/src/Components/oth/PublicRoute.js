@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 // PublicRoute component - only accessible for non-authenticated users
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return <div>Loading authentication...</div>;
   }

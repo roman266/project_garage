@@ -28,7 +28,6 @@ const HomePage = () => {
         }
 
         const fetchedPosts = data.data.posts?.$values || [];
-        console.log("Fetched Posts:", fetchedPosts);
 
         if (!Array.isArray(fetchedPosts)) {
           setError("Invalid post data format");

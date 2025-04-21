@@ -16,7 +16,7 @@ namespace project_garage.Models.DbModels
         public DateTime? UpdatedAt { get; set; }
         public string Description { get; set; } = "None"; // Optional description of user
         public DateTime? LastLogin { get; set; } // Nullable, updated when the user logs in
-        public string ActiveStatus { get; set; } = "Online"; // Status like "Online", "Away", etc.
+        public string ActiveStatus { get; set; } = "Offline"; // Status like "Online", "Away", etc.
         public string AccountStatus { get; set; } = "Active"; // Account status: "Active", "Banned", etc.
         public string EmailConfirmationCode { get; set; }
         public ICollection<PostModel> Posts { get; set; }

@@ -52,7 +52,7 @@ namespace project_garage.Service
             var formattedPosts = paginatedPosts.Select(p => new
             {
                 Id = p.Id,
-                Content = p.Content,
+                Content = p.Description,
                 CreatedAt = p.CreatedAt,
                 Author = p.User != null ? new
                 {
@@ -118,7 +118,7 @@ namespace project_garage.Service
             friendsOfFriends.Remove(userId);
 
             var userInterests = await _userInterestService.GetUserInterestAsync(userId);
-            var userInterestSet = new HashSet<string>(userInterests.Select(i => i.Interest.ToString()));
+            var userInterestSet = new HashSet<string>(userInterests.Select(i => i.Name));
 
             Console.WriteLine($"Friends of friends count: {friendsOfFriends.Count}");
             Console.WriteLine($"User interests: {string.Join(", ", userInterestSet)}");
@@ -141,7 +141,7 @@ namespace project_garage.Service
                 double jaccardIndex = union == 0 ? 0 : (double)intersection / union;
 
                 var potentialUserInterests = await _userInterestService.GetUserInterestAsync(potentialUser);
-                var potentialInterestSet = new HashSet<string>(potentialUserInterests.Select(i => i.Interest.ToString()));
+                var potentialInterestSet = new HashSet<string>(potentialUserInterests.Select(i => i.Name));
 
                 double interestScore = userInterestSet.Any() ? (double)userInterestSet.Intersect(potentialInterestSet).Count() / userInterestSet.Count : 0;
                 double finalScore = jaccardIndex + (interestScore * 0.5);
