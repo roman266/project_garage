@@ -9,7 +9,7 @@ namespace project_garage.Interfaces.IRepository
         public Task AddInterestRangeAsync(List<UserInterestModel> userInterests);
         public Task<bool> UserHasInterestAsync(string userId, int interest);
         public Task<UserInterestModel> GetInterestByIdAsync(string interestId);
-        public Task<List<UserInterestModel>> GetInterestsByUserIdAsync(string userId);
-        public Task RemoveInterestAsync(string interestId);
+        public Task<List<InterestModel>> GetInterestsByUserIdAsync(string userId);
+        public Task RemoveInterestAsync(int interestId, string userId);
     }
 }

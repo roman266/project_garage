@@ -46,17 +46,20 @@ namespace project_garage.Repository
             return interes;
         }
 
-        public async Task<List<UserInterestModel>> GetInterestsByUserIdAsync(string userId)
+        public async Task<List<InterestModel>> GetInterestsByUserIdAsync(string userId)
         {
             var interests = await _context.UserInterests
-                .Where(ui => ui.UserId == userId).ToListAsync();
+                .Where(ui => ui.UserId == userId)
+                .Select(ui => ui.Interest)
+                .ToListAsync();
 
             return interests;
         }
 
-        public async Task RemoveInterestAsync(string interesId)
+        public async Task RemoveInterestAsync(int interesId, string userId)
         {
-            var interes = await GetInterestByIdAsync(interesId);
+            var interes = _context.UserInterests
+                .FirstOrDefault(ui => ui.InterestId == interesId && ui.UserId == userId);
             _context.UserInterests.Remove(interes);
             await _context.SaveChangesAsync();
         }

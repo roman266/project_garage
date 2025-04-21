@@ -158,7 +158,6 @@ export const setupChatNotifications = async (onNewMessage) => {
     }
 };
 
-// Join a specific chat
 export const joinChat = async (chatId) => {
     try {
         const connection = await getNotificationConnection();

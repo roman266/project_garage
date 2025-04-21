@@ -117,6 +117,12 @@ namespace project_garage.Data
                 .HasForeignKey(ui => ui.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<UserInterestModel>()
+                .HasOne(ui => ui.Interest)
+                .WithMany()
+                .HasForeignKey(ui => ui.InterestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<RefreshTokenModel>()
                 .HasOne(rt => rt.User)
                 .WithMany(u => u.RefreshTokens)

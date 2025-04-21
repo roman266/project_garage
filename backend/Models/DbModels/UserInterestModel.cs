@@ -8,7 +8,6 @@ namespace project_garage.Models.DbModels
         public string UserId { get; set; }
         public UserModel User { get; set; }
         public int InterestId { get; set; }
-
         public InterestModel Interest { get; set; }
     }
 }

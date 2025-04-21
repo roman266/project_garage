@@ -43,7 +43,7 @@ namespace project_garage.Service
             await _userInterestRepository.AddInterestRangeAsync(userInterests);
         }
 
-        public async Task<List<UserInterestModel>> GetUserInterestAsync(string userId)
+        public async Task<List<InterestModel>> GetUserInterestAsync(string userId)
         {
             if (!await _userService.CheckForExistanceByIdAsync(userId))
                 throw new InvalidOperationException($"User with this id: {userId} does not exist");
@@ -52,12 +52,9 @@ namespace project_garage.Service
             return interests;
         }
 
-        public async Task RemoveInterestAsync(string interestId)
+        public async Task RemoveInterestAsync(int interestId, string userId)
         {
-            if (string.IsNullOrEmpty(interestId))
-                throw new ArgumentException("Wrong interestId format");
-
-            await _userInterestRepository.RemoveInterestAsync(interestId);
+            await _userInterestRepository.RemoveInterestAsync(interestId, userId);
         }
     }
 }
