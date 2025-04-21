@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250406135359_NewMigration")]
-    partial class NewMigration
+    [Migration("20250421102835_Added foreign key for UserInterest")]
+    partial class AddedforeignkeyforUserInterest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -225,6 +225,21 @@ namespace project_garage.Migrations
                     b.ToTable("Friends");
                 });
 
+            modelBuilder.Entity("project_garage.Models.DbModels.InterestModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Interests");
+                });
+
             modelBuilder.Entity("project_garage.Models.DbModels.MessageModel", b =>
                 {
                     b.Property<string>("Id")
@@ -237,6 +252,9 @@ namespace project_garage.Migrations
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsReaden")
                         .HasColumnType("INTEGER");
@@ -262,6 +280,21 @@ namespace project_garage.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.PostCategoryModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PostCategories");
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
@@ -302,9 +335,8 @@ namespace project_garage.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -418,7 +450,7 @@ namespace project_garage.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Interest")
+                    b.Property<int>("InterestId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
@@ -426,6 +458,8 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InterestId");
 
                     b.HasIndex("UserId");
 
@@ -714,11 +748,19 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.UserInterestModel", b =>
                 {
+                    b.HasOne("project_garage.Models.DbModels.InterestModel", "Interest")
+                        .WithMany()
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
                         .WithMany("UserInterests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Interest");
 
                     b.Navigation("User");
                 });

@@ -17,6 +17,7 @@ namespace project_garage.Data
         public DbSet<UserInterestModel> UserInterests { get; set; }
         public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
         public DbSet<PostCategoryModel> PostCategories { get; set; }
+        public DbSet<InterestModel> Interests { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -114,6 +115,12 @@ namespace project_garage.Data
                 .HasOne(ui => ui.User)
                 .WithMany(u => u.UserInterests)
                 .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserInterestModel>()
+                .HasOne(ui => ui.Interest)
+                .WithMany()
+                .HasForeignKey(ui => ui.InterestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<RefreshTokenModel>()

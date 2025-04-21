@@ -17,17 +17,23 @@ namespace project_garage.Repository
 
         public async Task AddInterestAsync(UserInterestModel userInteres)
         {
-            if (await UserHasInterestAsync(userInteres.UserId, userInteres.Interest))
+            if (await UserHasInterestAsync(userInteres.UserId, userInteres.InterestId))
                 throw new ArgumentException($"User has interest: {userInteres.Interest} already");
 
             _context.UserInterests.Add(userInteres);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> UserHasInterestAsync(string userId, UserInterest interest)
+        public async Task AddInterestRangeAsync(List<UserInterestModel> userInteres)
+        {
+            _context.UserInterests.AddRange(userInteres);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> UserHasInterestAsync(string userId, int interest)
         {
             return await _context.UserInterests
-                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.Interest == interest) != null;
+                .FirstOrDefaultAsync(ui => ui.UserId == userId && ui.InterestId == interest) != null;
         }
 
         public async Task<UserInterestModel> GetInterestByIdAsync(string interesId)
@@ -40,17 +46,20 @@ namespace project_garage.Repository
             return interes;
         }
 
-        public async Task<List<UserInterestModel>> GetInterestsByUserIdAsync(string userId)
+        public async Task<List<InterestModel>> GetInterestsByUserIdAsync(string userId)
         {
             var interests = await _context.UserInterests
-                .Where(ui => ui.UserId == userId).ToListAsync();
+                .Where(ui => ui.UserId == userId)
+                .Select(ui => ui.Interest)
+                .ToListAsync();
 
             return interests;
         }
 
-        public async Task RemoveInterestAsync(string interesId)
+        public async Task RemoveInterestAsync(int interesId, string userId)
         {
-            var interes = await GetInterestByIdAsync(interesId);
+            var interes = _context.UserInterests
+                .FirstOrDefault(ui => ui.InterestId == interesId && ui.UserId == userId);
             _context.UserInterests.Remove(interes);
             await _context.SaveChangesAsync();
         }
