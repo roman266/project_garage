@@ -29,9 +29,6 @@ const Friends = () => {
         credentials: "include"
     });
 
-      console.log(receivedRes);
-      console.log(sentRes);
-      console.log(friendsRes);
 
       if (!receivedRes.ok || !sentRes.ok || !friendsRes.ok) {
         throw new Error("Ошибка загрузки данных");
@@ -50,26 +47,29 @@ const Friends = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", width: "100%", height: "100%" }}>
-      <Box sx={{
-        display: "grid",
-        gridTemplateColumns: "39% 39%",
-        gap: 2,
-        height: "100%",
-        width: "90%",
-        marginLeft: "17%"
-      }}>
-        {/* Левый блок */}
-        <Box sx={{ height: "100%", display: "grid", gridTemplateRows: "50% 50%" }}>
-          <FriendRequestsReceived received={receivedRequests} fetchFriendsData={fetchFriendsData} />
-          <Divider sx={{ marginY: 2, position: "absolute" }} />
-          <FriendRequestsSent sent={sentRequests} fetchFriendsData={fetchFriendsData} />
-        </Box>
-
-        {/* Правый блок */}
-        <FriendsList friends={friends} />
-      </Box>
+  <Box sx={{ display: "flex", justifyContent: "center", width: "100%", height: "100%" }}>
+  <Box sx={{
+    display: "grid",
+    gridTemplateColumns: "39% 39%",
+    gap: 2,
+    height: "100%",
+    width: "90%",
+    marginLeft: "17%",
+  }}>
+    {/* Левый блок */}
+    <Box sx={{ height: "100%", display: "grid", gridTemplateRows: "50% 50%" }}>
+      <FriendRequestsReceived received={receivedRequests} fetchFriendsData={fetchFriendsData} />
+      <Divider sx={{ marginY: 2 }} />
+      <FriendRequestsSent sent={sentRequests} fetchFriendsData={fetchFriendsData} />
     </Box>
+
+    {/* Правый блок */}
+    <Box sx={{ height: "50%", overflowY: "auto" }}>
+      <FriendsList friends={friends} />
+    </Box>
+  </Box>
+</Box>
+
   );
 };
 
