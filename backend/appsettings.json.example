@@ -23,6 +23,68 @@
   },
   "AllowedOrigins": [
     "http://localhost:3000"
+  ],
+  "Interests": [
+    {
+      "Id": 1,
+      "Name": "Music"
+    },
+    {
+      "Id": 2,
+      "Name": "Gaming"
+    },
+    {
+      "Id": 3,
+      "Name": "Programming"
+    },
+    {
+      "Id": 4,
+      "Name": "Art"
+    },
+    {
+      "Id": 5,
+      "Name": "Travel"
+    },
+    {
+      "Id": 6,
+      "Name": "Photography"
+    },
+    {
+      "Id": 7,
+      "Name": "Reading"
+    },
+    {
+      "Id": 8,
+      "Name": "Fitness"
+    },
+    {
+      "Id": 9,
+      "Name": "Cooking"
+    },
+    {
+      "Id": 10,
+      "Name": "Movies"
+    },
+    {
+      "Id": 11,
+      "Name": "Nature"
+    },
+    {
+      "Id": 12,
+      "Name": "Fashion"
+    },
+    {
+      "Id": 13,
+      "Name": "Science"
+    },
+    {
+      "Id": 14,
+      "Name": "History"
+    },
+    {
+      "Id": 15,
+      "Name": "Languages"
+    }
   ]
 }
 
