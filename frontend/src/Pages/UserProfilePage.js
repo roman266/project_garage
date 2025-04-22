@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 export default function UserProfilePage() {
   const [profile, setProfile] = useState({
@@ -29,7 +31,10 @@ export default function UserProfilePage() {
   const [friendStatus, setFriendStatus] = useState("Add to Friends");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+    const [hasMore, setHasMore] = useState(true);
+
+    const navigate = useNavigate();
+
 
   const { userId } = useParams();
   const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
@@ -49,7 +54,50 @@ export default function UserProfilePage() {
     } catch (error) {
       console.error("Error fetching profile data", error);
     }
-  };
+    };
+    
+    const handleMessage = async () => {
+        try {
+
+            const response = await axios.get(`${API_BASE_URL}/api/conversations/my-conversations`, {
+                withCredentials: true,
+            });
+
+            const conversations = response.data?.$values || [];
+
+            const existingConversation = conversations.find(
+                (conv) => conv.isPrivate && conv.userName === profile.userName
+            );
+
+            if (existingConversation) {
+
+                navigate(`/messages/${existingConversation.conversationId}`);
+            } else {
+
+                await axios.post(`${API_BASE_URL}/api/conversations/start/${userId}`, {}, { withCredentials: true });
+
+                // Після створення — знову отримаємо всі переписки
+                const updatedResponse = await axios.get(`${API_BASE_URL}/api/conversations/my-conversations`, {
+                    withCredentials: true,
+                });
+
+                const updatedConversations = updatedResponse.data?.$values || [];
+
+                const newConversation = updatedConversations.find(
+                    (conv) => conv.isPrivate && conv.userName === profile.userName
+                );
+
+                if (newConversation) {
+                    navigate(`/messages/${newConversation.conversationId}`);
+                } else {
+                    console.error("Failed to find new conversation after creation.");
+                }
+            }
+        } catch (error) {
+            console.error("Error handling message button:", error);
+        }
+    };
+
 
   const fetchFriendStatus = async () => {
     try {
@@ -168,7 +216,16 @@ export default function UserProfilePage() {
           >
             {friendStatus}
           </Button>
-          <Button variant="contained" sx={{ flex: 1, mx: 1, bgcolor: "#365B87", "&:hover": { bgcolor: "#388E3C" } }}>
+                  <Button
+                      variant="contained"
+                      sx={{
+                          flex: 1,
+                          mx: 1,
+                          bgcolor: "#365B87",
+                          "&:hover": { bgcolor: "#388E3C" }
+                      }}
+                      onClick={handleMessage}
+                  >
             Message
           </Button>
         </Box>
