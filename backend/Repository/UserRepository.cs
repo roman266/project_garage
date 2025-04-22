@@ -118,11 +118,12 @@ namespace project_garage.Repository
                     UserName = u.UserName,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    ProfilePicture = u.ProfilePicture
+                    ProfilePicture = u.ProfilePicture,
+                    ActiveStatus = u.ActiveStatus
                 })
                 .ToListAsync();
 
-            if(users.Count == 0) 
+            if (users.Count == 0) 
                 throw new ArgumentException("No users founded");
 
             return users;

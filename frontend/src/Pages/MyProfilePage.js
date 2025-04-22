@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, Avatar, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Alert, Snackbar } from "@mui/material";
 import axios from "axios";
+import InterestForm from '../Components/Interests/InterestForm';
 
 export default function MyProfilePage() {
   const [profile, setProfile] = useState({
@@ -11,7 +12,7 @@ export default function MyProfilePage() {
     description: "",
     profilePicture: "",
   });
-  
+
   const handleAvatarClick = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -74,8 +75,8 @@ export default function MyProfilePage() {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/profile/me`, {
-			withCredentials: true,
-		});
+          withCredentials: true,
+        });
 
 
         setProfile(response.data.profile);
@@ -120,7 +121,7 @@ export default function MyProfilePage() {
       await axios.post(`${API_BASE_URL}/api/profile/send-password-verify-email`, {}, {
         withCredentials: true,
       });
-      
+
       setAlertInfo({
         open: true,
         message: "Confirmation code sent to your email!",
@@ -141,7 +142,7 @@ export default function MyProfilePage() {
     message: "",
     severity: "success" // 'success', 'error', 'warning', 'info'
   });
-  
+
   const handleClose = () => {
     setOpen(false);
     setEmailDialogOpen(false);
@@ -159,9 +160,9 @@ export default function MyProfilePage() {
 
   const handleEditSave = async () => {
     try {
-		await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
-			withCredentials: true,
-		});
+      await axios.post(`${API_BASE_URL}/api/profile/me/edit`, formData, {
+        withCredentials: true,
+      });
 
 
       setProfile((prevProfile) => ({ ...prevProfile, ...formData }));
@@ -183,9 +184,9 @@ export default function MyProfilePage() {
 
   const handleEmailSave = async () => {
     try {
-		await axios.patch(`${API_BASE_URL}/api/profile/change-email`, formData, {
-			withCredentials: true,
-		});
+      await axios.patch(`${API_BASE_URL}/api/profile/change-email`, formData, {
+        withCredentials: true,
+      });
 
 
       setProfile((prevProfile) => ({ ...prevProfile, email: formData.email }));
@@ -230,42 +231,52 @@ export default function MyProfilePage() {
     }
   };
 
+  const [interestsDialogOpen, setInterestsDialogOpen] = useState(false);
+
+  const handleInterestsClick = () => {
+    setInterestsDialogOpen(true);
+  };
+
+  const handleInterestsClose = () => {
+    setInterestsDialogOpen(false);
+  };
+
   return (
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "70vh", backgroundColor: "#365B87" }}>
       <Container maxWidth="sm" sx={{ backgroundColor: "white", padding: "40px", borderRadius: "12px", boxShadow: "2px 2px 15px rgba(0,0,0,0.3)", textAlign: "center" }}>
         <Typography variant="h5" sx={{ color: "#365B87", textAlign: "left", marginBottom: 2 }}>My profile</Typography>
-        <Avatar 
-          src={profile.profilePicture} 
-          sx={{ 
-            width: 80, 
-            height: 80, 
-            margin: "20px auto", 
+        <Avatar
+          src={profile.profilePicture}
+          sx={{
+            width: 80,
+            height: 80,
+            margin: "20px auto",
             backgroundColor: "black",
             cursor: "pointer",
             '&:hover': {
               opacity: 0.8,
               boxShadow: '0 0 10px rgba(0,0,0,0.3)'
             }
-          }} 
+          }}
           onClick={handleAvatarClick}
         />
         <Typography variant="caption" sx={{ display: 'block', mb: 2, color: 'text.secondary' }}>
           Click on avatar to upload new image
         </Typography>
-        
+
         <Box sx={{ textAlign: "left" }}>
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Username</Typography>
           <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.userName}</Typography>
-          
+
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>First Name</Typography>
           <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.firstName}</Typography>
-          
+
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Last Name</Typography>
           <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.lastName}</Typography>
-          
+
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Description</Typography>
           <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.description}</Typography>
-          
+
           <Typography sx={{ fontWeight: "bold", color: "#365B87" }}>Email</Typography>
           <Typography sx={{ marginBottom: 2, borderBottom: "1px solid #ccc", display: "inline-block", width: "100%" }}>{profile.email}</Typography>
         </Box>
@@ -273,6 +284,7 @@ export default function MyProfilePage() {
           <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2 }} onClick={handleClickOpen}>Edit</Button>
           <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, marginLeft: 2 }} onClick={changeEmailOnClick}>Change Email</Button>
           <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, marginLeft: 2 }} onClick={changePasswordOnClick}>Change Password</Button>
+          <Button variant="contained" sx={{ backgroundColor: "#1F4A7C", color: "white", marginTop: 2, marginLeft: 2 }} onClick={handleInterestsClick}>Manage Interests</Button>
         </Box>
       </Container>
 
@@ -301,52 +313,52 @@ export default function MyProfilePage() {
           <Button onClick={handleEmailSave} color="primary">Save</Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Add Snackbar with Alert */}
-      <Snackbar 
-        open={alertInfo.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={alertInfo.open}
+        autoHideDuration={6000}
         onClose={handleAlertClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleAlertClose} 
-          severity={alertInfo.severity} 
+        <Alert
+          onClose={handleAlertClose}
+          severity={alertInfo.severity}
           sx={{ width: '100%' }}
         >
           {alertInfo.message}
         </Alert>
       </Snackbar>
-      
+
       <Dialog open={passwordDialogOpen} onClose={handleClose}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <TextField 
-              margin="dense" 
-              name="confirmationCode" 
-              label="Confirmation Code" 
-              fullWidth 
-              value={formData.confirmationCode} 
-              onChange={handleChange} 
+            <TextField
+              margin="dense"
+              name="confirmationCode"
+              label="Confirmation Code"
+              fullWidth
+              value={formData.confirmationCode}
+              onChange={handleChange}
             />
-            <Button 
-              variant="contained" 
-              color="primary" 
-              sx={{ ml: 1, mt: 1, height: 40 }} 
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ ml: 1, mt: 1, height: 40 }}
               onClick={handleSendPasswordResetEmail}
             >
               Send Email
             </Button>
           </Box>
-          <TextField 
-            margin="dense" 
-            name="newPassword" 
-            label="New Password" 
-            type="password" 
-            fullWidth 
-            value={formData.newPassword} 
-            onChange={handleChange} 
+          <TextField
+            margin="dense"
+            name="newPassword"
+            label="New Password"
+            type="password"
+            fullWidth
+            value={formData.newPassword}
+            onChange={handleChange}
           />
         </DialogContent>
         <DialogActions>
@@ -354,22 +366,31 @@ export default function MyProfilePage() {
           <Button onClick={handlePasswordSave} color="primary">Save</Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Залишаємо тільки один Snackbar */}
-      <Snackbar 
-        open={alertInfo.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={alertInfo.open}
+        autoHideDuration={6000}
         onClose={handleAlertClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleAlertClose} 
-          severity={alertInfo.severity} 
+        <Alert
+          onClose={handleAlertClose}
+          severity={alertInfo.severity}
           sx={{ width: '100%' }}
         >
           {alertInfo.message}
         </Alert>
       </Snackbar>
+      <Dialog open={interestsDialogOpen} onClose={handleInterestsClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Manage Your Interests</DialogTitle>
+        <DialogContent>
+          <InterestForm userId={profile.id} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleInterestsClose} color="primary">Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

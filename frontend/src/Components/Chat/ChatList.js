@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Paper, Button, Box, Badge } from "@mui/material";
-import axios from "axios";
-import { API_URL } from "../../constants";
+import { 
+  fetchChats, 
+  fetchUnreadCount, 
+  setupChatNotifications, 
+  findChatById,
+  joinMultipleChats,
+  removeMessageCallback
+} from "../../services/conversationService";
 
 export default function ChatsList({ onSelectChat, currentChatId }) {
   const [chats, setChats] = useState([]);
@@ -10,49 +16,25 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
   const [loading, setLoading] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const listRef = useRef(null);
+  const chatsRef = useRef([]);
 
-  const fetchUnreadCount = async (conversationId) => {
-    try {
-      const response = await axios.get(`${API_URL}/api/message/${conversationId}/unreaded-count`, {
-        withCredentials: true
-      });
-      console.log(`Unread count for chat ${conversationId}:`, response.data);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching unread count for chat ${conversationId}:`, error);
-      return 0;
-    }
-  };
+  // Update the ref whenever chats change
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
 
-  const fetchChats = async (loadMore = false) => {
+  const loadChats = async (loadMore = false) => {
     try {
       setLoading(true);
-      const params = {
-        limit: 15,
-        lastConversationId: loadMore ? lastConversationId : null
-      };
+      const result = await fetchChats(loadMore ? lastConversationId : null);
 
-      const response = await axios.get(`${API_URL}/api/conversations/my-conversations`, {
-        params,
-        withCredentials: true
-      });
-
-      let newChats = [];
-      if (response.data.$values) {
-        newChats = response.data.$values;
-      } else if (response.data.conversationList) {
-        newChats = response.data.conversationList;
-      } else if (Array.isArray(response.data)) {
-        newChats = response.data;
-      }
-
-      if (newChats.length > 0) {
-        setLastConversationId(newChats[newChats.length - 1].conversationId);
-        setHasMore(newChats.length >= 15);
+      if (result.chats.length > 0) {
+        setLastConversationId(result.lastConversationId);
+        setHasMore(result.hasMore);
 
         const unreadCountsData = {};
         await Promise.all(
-          newChats.map(async (chat) => {
+          result.chats.map(async (chat) => {
             const count = await fetchUnreadCount(chat.conversationId);
             unreadCountsData[chat.conversationId] = count;
           })
@@ -61,10 +43,14 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
         setUnreadCounts(prev => ({ ...prev, ...unreadCountsData }));
 
         if (loadMore) {
-          setChats(prev => [...prev, ...newChats]);
+          setChats(prev => [...prev, ...result.chats]);
         } else {
-          setChats(newChats);
+          setChats(result.chats);
         }
+        
+        // Join all loaded chats to receive notifications
+        const chatIds = result.chats.map(chat => chat.conversationId);
+        await joinMultipleChats(chatIds);
       } else {
         setHasMore(false);
       }
@@ -75,9 +61,53 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
     }
   };
 
-  useEffect(() => {
-    fetchChats();
+  // Handle new message notifications - using useCallback to maintain reference
+  const handleNewMessage = useCallback(async (conversationId, messageData) => {
+    console.log("Handling new message for conversation:", conversationId);
+
+    // Increment unread count for this conversation
+    setUnreadCounts(prev => ({
+      ...prev,
+      [conversationId]: (prev[conversationId] || 0) + 1
+    }));
+
+    // Check if this conversation is already in our list
+    const existingChatIndex = chatsRef.current.findIndex(chat => chat.conversationId === conversationId);
+
+    if (existingChatIndex !== -1) {
+      // Move this conversation to the top of the list
+      const updatedChats = [...chatsRef.current];
+      const chatToMove = updatedChats.splice(existingChatIndex, 1)[0];
+      updatedChats.unshift(chatToMove);
+      setChats(updatedChats);
+    } else {
+      // This is a new conversation or one that wasn't loaded yet
+      // We need to reload all chats since we don't have a direct endpoint to get a single chat
+      loadChats();
+    }
   }, []);
+
+  useEffect(() => {
+    loadChats();
+
+    // Set up SignalR notification handling
+    setupChatNotifications(handleNewMessage)
+      .then(success => {
+        if (success) {
+          console.log("Chat notifications set up successfully");
+        } else {
+          console.error("Failed to set up chat notifications");
+        }
+      })
+      .catch(error => {
+        console.error("Error setting up chat notifications:", error);
+      });
+
+    return () => {
+      // Clean up by removing our callback when component unmounts
+      removeMessageCallback(handleNewMessage);
+    };
+  }, [handleNewMessage]);
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -93,7 +123,7 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
   const loadMoreChats = () => {
     if (!loading) {
       console.log("Fetching more chats with lastConversationId:", lastConversationId);
-      fetchChats(true);
+      loadChats(true);
     }
   };
 
@@ -103,7 +133,7 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
     setLastConversationId(null);
     setHasMore(true);
     setUnreadCounts({});
-    fetchChats(false);
+    loadChats(false);
   };
 
   return (
@@ -135,7 +165,7 @@ export default function ChatsList({ onSelectChat, currentChatId }) {
               onClick={() => {
                 console.log("Chat selected:", chat.conversationId);
                 onSelectChat(chat.conversationId);
-                // Скидаємо лічильник непрочитаних повідомлень при виборі чату
+                // Reset unread count when selecting a chat
                 setUnreadCounts(prev => ({ ...prev, [chat.conversationId]: 0 }));
               }}
               sx={{
