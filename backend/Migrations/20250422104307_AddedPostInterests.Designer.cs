@@ -11,8 +11,13 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
+<<<<<<<< HEAD:backend/Migrations/20250422104307_AddedPostInterests.Designer.cs
     [Migration("20250422104307_AddedPostInterests")]
     partial class AddedPostInterests
+========
+    [Migration("20250418223902_AddedUserInterestId")]
+    partial class AddedUserInterestId
+>>>>>>>> 2f73b58c59ca045248f299f5c00317c6b96e1202:backend/Migrations/20250418223902_AddedUserInterestId.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -312,9 +317,12 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
+<<<<<<<< HEAD:backend/Migrations/20250422104307_AddedPostInterests.Designer.cs
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+========
+>>>>>>>> 2f73b58c59ca045248f299f5c00317c6b96e1202:backend/Migrations/20250418223902_AddedUserInterestId.Designer.cs
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
