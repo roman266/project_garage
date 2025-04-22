@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, CardMedia, CardActions, Button, Grid, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  IconButton
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import { API_URL } from '../constants';
+import PostCard from './PostCard';
 
 const MyPosts = () => {
   const [posts, setPosts] = useState([]);
@@ -23,28 +36,28 @@ const MyPosts = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/api/post/my-posts`, {
-        params: { 
-          lastPostId: lastPostId, 
-          limit: 15 
+        params: {
+          lastPostId: lastPostId,
+          limit: 15
         },
         withCredentials: true
       });
-      
+
       // Handle the response format with $values array
-      const postsData = response.data && response.data.$values 
-        ? response.data.$values 
+      const postsData = response.data && response.data.$values
+        ? response.data.$values
         : (Array.isArray(response.data) ? response.data : []);
-      
+
       if (postsData.length < 15) {
         setHasMore(false);
       }
-      
+
       if (lastPostId) {
         setPosts(prev => [...prev, ...postsData]);
       } else {
         setPosts(postsData);
       }
-      
+
       console.log('Posts data:', postsData);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -68,11 +81,11 @@ const MyPosts = () => {
       }, {
         withCredentials: true
       });
-      
-      setPosts(posts.map(post => 
+
+      setPosts(posts.map(post =>
         post.postId === currentPost.postId ? { ...post, postDescription: editedText } : post
       ));
-      
+
       setEditDialogOpen(false);
     } catch (error) {
       console.error('Error updating post:', error);
@@ -89,7 +102,7 @@ const MyPosts = () => {
       await axios.delete(`${API_URL}/api/post/delete/${postToDelete.postId}`, {
         withCredentials: true
       });
-      
+
       setPosts(posts.filter(post => post.postId !== postToDelete.postId));
       setDeleteDialogOpen(false);
     } catch (error) {
@@ -109,7 +122,7 @@ const MyPosts = () => {
       <Typography color='#365B87' variant="h4" gutterBottom>
         My Posts
       </Typography>
-      
+
       {loading && (!posts || posts.length === 0) ? (
         <Box display="flex" justifyContent="center" my={4}>
           <CircularProgress />
@@ -124,75 +137,41 @@ const MyPosts = () => {
             <Grid container spacing={3}>
               {Array.isArray(posts) && posts.map(post => (
                 <Grid item xs={12} key={post.postId}>
-                  <Card sx={{ mb: 2 }}>
-                    <Box sx={{ p: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        {post.senderAvatarUlr && (
-                          <Avatar 
-                            src={post.senderAvatarUlr} 
-                            alt={post.senderNickName}
-                            sx={{ width: 40, height: 40, mr: 2 }}
-                          />
-                        )}
-                        <Box>
-                          <Typography variant="subtitle1">{post.senderNickName}</Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {new Date(post.postDate).toLocaleString()}
-                          </Typography>
-                        </Box>
-                      </Box>
+                  <Box position="relative">
+                    <Box position="absolute" right={10} top={10} zIndex={1} sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditClick(post)}
+                        sx={{ bgcolor: 'white', '&:hover': { bgcolor: 'white' } }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(post)}
+                        sx={{ bgcolor: 'white', '&:hover': { bgcolor: 'white' } }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </Box>
-                    
-                    {post.postImageUrl && (
-                      <Box sx={{ 
-                        width: '100%', 
-                        height: { xs: '300px', md: '400px' },
-                        backgroundColor: 'black',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}>
-                        <CardMedia
-                          component="img"
-                          sx={{ 
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'contain'
-                          }}
-                          image={post.postImageUrl}
-                          alt={post.postDescription}
-                        />
-                      </Box>
-                    )}
-                    
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="body1" paragraph>{post.postDescription}</Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <IconButton 
-                          size="small" 
-                          color="primary"
-                          onClick={() => handleEditClick(post)}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton 
-                          size="small" 
-                          color="error"
-                          onClick={() => handleDeleteClick(post)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </Card>
+                    <PostCard
+                      avatarUrl={post.senderAvatarUlr}
+                      profileName={post.senderNickName}
+                      postDescription={new Date(post.postDate).toLocaleString()}
+                      postImage={post.postImageUrl}
+                      contentText={post.postDescription}
+                      likesCount={post.likesCount || 0}
+                      comments={post.comments || []}
+                    />
+                  </Box>
                 </Grid>
               ))}
             </Grid>
-            
+
             {hasMore && (
               <Box display="flex" justifyContent="center" mt={3}>
-                <Button 
-                  variant="outlined" 
+                <Button
+                  variant="outlined"
                   onClick={loadMorePosts}
                   disabled={loading}
                 >
@@ -204,6 +183,7 @@ const MyPosts = () => {
         </>
       )}
 
+      {/* Keep existing dialogs */}
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
         <DialogTitle>Edit Post</DialogTitle>

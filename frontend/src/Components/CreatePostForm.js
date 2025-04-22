@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { 
-  Button, 
-  TextField, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Box, 
+import {
+  Button,
+  TextField,
+  Card,
+  CardContent,
+  Typography,
+  Box,
   CircularProgress,
   IconButton,
   Container,
@@ -30,7 +30,7 @@ export default function CreatePostPage() {
 
   useEffect(() => {
     fetchCategories();
-    
+
     if (image) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -45,20 +45,20 @@ export default function CreatePostPage() {
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
-      const response = await fetch(`${API_URL}/api/post/get-categories`, {
+      const response = await fetch(`${API_URL}/api/interest/get-all`, {
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
-      
+
       const data = await response.json();
-      const categoriesArray = Array.isArray(data) ? data : 
-                             (data.$values ? data.$values : []);
-      
+      const categoriesArray = Array.isArray(data) ? data :
+        (data.$values ? data.$values : []);
+
       setCategories(categoriesArray);
-      
+
       if (categoriesArray.length > 0) {
         setSelectedCategory(categoriesArray[0].id.toString());
       }
@@ -84,7 +84,7 @@ export default function CreatePostPage() {
       setError("Please select a category.");
       return;
     }
-    
+
     setLoading(true);
     setError(null);
 
@@ -92,12 +92,11 @@ export default function CreatePostPage() {
       const formData = new FormData();
       formData.append('description', content);
       formData.append('image', image);
-      
+
       const selectedCategoryObj = categories.find(cat => cat.id.toString() === selectedCategory);
-      
-      formData.append('CategoryId', selectedCategory);
-      formData.append('Category', selectedCategoryObj ? selectedCategoryObj.name : '');
-      
+
+      formData.append('InterestId', selectedCategory);
+
       const response = await fetch(`${API_URL}/api/post/create`, {
         method: 'POST',
         body: formData,
@@ -163,7 +162,7 @@ export default function CreatePostPage() {
             margin="normal"
             sx={{ fontFamily: "Roboto, sans-serif" }}
           />
-          
+
           <FormControl fullWidth margin="normal">
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
@@ -187,19 +186,19 @@ export default function CreatePostPage() {
               )}
             </Select>
           </FormControl>
-          
+
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <IconButton onClick={handleEmojiClick} color="primary">
               <EmojiEmotionsIcon />
             </IconButton>
           </Box>
-          
+
           <Button
             variant="contained"
             component="label"
-            sx={{ 
-              backgroundColor: "#1F4A7C", 
-              color: "white", 
+            sx={{
+              backgroundColor: "#1F4A7C",
+              color: "white",
               fontFamily: "Roboto, sans-serif",
               mt: 1,
               width: "100%"
@@ -213,13 +212,13 @@ export default function CreatePostPage() {
               onChange={(e) => setImage(e.target.files[0])}
             />
           </Button>
-          
+
           {imagePreview && (
-            <Box sx={{ 
-              position: 'relative', 
-              mt: 2, 
-              width: '100%', 
-              height: '300px', 
+            <Box sx={{
+              position: 'relative',
+              mt: 2,
+              width: '100%',
+              height: '300px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -227,21 +226,21 @@ export default function CreatePostPage() {
               borderRadius: '4px',
               overflow: 'hidden'
             }}>
-              <img 
-                src={imagePreview} 
-                alt="Preview" 
-                style={{ 
-                  maxWidth: '100%', 
+              <img
+                src={imagePreview}
+                alt="Preview"
+                style={{
+                  maxWidth: '100%',
                   maxHeight: '100%',
                   objectFit: 'contain'
-                }} 
+                }}
               />
-              <IconButton 
+              <IconButton
                 onClick={clearImage}
-                sx={{ 
-                  position: 'absolute', 
-                  top: 5, 
-                  right: 5, 
+                sx={{
+                  position: 'absolute',
+                  top: 5,
+                  right: 5,
                   bgcolor: 'rgba(255,255,255,0.7)',
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
                 }}
@@ -251,20 +250,20 @@ export default function CreatePostPage() {
               </IconButton>
             </Box>
           )}
-          
+
           {error && (
             <Typography color="error" variant="body2" sx={{ mt: 1 }}>
               {error}
             </Typography>
           )}
-          
-          <Button 
-            type="submit" 
-            variant="contained" 
+
+          <Button
+            type="submit"
+            variant="contained"
             disabled={loading}
-            sx={{ 
-              backgroundColor: "#1F4A7C", 
-              color: "white", 
+            sx={{
+              backgroundColor: "#1F4A7C",
+              color: "white",
               fontFamily: "Roboto, sans-serif",
               mt: 2,
               width: "100%"

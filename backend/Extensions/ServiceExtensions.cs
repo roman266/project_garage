@@ -57,7 +57,6 @@ namespace project_garage.Extensions
             services.AddSingleton<JWTSettings>();
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
-            services.AddScoped<IPostCategoryRepository, PostCategoryRepository>();
         }
 
         public static void AddIdentity(this IServiceCollection services)

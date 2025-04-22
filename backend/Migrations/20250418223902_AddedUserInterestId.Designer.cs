@@ -328,16 +328,6 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -349,6 +339,9 @@ namespace project_garage.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("InterestId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
@@ -357,6 +350,8 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InterestId");
 
                     b.HasIndex("UserId");
 
@@ -696,11 +691,19 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
+                    b.HasOne("project_garage.Models.DbModels.InterestModel", "Interest")
+                        .WithMany()
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Interest");
 
                     b.Navigation("User");
                 });
