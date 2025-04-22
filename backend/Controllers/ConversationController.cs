@@ -88,5 +88,17 @@ namespace project_garage.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("get-private/{friendId}")]
+        public async Task<IActionResult> GetPrivateConversationByFriendId(string friendId)
+        {
+            var userId = UserHelper.GetCurrentUserId(HttpContext);
+            var conversationId = await _conversationService.GetPrivateConversationIdByFriendIdAsync(userId, friendId);
+
+            if(conversationId == null)
+                return NotFound();
+
+            return Ok(conversationId);
+        }
     }
 }
