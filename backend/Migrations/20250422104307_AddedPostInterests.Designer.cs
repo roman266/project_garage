@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250418223902_AddedUserInterestId")]
-    partial class AddedUserInterestId
+    [Migration("20250422104307_AddedPostInterests")]
+    partial class AddedPostInterests
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -282,21 +282,6 @@ namespace project_garage.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("project_garage.Models.DbModels.PostCategoryModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PostCategories");
-                });
-
             modelBuilder.Entity("project_garage.Models.DbModels.PostImageModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -311,7 +296,6 @@ namespace project_garage.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PostId1")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserModelId")
@@ -328,6 +312,9 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.PostModel", b =>
                 {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -678,9 +665,7 @@ namespace project_garage.Migrations
                 {
                     b.HasOne("project_garage.Models.DbModels.PostModel", "Post")
                         .WithMany("Images")
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PostId1");
 
                     b.HasOne("project_garage.Models.DbModels.UserModel", null)
                         .WithMany("Images")
