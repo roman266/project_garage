@@ -11,5 +11,6 @@ namespace project_garage.Interfaces.IRepository
         Task<List<UserModel>> GetConversationMembersAsync(string conversationId);
         Task RemoveUserFromConversationAsync(string userId, string conversationId);
         Task<List<ConversationDisplayDto>> GetPaginatedUserConversationsAsync(string userId, string? lastConversationId, int limit);
+        Task<string> GetPrivateConversationBetweenUsersAsync(string userId, string friendId);
     }
 }

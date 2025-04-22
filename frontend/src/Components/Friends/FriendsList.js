@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import FriendCard from "./FriendCard";
 
-const FriendsList = ({ friends, loadMore }) => (
+const FriendsList = ({ friends, loadMore, deleteFriend }) => (
   <Box 
     sx={{ 
       backgroundColor: "White", 
@@ -22,7 +22,8 @@ const FriendsList = ({ friends, loadMore }) => (
         top: 0, 
         backgroundColor: "White", 
         zIndex: 1, 
-        padding: 1
+        padding: 1,
+        mt: 6
       }}
     >
       Friends
@@ -32,7 +33,7 @@ const FriendsList = ({ friends, loadMore }) => (
       <>
         {friends.map((friend) => (
           <Box key={friend.id} sx={{ mb: 2 }}>
-            <FriendCard user={friend} />
+            <FriendCard user={friend} deleteFriend={deleteFriend} />
           </Box>
         ))}
         {friends.length >= 20 && (

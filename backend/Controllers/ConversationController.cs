@@ -23,9 +23,9 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _conversationService.CreatePrivateConversationBetweenUsersAsync(userId, recipientId);
+                var conversationId = await _conversationService.CreatePrivateConversationBetweenUsersAsync(userId, recipientId);
 
-                return Ok(new { message = "Conversation started successfully" });
+                return Ok(new { id = conversationId });
             }
             catch (ArgumentException ex)
             {
@@ -87,6 +87,18 @@ namespace project_garage.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpGet("get-private/{friendId}")]
+        public async Task<IActionResult> GetPrivateConversationByFriendId(string friendId)
+        {
+            var userId = UserHelper.GetCurrentUserId(HttpContext);
+            var conversationId = await _conversationService.GetPrivateConversationIdByFriendIdAsync(userId, friendId);
+
+            if(conversationId == null)
+                return NotFound();
+
+            return Ok(new { id = conversationId });
         }
     }
 }
