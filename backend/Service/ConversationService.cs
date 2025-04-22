@@ -128,5 +128,10 @@ namespace project_garage.Service
             await _conversationRepository.DeleteAsync(conversation);
         }
 
+        public async Task<string> GetPrivateConversationIdByFriendIdAsync(string userId, string friendId)
+        {
+            var conversationId = await _userConversationRepository.GetPrivateConversationBetweenUsersAsync(userId, friendId);
+            return conversationId;
+        }
     }
 }

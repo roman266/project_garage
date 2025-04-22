@@ -13,6 +13,7 @@ namespace project_garage.Interfaces.IService
         Task<List<ConversationDisplayDto>> GetPaginatedConversationsByUserIdAsync(string userId, string? lastConversationId, int limit);
         Task<bool> IsUserInConversationAsync(string userId, string conversationId);
         Task<bool> CheckConversationExistance(string conversationId);
+        Task<string> GetPrivateConversationIdByFriendIdAsync(string userId, string friendId);
         Task DeleteConversationAsync(string conversationId);
     }
 }

@@ -98,5 +98,17 @@ namespace project_garage.Repository
 
             return conversations;
         }
+
+        public async Task<string> GetPrivateConversationBetweenUsersAsync(string userId, string friendId)
+        {
+            var conversationId = await _context.Conversations
+                .Where(c => c.IsPrivate)
+                .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
+                .Where(c => c.UserConversations.Any(uc => uc.UserId == friendId))
+                .Select(c => c.Id)
+                .FirstOrDefaultAsync();
+
+            return conversationId;
+        }
     }
 }
