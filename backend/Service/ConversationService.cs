@@ -70,7 +70,7 @@ namespace project_garage.Service
             return userIds;
         }
 
-        public async Task CreatePrivateConversationBetweenUsersAsync(string userId, string anotherUserId)
+        public async Task<string> CreatePrivateConversationBetweenUsersAsync(string userId, string anotherUserId)
         {
             if (await _userConversationRepository.ExistsPrivateConversationAsync(userId, anotherUserId))
                 throw new InvalidOperationException("Those users already have private conversation");
@@ -93,6 +93,7 @@ namespace project_garage.Service
 
             await _userConversationRepository.AddUserToConversationAsync(firstUserModel);
             await _userConversationRepository.AddUserToConversationAsync(secondUserModel);
+            return conversation.Id;
         }
 
         public async Task<bool> IsUserInConversationAsync(string userId, string conversationId)

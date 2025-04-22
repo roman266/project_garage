@@ -23,9 +23,9 @@ namespace project_garage.Controllers
             try
             {
                 var userId = UserHelper.GetCurrentUserId(HttpContext);
-                await _conversationService.CreatePrivateConversationBetweenUsersAsync(userId, recipientId);
+                var conversationId = await _conversationService.CreatePrivateConversationBetweenUsersAsync(userId, recipientId);
 
-                return Ok(new { message = "Conversation started successfully" });
+                return Ok(new { id = conversationId });
             }
             catch (ArgumentException ex)
             {
@@ -98,7 +98,7 @@ namespace project_garage.Controllers
             if(conversationId == null)
                 return NotFound();
 
-            return Ok(conversationId);
+            return Ok(new { id = conversationId });
         }
     }
 }
