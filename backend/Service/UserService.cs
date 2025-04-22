@@ -15,7 +15,10 @@ namespace project_garage.Service
         private readonly IEmailSenderService _emailSender;
         private readonly string _baseUrl;
 
-        public UserService(IUserRepository userRepository, IConfiguration config, IEmailSenderService emailSender) 
+        public UserService(
+            IUserRepository userRepository, 
+            IConfiguration config, 
+            IEmailSenderService emailSender) 
         {
             _userRepository = userRepository;
             _emailSender = emailSender;
@@ -42,8 +45,7 @@ namespace project_garage.Service
             if (!result.Succeeded)
                 throw new ArgumentException("This username is already in use");
 
-            //await SendEmailAsync(registerDto.Email);
-
+            await SendEmailAsync(registerDto.Email);
             return result;
         }
 
