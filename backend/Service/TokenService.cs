@@ -20,7 +20,10 @@ namespace project_garage.Service
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly JWTSettings _jwtSettings;
 
-        public TokenService(IRefreshTokenRepository refreshTokenRepository, IHttpContextAccessor httpContextAccessor, JWTSettings jwtSettings)
+        public TokenService(
+            IRefreshTokenRepository refreshTokenRepository, 
+            IHttpContextAccessor httpContextAccessor, 
+            JWTSettings jwtSettings)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _httpContextAccessor = httpContextAccessor;
