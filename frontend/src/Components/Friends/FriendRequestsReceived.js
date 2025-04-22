@@ -7,9 +7,10 @@ const FriendRequestsReceived = ({ received, loadMore, handleAcceptRequest, handl
     sx={{ 
       backgroundColor: "White", 
       padding: 2, 
-      borderRadius: 2, 
-      maxHeight: "100%", // Ограничение по высоте (можно менять)
-      overflowY: "auto" // Включаем скролл
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10, 
+      maxHeight: "100%", 
+      overflowY: "auto" 
     }}
   >
     <Typography 

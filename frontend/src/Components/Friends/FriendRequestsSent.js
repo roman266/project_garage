@@ -9,7 +9,8 @@ const FriendRequestsSent = ({ sent, loadMore, handleCancelRequest }) => (
     sx={{ 
       backgroundColor: "White", 
       padding: 2, 
-      borderRadius: 2, 
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10, 
       maxHeight: "100%", 
       overflowY: "auto" 
     }}

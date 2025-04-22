@@ -22,7 +22,8 @@ const FriendsList = ({ friends, loadMore }) => (
         top: 0, 
         backgroundColor: "White", 
         zIndex: 1, 
-        padding: 1
+        padding: 1,
+        mt: 6
       }}
     >
       Friends
