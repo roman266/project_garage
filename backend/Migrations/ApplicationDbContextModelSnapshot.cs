@@ -676,7 +676,7 @@ namespace project_garage.Migrations
                     b.HasOne("project_garage.Models.DbModels.InterestModel", "Interest")
                         .WithMany()
                         .HasForeignKey("InterestId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")

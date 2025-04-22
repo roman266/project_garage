@@ -104,7 +104,7 @@ namespace project_garage.Service
         public async Task<List<PostModel>> GetRecommendedPostsAsync(string userId)
         {
             var userPosts = await _postService.GetPostsByUserIdsAsync(new List<string> { userId });
-            var userCategories = new HashSet<string>(userPosts.Select(p => p.Interest.Name ?? ""));
+            var userCategoryIds = new HashSet<int>(userPosts.Select(p => p.InterestId));
             var friends = await _friendService.GetByUserIdAsync(userId);
             var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
 
@@ -118,11 +118,11 @@ namespace project_garage.Service
             friendsOfFriends.Remove(userId);
 
             var userInterests = await _userInterestService.GetUserInterestAsync(userId);
-            var userInterestSet = new HashSet<string>(userInterests.Select(i => i.Name));
+            var userInterestIdsSet = new HashSet<int>(userInterests.Select(i => i.Id));
 
             Console.WriteLine($"Friends of friends count: {friendsOfFriends.Count}");
-            Console.WriteLine($"User interests: {string.Join(", ", userInterestSet)}");
-            Console.WriteLine($"User categories: {string.Join(", ", userCategories)}");
+            Console.WriteLine($"User interests: {string.Join(", ", userInterestIdsSet)}");
+            Console.WriteLine($"User categories: {string.Join(", ", userCategoryIds)}");
 
             if (!friendsOfFriends.Any())
             {
@@ -131,6 +131,7 @@ namespace project_garage.Service
             }
 
             var userScores = new Dictionary<string, double>();
+
             foreach (var potentialUser in friendsOfFriends)
             {
                 var potentialUserFriends = await _friendService.GetByUserIdAsync(potentialUser);
@@ -141,11 +142,13 @@ namespace project_garage.Service
                 double jaccardIndex = union == 0 ? 0 : (double)intersection / union;
 
                 var potentialUserInterests = await _userInterestService.GetUserInterestAsync(potentialUser);
-                var potentialInterestSet = new HashSet<string>(potentialUserInterests.Select(i => i.Name));
+                var potentialInterestIdSet = new HashSet<int>(potentialUserInterests.Select(i => i.Id));
 
-                double interestScore = userInterestSet.Any() ? (double)userInterestSet.Intersect(potentialInterestSet).Count() / userInterestSet.Count : 0;
+                double interestScore = userInterestIdsSet.Any()
+                    ? (double)userInterestIdsSet.Intersect(potentialInterestIdSet).Count() / userInterestIdsSet.Count
+                    : 0;
+
                 double finalScore = jaccardIndex + (interestScore * 0.5);
-
                 userScores[potentialUser] = finalScore;
             }
 
@@ -154,13 +157,14 @@ namespace project_garage.Service
                 .ToDictionary(g => g.Key, g => g.Select(u => u.Key).ToList());
 
             var recommendedPosts = new List<PostModel>();
+
             foreach (var group in groupedUsers.OrderByDescending(g => g.Key))
             {
                 var usersInGroup = group.Value;
                 var posts = await _postService.GetPostsByUserIdsAsync(usersInGroup);
 
-                var filteredPosts = userInterestSet.Any()
-                    ? posts.Where(p => p.UserId != userId && userInterestSet.Contains(p.Interest.Name ?? ""))
+                var filteredPosts = userInterestIdsSet.Any()
+                    ? posts.Where(p => p.UserId != userId && userInterestIdsSet.Contains(p.InterestId))
                     : posts.Where(p => p.UserId != userId);
 
                 Console.WriteLine($"Group {group.Key}, Users: {usersInGroup.Count}, Posts: {posts.Count}, Filtered: {filteredPosts.Count()}");
@@ -169,6 +173,7 @@ namespace project_garage.Service
                     .GroupBy(p => p.UserId)
                     .SelectMany(g => g.Take(3))
                     .ToList();
+
                 recommendedPosts.AddRange(selectedPosts);
             }
 
