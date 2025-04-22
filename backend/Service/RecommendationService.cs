@@ -104,7 +104,7 @@ namespace project_garage.Service
         public async Task<List<PostModel>> GetRecommendedPostsAsync(string userId)
         {
             var userPosts = await _postService.GetPostsByUserIdsAsync(new List<string> { userId });
-            var userCategories = new HashSet<string>(userPosts.Select(p => p.Category?.ToString() ?? ""));
+            var userCategories = new HashSet<string>(userPosts.Select(p => p.Interest.Name ?? ""));
             var friends = await _friendService.GetByUserIdAsync(userId);
             var friendIds = friends.Where(f => f.IsAccepted).Select(f => f.FriendId).ToList();
 
@@ -160,7 +160,7 @@ namespace project_garage.Service
                 var posts = await _postService.GetPostsByUserIdsAsync(usersInGroup);
 
                 var filteredPosts = userInterestSet.Any()
-                    ? posts.Where(p => p.UserId != userId && userInterestSet.Contains(p.Category?.ToString() ?? ""))
+                    ? posts.Where(p => p.UserId != userId && userInterestSet.Contains(p.Interest.Name ?? ""))
                     : posts.Where(p => p.UserId != userId);
 
                 Console.WriteLine($"Group {group.Key}, Users: {usersInGroup.Count}, Posts: {posts.Count}, Filtered: {filteredPosts.Count()}");

@@ -16,7 +16,6 @@ namespace project_garage.Data
         public DbSet<UserConversationModel> UserConversations { get; set; }
         public DbSet<UserInterestModel> UserInterests { get; set; }
         public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
-        public DbSet<PostCategoryModel> PostCategories { get; set; }
         public DbSet<InterestModel> Interests { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
