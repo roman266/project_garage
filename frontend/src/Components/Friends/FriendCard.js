@@ -8,8 +8,39 @@ const FriendCard = ({ user, deleteFriend }) => {
   const navigate = useNavigate(); 
   const defaultAvatar = "/user-avatar.png"; 
 
-  const goChat = () => {
-    navigate('/messages'); 
+  const goChat = async (userId) => {
+    try {
+      // Пробуємо отримати приватний чат
+      const response = await fetch(`${API_URL}/api/conversations/get-private/${userId}`, {
+        method: "GET",
+        credentials: "include"
+      });
+  
+      let conversation;
+  
+      if (response.status === 200) {
+        conversation = await response.json(); // Існуючий чат
+      } else if (response.status === 404) {
+        // Якщо нема чату — створюємо новий
+        const createResponse = await fetch(`${API_URL}/api/conversations/start/${userId}`, {
+          method: "POST",
+          credentials: "include"
+        });
+  
+        if (!createResponse.ok) {
+          throw new Error("Не вдалося створити чат");
+        }
+  
+        conversation = await createResponse.json(); // Новий чат
+      } else {
+        throw new Error("Помилка при отриманні чату");
+      }
+  
+      // Перенаправляємо на чат по id
+      navigate(`/messages/${conversation.id}`);
+    } catch (error) {
+      console.error("Помилка під час переходу до чату:", error);
+    }
   };
 
   const  onCancel = async (requestId) => {
@@ -53,7 +84,7 @@ const FriendCard = ({ user, deleteFriend }) => {
         <IconButton size="small" color="error" onClick={() => {onCancel(user.id); deleteFriend(user.id)}}>
           <Close />
         </IconButton>
-        <IconButton size="small" onClick={goChat} sx={{ color: "#3f5975" }}>
+        <IconButton size="small" onClick={() => {goChat(user.friendId)}} sx={{ color: "#3f5975" }}>
           <Chat sx={{ fontSize: 28 }} />
         </IconButton>
       </Box>
