@@ -6,15 +6,12 @@ import {
     Container,
     Button,
     Grid,
-    Card,
-    CardMedia,
-    IconButton,
     CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import PostCard from "../Components/PostCard";
 
 export default function UserProfilePage() {
     const [profile, setProfile] = useState({
@@ -34,8 +31,6 @@ export default function UserProfilePage() {
     const [hasMore, setHasMore] = useState(true);
 
     const navigate = useNavigate();
-
-
     const { userId } = useParams();
     const API_BASE_URL = process.env.REACT_APP_HTTPS_API_URL;
 
@@ -58,7 +53,6 @@ export default function UserProfilePage() {
 
     const handleMessage = async () => {
         try {
-
             const response = await axios.get(`${API_BASE_URL}/api/conversations/my-conversations`, {
                 withCredentials: true,
             });
@@ -70,13 +64,10 @@ export default function UserProfilePage() {
             );
 
             if (existingConversation) {
-
                 navigate(`/messages/${existingConversation.conversationId}`);
             } else {
-
                 await axios.post(`${API_BASE_URL}/api/conversations/start/${userId}`, {}, { withCredentials: true });
 
-                // Після створення — знову отримаємо всі переписки
                 const updatedResponse = await axios.get(`${API_BASE_URL}/api/conversations/my-conversations`, {
                     withCredentials: true,
                 });
@@ -97,7 +88,6 @@ export default function UserProfilePage() {
             console.error("Error handling message button:", error);
         }
     };
-
 
     const fetchFriendStatus = async () => {
         try {
@@ -239,44 +229,17 @@ export default function UserProfilePage() {
                     ) : (
                         posts.map(post => (
                             <Grid item xs={12} key={post.postId}>
-                                <Card>
-                                    <Box sx={{ p: 2 }}>
-                                        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                            <Avatar
-                                                src={post.senderAvatarUlr}
-                                                alt={post.senderNickName}
-                                                sx={{ width: 40, height: 40, mr: 2 }}
-                                            />
-                                            <Box>
-                                                <Typography variant="subtitle2">{post.senderNickName}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {new Date(post.postDate).toLocaleString()}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                        {post.postImageUrl && (
-                                            <Box
-                                                sx={{
-                                                    width: "100%",
-                                                    height: { xs: 300, md: 400 },
-                                                    backgroundColor: "black",
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                    mb: 2,
-                                                }}
-                                            >
-                                                <CardMedia
-                                                    component="img"
-                                                    sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-                                                    image={post.postImageUrl}
-                                                    alt={post.postDescription}
-                                                />
-                                            </Box>
-                                        )}
-                                        <Typography variant="body2">{post.postDescription}</Typography>
-                                    </Box>
-                                </Card>
+                                <PostCard
+                                    avatarUrl={post.senderAvatarUlr}
+                                    profileName={post.senderNickName}
+                                    postDescription={post.postDescription}
+                                    postImage={post.postImageUrl}
+                                    contentText={post.postDescription}
+                                    likesCount={post.likesCount}
+                                    comments={post.comments}
+                                    onLike={() => console.log(`Liked post ${post.postId}`)}
+                                    onComment={() => console.log(`Commented on post ${post.postId}`)}
+                                />
                             </Grid>
                         ))
                     )}
