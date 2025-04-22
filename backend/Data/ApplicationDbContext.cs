@@ -47,6 +47,12 @@ namespace project_garage.Data
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<PostModel>()
+                .HasOne(p => p.Interest)
+                .WithMany()
+                .HasForeignKey(p => p.InterestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Налаштування таблиці Friend
             modelBuilder.Entity<FriendModel>()
                 .HasOne(f => f.User)

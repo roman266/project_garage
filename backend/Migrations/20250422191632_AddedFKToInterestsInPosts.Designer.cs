@@ -11,8 +11,8 @@ using project_garage.Data;
 namespace project_garage.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250422104307_AddedPostInterests")]
-    partial class AddedPostInterests
+    [Migration("20250422191632_AddedFKToInterestsInPosts")]
+    partial class AddedFKToInterestsInPosts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -679,7 +679,7 @@ namespace project_garage.Migrations
                     b.HasOne("project_garage.Models.DbModels.InterestModel", "Interest")
                         .WithMany()
                         .HasForeignKey("InterestId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
