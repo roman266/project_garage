@@ -1,15 +1,32 @@
 import React from "react";
 import { Card, Typography, IconButton, Avatar, Box } from "@mui/material";
-import { Chat } from "@mui/icons-material";
+import { Chat, Close } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../constants";
 
-const FriendCard = ({ user }) => {
+const FriendCard = ({ user, deleteFriend }) => {
   const navigate = useNavigate(); 
   const defaultAvatar = "/user-avatar.png"; 
 
   const goChat = () => {
     navigate('/messages'); 
   };
+
+  const  onCancel = async (requestId) => {
+      try {
+          const response = await fetch(
+              `${API_URL}/api/friends/reject/${requestId}`,
+              {
+                  method: "DELETE",
+                  credentials: "include"
+              }
+               
+          )
+          console.log(response.data);
+      } catch (ex)  {
+          console.log(ex);
+      }
+  } 
 
   return (
     <Card 
@@ -32,9 +49,14 @@ const FriendCard = ({ user }) => {
           <Typography variant="caption" sx={{ color: "gray" }}>{user.activeStatus}</Typography>
         </Box>
       </Box>
-      <IconButton size="small" onClick={goChat} sx={{ color: "#3f5975" }}>
-        <Chat sx={{ fontSize: 28 }} />
-      </IconButton>
+      <Box>
+        <IconButton size="small" color="error" onClick={() => {onCancel(user.id); deleteFriend(user.id)}}>
+          <Close />
+        </IconButton>
+        <IconButton size="small" onClick={goChat} sx={{ color: "#3f5975" }}>
+          <Chat sx={{ fontSize: 28 }} />
+        </IconButton>
+      </Box>
     </Card>
   );
 };
