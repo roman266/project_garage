@@ -104,14 +104,40 @@ namespace project_garage.Repository
             return result;
         }
 
-        public async Task<List<UserModel>> SearchUsersAsync(string query)
+        public async Task<List<UserModel>> SearchUsersAsync(string query, string? lastUserId, int limit)
         {
             if (string.IsNullOrEmpty(query))
                 throw new ArgumentException("Query cannot be null or empty", nameof(query));
 
-            var users = await _userManager.Users
-                .Where(u => u.UserName.Contains(query))
-                .Take(10)
+            var baseQuery = _userManager.Users
+                .Where(u => u.UserName.Contains(query));
+
+            string? lastUserName = null;
+
+            if (!string.IsNullOrEmpty(lastUserId))
+            {
+                lastUserName = await _userManager.Users
+                    .Where(u => u.Id == lastUserId)
+                    .Select(u => u.UserName)
+                    .FirstOrDefaultAsync();
+
+                if (lastUserName == null)
+                {
+                    throw new Exception($"User with ID '{lastUserId}' not found");
+                }
+            }
+
+            var usersQuery = baseQuery;
+
+            if (!string.IsNullOrEmpty(lastUserName))
+            {
+                usersQuery = usersQuery
+                    .Where(u => string.Compare(u.UserName, lastUserName) > 0);
+            }
+
+            var users = await usersQuery
+                .OrderBy(u => u.UserName)
+                .Take(limit)
                 .Select(u => new UserModel
                 {
                     Id = u.Id,
@@ -123,11 +149,9 @@ namespace project_garage.Repository
                 })
                 .ToListAsync();
 
-            if (users.Count == 0) 
-                throw new ArgumentException("No users founded");
-
             return users;
         }
+
 
         public async Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email)
         {

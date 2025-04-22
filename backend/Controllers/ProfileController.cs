@@ -114,7 +114,7 @@ namespace project_garage.Controllers
 
         [HttpGet]
         [Route("search-users")]
-        public async Task<IActionResult> SearchUsers([FromQuery]SearchBoxDto model)
+        public async Task<IActionResult> SearchUsers([FromQuery]SearchBoxDto model, string? lastUserId, int limit = 4)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
             {
@@ -123,7 +123,7 @@ namespace project_garage.Controllers
 
             try
             {
-                var users = await _userService.SearchUsersAsync(model.Query);
+                var users = await _userService.SearchUsersAsync(model.Query, lastUserId, limit);
                 return Ok(new { message = users });
 
             }

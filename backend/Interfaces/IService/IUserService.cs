@@ -17,7 +17,7 @@ namespace project_garage.Interfaces.IService
         Task ConfirmUserEmail(string userId, string code);
         Task<bool> CheckPasswordAsync(UserModel user, string password);
         Task<IdentityResult> DeleteUserAsync(string id);
-        Task<List<UserModel>> SearchUsersAsync(string query);
+        Task<List<UserModel>> SearchUsersAsync(string query, string? lastUserId, int limit);
         Task<bool> CheckForExistanceByIdAsync(string userId);
     }
 }
