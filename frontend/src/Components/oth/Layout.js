@@ -83,31 +83,31 @@ const Layout = () => {
       const users = response.data.message.$values || [];
       setSearchResults(users);
       setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
-      setHasMoreResults(users.length === 10);
+      setHasMoreResults(users.length > 0); // Якщо є результати, дозволяємо завантаження ще
       setIsResultsVisible(true);
       setAlert(null);
     } catch (error) {
       const errorMessage = error.response?.data?.message;
       setSearchResults([]);
-      setHasMoreResults(false); // Stop further loading if an error occurs
+      setHasMoreResults(false); // Зупиняємо завантаження, якщо сталася помилка
       setAlert({ type: errorMessage === "No users founded" ? "info" : "error", message: errorMessage || "Something went wrong. Please try again." });
     }
   };
 
   const handleLoadMore = async () => {
-    if (!searchQuery.trim() || !lastUserId) return;
+    if (!searchQuery.trim() || !lastUserId || !hasMoreResults) return;
 
     try {
-      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}&lastUserId=${lastUserId}&limit=4`, {
+      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}&lastUserId=${lastUserId}`, {
         withCredentials: true
       });
 
       const users = response.data.message.$values || [];
       setSearchResults((prevResults) => [...prevResults, ...users]);
       setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
-      setHasMoreResults(users.length === 10);
+      setHasMoreResults(users.length > 0); // Перевіряємо, чи є ще результати
     } catch (error) {
-      setHasMoreResults(false); // Stop further loading if an error occurs
+      setHasMoreResults(false); // Зупиняємо завантаження, якщо сталася помилка
       setAlert({ type: "error", message: "Failed to load more users. Please try again." });
     }
   };
