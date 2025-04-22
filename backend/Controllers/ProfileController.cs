@@ -114,7 +114,7 @@ namespace project_garage.Controllers
 
         [HttpGet]
         [Route("search-users")]
-        public async Task<IActionResult> SearchUsers([FromQuery] SearchBoxDto model, string? lastUserId, int limit = 4)
+        public async Task<IActionResult> SearchUsers([FromQuery] SearchBoxDto model, string? lastUserId, int limit = 10)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
                 return BadRequest(new { message = "Search query cannot be empty" });

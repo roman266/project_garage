@@ -6,7 +6,7 @@ import SearchResults from "./SearchResults";
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { useUnreadMessages } from "../../context/UnreadMessagesContext"; // Додаємо імпорт контексту
+import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 
 import {
   AppBar,
@@ -19,7 +19,6 @@ import {
   ListItem,
   ListItemText,
   Button,
-
   ListItemIcon,
   IconButton
 } from "@mui/material";
@@ -39,15 +38,17 @@ const menuItems = [
 const Layout = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { unreadCount } = useUnreadMessages(); // Використовуємо контекст для отримання кількості непрочитаних повідомлень
+  const { unreadCount } = useUnreadMessages();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [alert, setAlert] = useState(null);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
-  
-  const searchContainerRef = useRef(null);
 
+  const [lastUserId, setLastUserId] = useState(null);
+  const [hasMoreResults, setHasMoreResults] = useState(true);
+
+  const searchContainerRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,7 +63,6 @@ const Layout = () => {
     };
   }, []);
 
-  // Handle logout with local navigation
   const handleLogout = async () => {
     try {
       await logout();
@@ -80,19 +80,35 @@ const Layout = () => {
         withCredentials: true
       });
 
-      setSearchResults(response.data.message.$values || []);
-	  setIsResultsVisible(true);
+      const users = response.data.message.$values || [];
+      setSearchResults(users);
+      setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
+      setHasMoreResults(users.length === 10);
+      setIsResultsVisible(true);
       setAlert(null);
     } catch (error) {
       const errorMessage = error.response?.data?.message;
+      setSearchResults([]);
+      setHasMoreResults(false); // Stop further loading if an error occurs
+      setAlert({ type: errorMessage === "No users founded" ? "info" : "error", message: errorMessage || "Something went wrong. Please try again." });
+    }
+  };
 
-      if (errorMessage === "No users founded") {
-        setSearchResults([]);
-        setAlert({ type: "info", message: "No users found." });
-      } else {
-        setSearchResults([]);
-        setAlert({ type: "error", message: "Something went wrong. Please try again." });
-      }
+  const handleLoadMore = async () => {
+    if (!searchQuery.trim() || !lastUserId) return;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}&lastUserId=${lastUserId}&limit=4`, {
+        withCredentials: true
+      });
+
+      const users = response.data.message.$values || [];
+      setSearchResults((prevResults) => [...prevResults, ...users]);
+      setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
+      setHasMoreResults(users.length === 10);
+    } catch (error) {
+      setHasMoreResults(false); // Stop further loading if an error occurs
+      setAlert({ type: "error", message: "Failed to load more users. Please try again." });
     }
   };
 
@@ -238,12 +254,14 @@ const Layout = () => {
           }}
         >
           <Outlet />
-		  {isResultsVisible && (
-			<SearchResults 
-			  results={searchResults} 
-			  onClose={() => setIsResultsVisible(false)} 
-			/>
-		  )}
+          {isResultsVisible && (
+            <SearchResults 
+              results={searchResults} 
+              onClose={() => setIsResultsVisible(false)} 
+              onLoadMore={handleLoadMore} 
+              hasMoreResults={hasMoreResults} 
+            />
+          )}
         </Box>
       </Box>
 

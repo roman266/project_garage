@@ -1,11 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Avatar } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Avatar, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-const SearchResults = ({ results, onClose }) => {
+const SearchResults = ({ results, onClose, onLoadMore, hasMoreResults }) => {
   const resultsRef = useRef(null);
 
-  // Закриття вікна при кліку поза його межами
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (resultsRef.current && !resultsRef.current.contains(event.target)) {
@@ -63,9 +62,11 @@ const SearchResults = ({ results, onClose }) => {
         maxHeight: '300px',
         overflowY: 'auto',
         zIndex: 1101,
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
-      <List>
+      <List sx={{ flex: 1, overflowY: 'auto' }}> {/* Allow scrolling for results */}
         {results.map(({ id, userName, firstName, lastName, profilePicture, activeStatus }) => {
           const displayFirstName = firstName && firstName !== 'None' ? firstName : '';
           const displayLastName = lastName && lastName !== 'None' ? lastName : '';
@@ -77,7 +78,7 @@ const SearchResults = ({ results, onClose }) => {
               key={id}
               sx={{ borderBottom: '1px solid #ddd', position: 'relative' }}
               component={Link}
-              to={/profile/${id}}
+              to={`/profile/${id}`}
               onClick={onClose}
             >
               <Box sx={{ position: 'relative', display: 'inline-block' }}>
@@ -95,11 +96,22 @@ const SearchResults = ({ results, onClose }) => {
                   }}
                 />
               </Box>
-              <ListItemText primary={${displayFirstName} ${displayLastName}.trim()} secondary={@${userName}} />
+              <ListItemText primary={`${displayFirstName} ${displayLastName}`.trim()} secondary={`@${userName}`} />
             </ListItem>
           );
         })}
       </List>
+      {hasMoreResults && (
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={onLoadMore}
+          sx={{ mt: 1 }}
+        >
+          Load More
+        </Button>
+      )}
     </Box>
   );
 };
