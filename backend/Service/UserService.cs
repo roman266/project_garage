@@ -199,9 +199,9 @@ namespace project_garage.Service
             return result;
         }
 
-        public async Task<List<UserModel>> SearchUsersAsync(string query)
+        public async Task<List<UserModel>> SearchUsersAsync(string query, string? lastUserId, int limit)
         {
-            var users = await _userRepository.SearchUsersAsync(query);
+            var users = await _userRepository.SearchUsersAsync(query, lastUserId, limit);
             return users;
         }
 
