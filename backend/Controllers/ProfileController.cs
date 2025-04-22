@@ -114,24 +114,23 @@ namespace project_garage.Controllers
 
         [HttpGet]
         [Route("search-users")]
-        public async Task<IActionResult> SearchUsers([FromQuery]SearchBoxDto model, string? lastUserId, int limit = 4)
+        public async Task<IActionResult> SearchUsers([FromQuery] SearchBoxDto model, string? lastUserId, int limit = 4)
         {
             if (string.IsNullOrWhiteSpace(model.Query))
-            {
                 return BadRequest(new { message = "Search query cannot be empty" });
-            }
 
             try
             {
                 var users = await _userService.SearchUsersAsync(model.Query, lastUserId, limit);
                 return Ok(new { message = users });
-
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+
 
         [HttpPost("upload-avatar")]
         public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)

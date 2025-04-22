@@ -109,34 +109,17 @@ namespace project_garage.Repository
             if (string.IsNullOrEmpty(query))
                 throw new ArgumentException("Query cannot be null or empty", nameof(query));
 
-            var baseQuery = _userManager.Users
+            var usersQuery = _userManager.Users
                 .Where(u => u.UserName.Contains(query));
-
-            string? lastUserName = null;
 
             if (!string.IsNullOrEmpty(lastUserId))
             {
-                lastUserName = await _userManager.Users
-                    .Where(u => u.Id == lastUserId)
-                    .Select(u => u.UserName)
-                    .FirstOrDefaultAsync();
-
-                if (lastUserName == null)
-                {
-                    throw new Exception($"User with ID '{lastUserId}' not found");
-                }
-            }
-
-            var usersQuery = baseQuery;
-
-            if (!string.IsNullOrEmpty(lastUserName))
-            {
                 usersQuery = usersQuery
-                    .Where(u => string.Compare(u.UserName, lastUserName) > 0);
+                    .Where(u => string.Compare(u.Id, lastUserId) > 0); // <-- Порівнюємо по Id
             }
 
             var users = await usersQuery
-                .OrderBy(u => u.UserName)
+                .OrderBy(u => u.Id) // <-- Сортуємо по Id
                 .Take(limit)
                 .Select(u => new UserModel
                 {
@@ -151,6 +134,8 @@ namespace project_garage.Repository
 
             return users;
         }
+
+
 
 
         public async Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email)
