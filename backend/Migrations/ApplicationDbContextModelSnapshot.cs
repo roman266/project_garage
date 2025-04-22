@@ -372,11 +372,9 @@ namespace project_garage.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("EntityType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ReactionType")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ReactionTypeId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -384,11 +382,40 @@ namespace project_garage.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ReactionTypeId");
+
                     b.HasIndex("UserId");
 
-                    b.HasIndex("EntityId", "EntityType");
-
                     b.ToTable("ReactionActions");
+                });
+
+            modelBuilder.Entity("project_garage.Models.DbModels.ReactionTypeModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ReactionTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            Name = "Like"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            Name = "Dislike"
+                        });
                 });
 
             modelBuilder.Entity("project_garage.Models.DbModels.RefreshTokenModel", b =>
@@ -704,11 +731,19 @@ namespace project_garage.Migrations
 
             modelBuilder.Entity("project_garage.Models.DbModels.ReactionModel", b =>
                 {
+                    b.HasOne("project_garage.Models.DbModels.ReactionTypeModel", "ReactionType")
+                        .WithMany()
+                        .HasForeignKey("ReactionTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("project_garage.Models.DbModels.UserModel", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ReactionType");
 
                     b.Navigation("User");
                 });

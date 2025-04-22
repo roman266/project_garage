@@ -15,7 +15,5 @@ namespace project_garage.Models.DbModels
         public string Category { get; set; }
         public ICollection<CommentModel> Comments { get; set; }
         public ICollection<PostImageModel> Images { get; set; } = new List<PostImageModel>();
-        public String Category {get; set; }
-        public String Content {get; set; }
     }
 }

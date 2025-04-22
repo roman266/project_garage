@@ -13,7 +13,7 @@ namespace project_garage.Controllers
     {
         private readonly IReactionService _reactionService;
 
-        public ReactionController(IReactionService reactionService) 
+        public ReactionController(IReactionService reactionService)
         {
             _reactionService = reactionService;
         }
@@ -23,16 +23,41 @@ namespace project_garage.Controllers
         {
             try
             {
+                Console.WriteLine($"Received reactionDto: {System.Text.Json.JsonSerializer.Serialize(reactionDto)}");
+                if (!ModelState.IsValid)
+                {
+                    Console.WriteLine($"ModelState errors: {string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))}");
+                    return BadRequest(ModelState);
+                }
                 var currentUserId = UserHelper.GetCurrentUserId(HttpContext);
-
+                Console.WriteLine($"Current userId: {currentUserId}");
                 await _reactionService.SendReactionAsync(
                     reactionDto.EntityId,
-                    reactionDto.ReactionType,
-                    reactionDto.EntityType,
+                    reactionDto.ReactionTypeId,
                     currentUserId
                 );
-
+                Console.WriteLine("Reaction added successfully");
                 return Ok(new { message = "Reaction added successfully" });
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"ArgumentException: {ex.Message}");
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new { error = "An unexpected error occurred.", details = ex.Message });
+            }
+        }
+
+        [HttpDelete("delete/{reactionId}")]
+        public async Task<IActionResult> DeleteReaction(string reactionId)
+        {
+            try
+            {
+                await _reactionService.DeleteReactionAsync(reactionId);
+                return Ok(new { message = "Reaction deleted successfully" });
             }
             catch (ArgumentException ex)
             {
@@ -44,17 +69,14 @@ namespace project_garage.Controllers
             }
         }
 
-        [HttpDelete("delete/{reactionId}")]
-        public async Task<IActionResult> DeleteReaction(string reactionId) 
+        // ReactionController.cs
+        [HttpGet("entity/{entityId}")]
+        public async Task<IActionResult> GetEntityReactions(string entityId)
         {
             try
             {
-                await _reactionService.DeleteReactionAsync(reactionId);
-                return Ok(new { message = "Message deleted successfully" });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new {error  = ex.Message});
+                var reactions = await _reactionService.GetEntityReactionsAsync(entityId);
+                return Ok(new { success = true, data = reactions });
             }
             catch (Exception ex)
             {

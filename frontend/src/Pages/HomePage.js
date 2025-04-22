@@ -1,20 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Card, CardContent, IconButton, Avatar, Pagination } from "@mui/material";
-import { ThumbUp, Comment, Share } from "@mui/icons-material";
-import API from "../utils/apiClient";
+import { ThumbUp, ThumbUpOutlined, Comment, Share } from "@mui/icons-material";
+import API, { addReaction, deleteReaction, getEntityReactions } from "../utils/apiClient";
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [userReactions, setUserReactions] = useState({}); // Зберігатиме реакції користувача
   const postsPerPage = 10;
+
+  // Функція для отримання реакцій поста
+  const fetchReactions = async (postId) => {
+    try {
+      const response = await getEntityReactions(postId);
+      if (response.success && response.data) {
+        const reactions = response.data.$values || response.data;
+        const userReaction = reactions.find((r) => r.userId === "current_user_id"); // Замініть на реальний userId
+        setUserReactions((prev) => ({
+          ...prev,
+          [postId]: userReaction || null,
+        }));
+        return reactions.length;
+      }
+      return 0;
+    } catch (err) {
+      console.error(`Error fetching reactions for post ${postId}:`, err);
+      return 0;
+    }
+  };
 
   useEffect(() => {
     const fetchFeed = async () => {
       try {
         const response = await API.get(`/home/feed?page=${page}&limit=${postsPerPage}`);
-        console.log("API Response:", response.data);
         const data = response.data;
 
         if (!data.success) {
@@ -28,13 +48,20 @@ const HomePage = () => {
         }
 
         const fetchedPosts = data.data.posts?.$values || [];
-
         if (!Array.isArray(fetchedPosts)) {
           setError("Invalid post data format");
           return;
         }
 
-        setPosts(fetchedPosts);
+        // Отримати кількість реакцій для кожного поста
+        const postsWithReactions = await Promise.all(
+          fetchedPosts.map(async (post) => {
+            const reactionCount = await fetchReactions(post.id);
+            return { ...post, likes: reactionCount };
+          })
+        );
+
+        setPosts(postsWithReactions);
         setTotalPages(data.data.totalPages || 1);
       } catch (error) {
         setError(`Error fetching feed: ${error.response?.data?.message || error.message}`);
@@ -43,6 +70,39 @@ const HomePage = () => {
 
     fetchFeed();
   }, [page]);
+
+  // Функція для додавання/видалення лайка
+  const handleLike = async (postId) => {
+    try {
+      const currentReaction = userReactions[postId];
+      if (currentReaction) {
+        // Видалити реакцію
+        await deleteReaction(currentReaction.id);
+        setUserReactions((prev) => ({ ...prev, [postId]: null }));
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId ? { ...post, likes: post.likes - 1 } : post
+          )
+        );
+      } else {
+        // Додати реакцію
+        const reactionData = {
+          entityId: postId,
+          reactionTypeId: "like", // ID для "лайка" з вашої бази даних
+        };
+        await addReaction(reactionData);
+        const newReaction = { id: "temp-id", userId: "current_user_id", reactionTypeId: "like" }; // Замініть на реальні дані
+        setUserReactions((prev) => ({ ...prev, [postId]: newReaction }));
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId ? { ...post, likes: post.likes + 1 } : post
+          )
+        );
+      }
+    } catch (error) {
+      setError(`Error handling reaction: ${error.response?.data?.error || error.message}`);
+    }
+  };
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -115,8 +175,12 @@ const HomePage = () => {
             </CardContent>
             <CardContent sx={{ display: "flex", justifyContent: "start", gap: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <IconButton size="small">
-                  <ThumbUp sx={{ color: "#1F4A7C" }} />
+                <IconButton size="small" onClick={() => handleLike(post.id)}>
+                  {userReactions[post.id] ? (
+                    <ThumbUp sx={{ color: "#1F4A7C" }} />
+                  ) : (
+                    <ThumbUpOutlined sx={{ color: "#1F4A7C" }} />
+                  )}
                 </IconButton>
                 <Typography>{post.likes || 0}</Typography>
               </Box>

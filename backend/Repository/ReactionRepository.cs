@@ -2,7 +2,6 @@
 using project_garage.Data;
 using project_garage.Interfaces.IRepository;
 using project_garage.Models.DbModels;
-using project_garage.Models.Enums;
 
 namespace project_garage.Repository
 {
@@ -19,15 +18,20 @@ namespace project_garage.Repository
         {
             _context.ReactionActions.Add(model);
             await _context.SaveChangesAsync();
-        } 
+        }
 
         public async Task<ReactionModel> GetByIdAsync(string id)
         {
-            var reaction = await _context
-                .ReactionActions
+            return await _context.ReactionActions
+                .Include(r => r.ReactionType)
+                .Include(r => r.User)
                 .FirstOrDefaultAsync(ra => ra.Id == id);
+        }
 
-            return reaction;
+        public async Task<ReactionTypeModel> GetReactionTypeByIdAsync(string reactionTypeId)
+        {
+            return await _context.ReactionTypes
+                .FirstOrDefaultAsync(rt => rt.Id == reactionTypeId);
         }
 
         public async Task UpdateAsync(ReactionModel model)
@@ -38,27 +42,28 @@ namespace project_garage.Repository
 
         public async Task<List<ReactionModel>> GetByUserIdAsync(string id)
         {
-            var list = await _context.ReactionActions.Where(ra => ra.UserId == id)
+            return await _context.ReactionActions
+                .Include(r => r.ReactionType)
+                .Include(r => r.User)
+                .Where(ra => ra.UserId == id)
                 .ToListAsync();
-
-            return list;
         }
 
-        public async Task<List<ReactionModel>> GetByEntityIdAsync(string id, EntityType entityType)
+        public async Task<List<ReactionModel>> GetByEntityIdAsync(string entityId)
         {
-            var list = await _context.ReactionActions
-                .Where(ra => ra.EntityId == id && ra.EntityType == entityType)
+            return await _context.ReactionActions
+                .Include(r => r.ReactionType)
+                .Include(r => r.User)
+                .Where(ra => ra.EntityId == entityId)
                 .ToListAsync();
-
-            return list;
         }
 
-        public async Task<ReactionModel> GetByEntityAndUserIdAsync(string userId, EntityType entityType, string entityId)
+        public async Task<ReactionModel> GetByEntityAndUserIdAsync(string userId, string entityId)
         {
-            var reaction = await _context.ReactionActions
-                .FirstOrDefaultAsync(ra => ra.UserId == userId && ra.EntityType == entityType && ra.EntityId == entityId);
-
-            return reaction ?? new ReactionModel();
+            return await _context.ReactionActions
+                .Include(r => r.ReactionType)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(ra => ra.UserId == userId && ra.EntityId == entityId);
         }
 
         public async Task DeleteAsync(ReactionModel action)
