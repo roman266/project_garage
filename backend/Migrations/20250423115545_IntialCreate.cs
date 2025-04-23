@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace project_garage.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IntialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,6 +61,45 @@ namespace project_garage.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Conversations",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    IsPrivate = table.Column<bool>(type: "INTEGER", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Interests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Interests", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReactionTypes",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReactionTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -168,39 +209,14 @@ namespace project_garage.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Conversations",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    User1Id = table.Column<string>(type: "TEXT", nullable: false),
-                    User2Id = table.Column<string>(type: "TEXT", nullable: false),
-                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Conversations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Conversations_AspNetUsers_User1Id",
-                        column: x => x.User1Id,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Conversations_AspNetUsers_User2Id",
-                        column: x => x.User2Id,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Friends",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
                     FriendId = table.Column<string>(type: "TEXT", nullable: false),
-                    IsAccepted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    IsAccepted = table.Column<bool>(type: "INTEGER", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -220,47 +236,24 @@ namespace project_garage.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Posts",
+                name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Token = table.Column<string>(type: "TEXT", nullable: false),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    ExpiryDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Posts", x => x.Id);
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Posts_AspNetUsers_UserId",
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReactionActions",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    ReactionType = table.Column<int>(type: "INTEGER", nullable: false),
-                    EntityType = table.Column<int>(type: "INTEGER", nullable: false),
-                    EntityId = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReactionActions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReactionActions_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -270,9 +263,10 @@ namespace project_garage.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     ConversationId = table.Column<string>(type: "TEXT", nullable: false),
                     SenderId = table.Column<string>(type: "TEXT", nullable: false),
-                    SenderName = table.Column<string>(type: "TEXT", nullable: false),
                     Text = table.Column<string>(type: "TEXT", nullable: false),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: false),
                     SendedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsEdited = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsReaden = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsVisible = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
@@ -294,12 +288,119 @@ namespace project_garage.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserConversations",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    ConversationId = table.Column<string>(type: "TEXT", nullable: false),
+                    JoinedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserConversations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserConversations_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserConversations_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Posts",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    InterestId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Posts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Posts_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Posts_Interests_InterestId",
+                        column: x => x.InterestId,
+                        principalTable: "Interests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserInterests",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    InterestId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserInterests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserInterests_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserInterests_Interests_InterestId",
+                        column: x => x.InterestId,
+                        principalTable: "Interests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReactionActions",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    ReactionTypeId = table.Column<string>(type: "TEXT", nullable: false),
+                    EntityId = table.Column<string>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReactionActions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReactionActions_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReactionActions_ReactionTypes_ReactionTypeId",
+                        column: x => x.ReactionTypeId,
+                        principalTable: "ReactionTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PostId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PostId = table.Column<string>(type: "TEXT", nullable: false),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
                     Content = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -319,6 +420,40 @@ namespace project_garage.Migrations
                         principalTable: "Posts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostImageModel",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: false),
+                    PostId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PostId1 = table.Column<string>(type: "TEXT", nullable: true),
+                    UserModelId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostImageModel", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostImageModel_AspNetUsers_UserModelId",
+                        column: x => x.UserModelId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PostImageModel_Posts_PostId1",
+                        column: x => x.PostId1,
+                        principalTable: "Posts",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "ReactionTypes",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { "1", "Like" },
+                    { "2", "Dislike" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -369,16 +504,6 @@ namespace project_garage.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Conversations_User1Id",
-                table: "Conversations",
-                column: "User1Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Conversations_User2Id",
-                table: "Conversations",
-                column: "User2Id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Friends_FriendId",
                 table: "Friends",
                 column: "FriendId");
@@ -399,18 +524,64 @@ namespace project_garage.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PostImageModel_PostId1",
+                table: "PostImageModel",
+                column: "PostId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostImageModel_UserModelId",
+                table: "PostImageModel",
+                column: "UserModelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Posts_InterestId",
+                table: "Posts",
+                column: "InterestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Posts_UserId",
                 table: "Posts",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReactionActions_EntityId_EntityType",
+                name: "IX_ReactionActions_ReactionTypeId",
                 table: "ReactionActions",
-                columns: new[] { "EntityId", "EntityType" });
+                column: "ReactionTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReactionActions_UserId",
                 table: "ReactionActions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReactionTypes_Name",
+                table: "ReactionTypes",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserConversations_ConversationId",
+                table: "UserConversations",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserConversations_UserId",
+                table: "UserConversations",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserInterests_InterestId",
+                table: "UserInterests",
+                column: "InterestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserInterests_UserId",
+                table: "UserInterests",
                 column: "UserId");
         }
 
@@ -442,7 +613,19 @@ namespace project_garage.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
+                name: "PostImageModel");
+
+            migrationBuilder.DropTable(
                 name: "ReactionActions");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "UserConversations");
+
+            migrationBuilder.DropTable(
+                name: "UserInterests");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -451,10 +634,16 @@ namespace project_garage.Migrations
                 name: "Posts");
 
             migrationBuilder.DropTable(
+                name: "ReactionTypes");
+
+            migrationBuilder.DropTable(
                 name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Interests");
         }
     }
 }
