@@ -25,7 +25,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(configuration);
 
 var app = builder.Build();
-
+/*
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -41,7 +41,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred during database seeding.");
     }
 }
-
+*/
 
 app.UseMiddleware<EnsureInterestsMiddleware>();
 app.UseHttpsRedirection();
