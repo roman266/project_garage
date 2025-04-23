@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../../constants";
 import ProfileCard from "./ProfileCard";
@@ -6,7 +6,7 @@ import SearchResults from "./SearchResults";
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { useUnreadMessages } from "../../context/UnreadMessagesContext"; // Додаємо імпорт контексту
+import { useUnreadMessages } from "../../context/UnreadMessagesContext";
 
 import {
   AppBar,
@@ -19,7 +19,6 @@ import {
   ListItem,
   ListItemText,
   Button,
-
   ListItemIcon,
   IconButton
 } from "@mui/material";
@@ -39,14 +38,31 @@ const menuItems = [
 const Layout = () => {
   const { user, logout, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { unreadCount } = useUnreadMessages(); // Використовуємо контекст для отримання кількості непрочитаних повідомлень
+  const { unreadCount } = useUnreadMessages();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [alert, setAlert] = useState(null);
-  // Видаляємо локальний стан unreadCount, оскільки тепер використовуємо контекст
+  const [isResultsVisible, setIsResultsVisible] = useState(false);
 
-  // Handle logout with local navigation
+  const [lastUserId, setLastUserId] = useState(null);
+  const [hasMoreResults, setHasMoreResults] = useState(true);
+
+  const searchContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setIsResultsVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -56,12 +72,52 @@ const Layout = () => {
     }
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}`, {
+        withCredentials: true
+      });
+
+      const users = response.data.message.$values || [];
+      setSearchResults(users);
+      setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
+      setHasMoreResults(users.length > 0); // Якщо є результати, дозволяємо завантаження ще
+      setIsResultsVisible(true);
+      setAlert(null);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message;
+      setSearchResults([]);
+      setHasMoreResults(false); // Зупиняємо завантаження, якщо сталася помилка
+      setAlert({ type: errorMessage === "No users founded" ? "info" : "error", message: errorMessage || "Something went wrong. Please try again." });
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (!searchQuery.trim() || !lastUserId || !hasMoreResults) return;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}&lastUserId=${lastUserId}`, {
+        withCredentials: true
+      });
+
+      const users = response.data.message.$values || [];
+      setSearchResults((prevResults) => [...prevResults, ...users]);
+      setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
+      setHasMoreResults(users.length > 0); // Перевіряємо, чи є ще результати
+    } catch (error) {
+      setHasMoreResults(false); // Зупиняємо завантаження, якщо сталася помилка
+      setAlert({ type: "error", message: "Failed to load more users. Please try again." });
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }}>
+    <Box sx={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden" }} ref={searchContainerRef}>
       <Drawer
         variant="permanent"
         sx={{
@@ -75,20 +131,23 @@ const Layout = () => {
         }}
       >
         <Box sx={{ padding: 2 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              fontSize: "60px",
-              fontWeight: "light",
-              fontFamily: "roboto",
-              color: "#365B87",
-            }}
-          >
-            Sigm
-            <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
-          </Typography>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "60px",
+                fontWeight: "light",
+                fontFamily: "roboto",
+                color: "#365B87",
+                cursor: "pointer",
+              }}
+            >
+              Sigm
+              <img src="/sigma_2.svg" alt="Sigma Logo" style={{ height: "60px", marginLeft: "2px" }} />
+            </Typography>
+          </Link>
         </Box>
         <ProfileCard profile={user} />
         <List>
@@ -186,9 +245,23 @@ const Layout = () => {
         </AppBar>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, backgroundColor: "#365B87", marginTop: "63px" }}>
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: "#365B87",
+            marginTop: "63px",
+            overflowY: "auto",
+          }}
+        >
           <Outlet />
-          <SearchResults results={searchResults} />
+          {isResultsVisible && (
+            <SearchResults 
+              results={searchResults} 
+              onClose={() => setIsResultsVisible(false)} 
+              onLoadMore={handleLoadMore} 
+              hasMoreResults={hasMoreResults} 
+            />
+          )}
         </Box>
       </Box>
 
