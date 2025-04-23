@@ -104,29 +104,39 @@ namespace project_garage.Repository
             return result;
         }
 
-        public async Task<List<UserModel>> SearchUsersAsync(string query)
+        public async Task<List<UserModel>> SearchUsersAsync(string query, string? lastUserId, int limit)
         {
             if (string.IsNullOrEmpty(query))
                 throw new ArgumentException("Query cannot be null or empty", nameof(query));
 
-            var users = await _userManager.Users
-                .Where(u => u.UserName.Contains(query))
-                .Take(10)
+            var usersQuery = _userManager.Users
+                .Where(u => u.UserName.Contains(query));
+
+            if (!string.IsNullOrEmpty(lastUserId))
+            {
+                usersQuery = usersQuery
+                    .Where(u => string.Compare(u.Id, lastUserId) > 0); // <-- Порівнюємо по Id
+            }
+
+            var users = await usersQuery
+                .OrderBy(u => u.Id) // <-- Сортуємо по Id
+                .Take(limit)
                 .Select(u => new UserModel
                 {
                     Id = u.Id,
                     UserName = u.UserName,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    ProfilePicture = u.ProfilePicture
+                    ProfilePicture = u.ProfilePicture,
+                    ActiveStatus = u.ActiveStatus
                 })
                 .ToListAsync();
 
-            if(users.Count == 0) 
-                throw new ArgumentException("No users founded");
-
             return users;
         }
+
+
+
 
         public async Task<IdentityResult> UpdateUserEmailAsync(UserModel user, string email)
         {

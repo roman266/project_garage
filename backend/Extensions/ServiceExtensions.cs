@@ -54,11 +54,13 @@ namespace project_garage.Extensions
             services.AddScoped<IInterestRepository, InterestRepository>();
             services.AddScoped<DataSeeder>();
 
+            services.AddScoped<IPasswordHasher<UserModel>, PasswordHasher<UserModel>>();
+            services.AddScoped<SeedService>();
+
             services.Configure<JWTSettings>(configuration.GetSection("Jwt"));
             services.AddSingleton<JWTSettings>();
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
-            services.AddScoped<IPostCategoryRepository, PostCategoryRepository>();
         }
 
         public static void AddIdentity(this IServiceCollection services)

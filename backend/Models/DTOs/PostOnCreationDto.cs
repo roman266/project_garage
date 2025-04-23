@@ -14,9 +14,6 @@ namespace project_garage.Models.ViewModels
         public IFormFile Image { get; set; }
 
         [Required]
-        public int CategoryId { get; set; }
-
-        [Required]
-        public string Category { get; set; }
+        public int InterestId { get; set; }
     }
 }

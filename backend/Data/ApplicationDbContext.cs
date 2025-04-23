@@ -17,7 +17,6 @@ namespace project_garage.Data
         public DbSet<UserConversationModel> UserConversations { get; set; }
         public DbSet<UserInterestModel> UserInterests { get; set; }
         public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
-        public DbSet<PostCategoryModel> PostCategories { get; set; }
         public DbSet<InterestModel> Interests { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -49,6 +48,12 @@ namespace project_garage.Data
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<PostModel>()
+                .HasOne(p => p.Interest)
+                .WithMany()
+                .HasForeignKey(p => p.InterestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Налаштування таблиці Friend
             modelBuilder.Entity<FriendModel>()
                 .HasOne(f => f.User)
@@ -75,7 +80,7 @@ namespace project_garage.Data
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Налаштування таблиці Reaction
+            // Налаштування таблиці ReactionActions
             modelBuilder.Entity<ReactionModel>()
                 .HasOne(r => r.ReactionType)
                 .WithMany()
