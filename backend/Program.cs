@@ -4,6 +4,7 @@ using project_garage.Bogus;
 using project_garage.Data;
 using project_garage.Extensions;
 using project_garage.Middleware;
+using project_garage.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -24,6 +25,23 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(configuration);
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var seedService = services.GetRequiredService<SeedService>();
+        await seedService.SeedDatabaseAsync(true); 
+        app.Logger.LogInformation("Database seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database seeding.");
+    }
+}
+
 
 app.UseMiddleware<EnsureInterestsMiddleware>();
 app.UseHttpsRedirection();

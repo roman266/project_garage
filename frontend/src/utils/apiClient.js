@@ -60,6 +60,22 @@ export const checkAuthentication = async () => {
   }
 };
 
+// Додаємо методи для роботи з реакціями
+export const addReaction = async (reactionData) => {
+  const response = await API.post("/reactions/add", reactionData);
+  return response.data;
+};
+
+export const deleteReaction = async (reactionId) => {
+  const response = await API.delete(`/reactions/delete/${reactionId}`);
+  return response.data;
+};
+
+export const getEntityReactions = async (entityId) => {
+  const response = await API.get(`/reactions/entity/${entityId}`);
+  return response.data;
+};
+
 API.interceptors.response.use(
   (response) => response,
   async (error) => {

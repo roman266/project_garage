@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Card, CardContent, IconButton, Avatar, Pagination } from "@mui/material";
-import { ThumbUp, Comment, Share } from "@mui/icons-material";
-import API from "../utils/apiClient";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  Avatar,
+  Pagination,
+  TextField,
+  Button,
+} from "@mui/material";
+import { ThumbUp, ThumbUpOutlined, Comment, Share } from "@mui/icons-material";
+import API from "../utils/apiClient"; // Keep for fetching posts
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [userReactions, setUserReactions] = useState({}); // User likes
+  const [comments, setComments] = useState({}); // Comments for each post
+  const [newComment, setNewComment] = useState({}); // Text for new comment
   const postsPerPage = 10;
 
   useEffect(() => {
     const fetchFeed = async () => {
       try {
         const response = await API.get(`/home/feed?page=${page}&limit=${postsPerPage}`);
-        console.log("API Response:", response.data);
         const data = response.data;
 
         if (!data.success) {
@@ -28,13 +40,19 @@ const HomePage = () => {
         }
 
         const fetchedPosts = data.data.posts?.$values || [];
-
         if (!Array.isArray(fetchedPosts)) {
           setError("Invalid post data format");
           return;
         }
 
-        setPosts(fetchedPosts);
+        // Initialize posts with local likes and comments
+        const postsWithLocalData = fetchedPosts.map((post) => ({
+          ...post,
+          likes: post.likes || 0,
+          comments: comments[post.id] || [],
+        }));
+
+        setPosts(postsWithLocalData);
         setTotalPages(data.data.totalPages || 1);
       } catch (error) {
         setError(`Error fetching feed: ${error.response?.data?.message || error.message}`);
@@ -43,6 +61,53 @@ const HomePage = () => {
 
     fetchFeed();
   }, [page]);
+
+  // Function to handle likes
+  const handleLike = (postId) => {
+    setUserReactions((prev) => {
+      const isLiked = !!prev[postId];
+      return {
+        ...prev,
+        [postId]: isLiked ? null : { userId: "current_user_id", reactionTypeId: "like" },
+      };
+    });
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, likes: userReactions[postId] ? post.likes - 1 : post.likes + 1 }
+          : post
+      )
+    );
+  };
+
+  // Function to add a comment
+  const handleAddComment = (postId) => {
+    if (!newComment[postId]?.trim()) return;
+
+    const comment = {
+      id: Date.now(), // Unique ID for the comment
+      userId: "current_user_id",
+      username: "Current User", // Replace with actual user
+      content: newComment[postId],
+      createdAt: new Date().toISOString(),
+    };
+
+    setComments((prev) => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), comment],
+    }));
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, comments: [...(post.comments || []), comment] }
+          : post
+      )
+    );
+
+    setNewComment((prev) => ({ ...prev, [postId]: "" }));
+  };
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -88,7 +153,7 @@ const HomePage = () => {
                   <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.9rem" }}>
                     @{post.author?.username || "unknown"} ·{" "}
                     {post.createdAt
-                      ? new Date(post.createdAt).toLocaleDateString("uk-UA", {
+                      ? new Date(post.createdAt).toLocaleDateString("en-US", {
                           month: "long",
                           day: "numeric",
                           year: "numeric",
@@ -115,8 +180,12 @@ const HomePage = () => {
             </CardContent>
             <CardContent sx={{ display: "flex", justifyContent: "start", gap: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <IconButton size="small">
-                  <ThumbUp sx={{ color: "#1F4A7C" }} />
+                <IconButton size="small" onClick={() => handleLike(post.id)}>
+                  {userReactions[post.id] ? (
+                    <ThumbUp sx={{ color: "#1F4A7C" }} />
+                  ) : (
+                    <ThumbUpOutlined sx={{ color: "#1F4A7C" }} />
+                  )}
                 </IconButton>
                 <Typography>{post.likes || 0}</Typography>
               </Box>
@@ -133,10 +202,52 @@ const HomePage = () => {
                 <Typography>{post.shares || 0}</Typography>
               </Box>
             </CardContent>
+            {/* Comments section */}
+            <CardContent>
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Add a comment"
+                  value={newComment[post.id] || ""}
+                  onChange={(e) =>
+                    setNewComment((prev) => ({ ...prev, [post.id]: e.target.value }))
+                  }
+                  sx={{ mb: 2 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={() => handleAddComment(post.id)}
+                  sx={{ backgroundColor: "#1F4A7C" }}
+                >
+                  Submit
+                </Button>
+              </Box>
+              {post.comments?.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  {post.comments.map((comment) => (
+                    <Box key={comment.id} sx={{ mb: 1, borderLeft: "2px solid #ddd", pl: 2 }}>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                        {comment.username}
+                      </Typography>
+                      <Typography variant="body2">{comment.content}</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {new Date(comment.createdAt).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </CardContent>
           </Card>
         ))
       ) : (
-        <Typography>Ще немає постів.</Typography>
+        <Typography>No posts yet.</Typography>
       )}
 
       {totalPages > 1 && (

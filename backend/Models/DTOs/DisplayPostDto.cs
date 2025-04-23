@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using project_garage.Models.ViewModels;
 
 namespace project_garage.Models.DTOs
 {
@@ -10,5 +11,7 @@ namespace project_garage.Models.DTOs
         public DateTime PostDate { get; set; }
         public string SenderAvatarUlr { get; set; }
         public string SenderNickName { get; set; }
+        public List<ReactionDto> Reactions { get; set; } 
+        public ReactionDto UserReaction { get; set; }
     }
 }

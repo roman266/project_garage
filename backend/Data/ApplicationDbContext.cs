@@ -13,6 +13,7 @@ namespace project_garage.Data
         public DbSet<ConversationModel> Conversations { get; set; }
         //public DbSet<PostImageModel> PostImages { get; set; }
         public DbSet<ReactionModel> ReactionActions { get; set; }
+        public DbSet<ReactionTypeModel> ReactionTypes { get; set; }
         public DbSet<UserConversationModel> UserConversations { get; set; }
         public DbSet<UserInterestModel> UserInterests { get; set; }
         public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
@@ -79,16 +80,22 @@ namespace project_garage.Data
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Налаштування таблиці Reaction
+            // Налаштування таблиці ReactionActions
             modelBuilder.Entity<ReactionModel>()
-                .HasOne(r => r.User)
+                .HasOne(r => r.ReactionType)
                 .WithMany()
-                .HasForeignKey(r => r.UserId)
+                .HasForeignKey(r => r.ReactionTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<ReactionModel>()
-                .HasIndex(r => new { r.EntityId, r.EntityType });
+            modelBuilder.Entity<ReactionTypeModel>()
+                .HasIndex(rt => rt.Name)
+                .IsUnique();
 
+            // Ініціалізація типів реакцій
+            modelBuilder.Entity<ReactionTypeModel>().HasData(
+                new ReactionTypeModel { Id = "1", Name = "Like" },
+                new ReactionTypeModel { Id = "2", Name = "Dislike" }
+            );
             //Налаштування таблиці PostImage
             //modelBuilder.Entity<PostImageModel>()
             //    .HasKey(pi => pi.Id);
