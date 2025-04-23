@@ -76,21 +76,26 @@ const Layout = () => {
     if (!searchQuery.trim()) return;
 
     try {
-      const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}`, {
-        withCredentials: true
-      });
+        const response = await axios.get(`${API_URL}/api/profile/search-users?query=${searchQuery}`, {
+            withCredentials: true
+        });
 
-      const users = response.data.message.$values || [];
-      setSearchResults(users);
-      setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
-      setHasMoreResults(users.length > 0); // Якщо є результати, дозволяємо завантаження ще
-      setIsResultsVisible(true);
-      setAlert(null);
+        const users = response.data.message.$values || [];
+        setSearchResults(users);
+        setLastUserId(users.length > 0 ? users[users.length - 1].id : null);
+        setHasMoreResults(users.length > 0); 
+        setIsResultsVisible(true);
+
+        if (users.length === 0) {
+            setAlert({ type: "info", message: "No users found" });
+        } else {
+            setAlert(null);
+        }
     } catch (error) {
-      const errorMessage = error.response?.data?.message;
-      setSearchResults([]);
-      setHasMoreResults(false); // Зупиняємо завантаження, якщо сталася помилка
-      setAlert({ type: errorMessage === "No users founded" ? "info" : "error", message: errorMessage || "Something went wrong. Please try again." });
+        const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
+        setSearchResults([]);
+        setHasMoreResults(false); 
+        setAlert({ type: "error", message: errorMessage });
     }
   };
 
