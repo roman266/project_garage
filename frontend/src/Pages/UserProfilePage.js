@@ -232,7 +232,7 @@ export default function UserProfilePage() {
                                 <PostCard
                                     avatarUrl={post.senderAvatarUlr}
                                     profileName={post.senderNickName}
-                                    postDescription={post.postDescription}
+                                    postDescription={new Date(post.postDate).toLocaleString()}
                                     postImage={post.postImageUrl}
                                     contentText={post.postDescription}
                                     likesCount={post.likesCount}
